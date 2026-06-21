@@ -1,0 +1,101 @@
+name: Build site
+
+on:
+  # Fast path: rebuild within minutes of any data-branch push.
+  push:
+    branches: [platformio, arduino, vendors, other]
+  # 24-hour backstop: catches missed push triggers, GH outages, etc.
+  schedule:
+    - cron: "30 4 * * *"
+  # Human override.
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (tools live here)
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "fbuild-bot[site]"
+          git config user.email "fbuild-bot+site@users.noreply.github.com"
+
+      - name: Worktree each data branch + the site branch
+        id: worktrees
+        run: |
+          set -euo pipefail
+          mkdir -p .branches /tmp/source-shas
+          : > /tmp/source-shas.json
+          echo "{" > /tmp/source-shas.json
+          first=1
+          for b in platformio arduino vendors other; do
+            if git ls-remote --heads origin "$b" | grep -q .; then
+              git fetch origin "$b:$b"
+              git worktree add ".branches/$b" "$b"
+              sha=$(git -C ".branches/$b" rev-parse HEAD)
+              [ $first -eq 0 ] && echo "," >> /tmp/source-shas.json
+              echo "  \"$b\": \"$sha\"" >> /tmp/source-shas.json
+              first=0
+            else
+              echo "::warning::data branch '$b' does not yet exist on remote; skipping"
+            fi
+          done
+          echo "}" >> /tmp/source-shas.json
+          cat /tmp/source-shas.json
+
+          if git ls-remote --heads origin site | grep -q .; then
+            git fetch origin site:site
+            git worktree add .site site
+          else
+            git worktree add --detach .site
+            (cd .site && git checkout --orphan site && git rm -rf . 2>/dev/null || true)
+          fi
+
+      - name: Run site builder
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          uv run --no-project --script builders/site.py \
+            --data-root .branches \
+            --out .site \
+            --source-shas /tmp/source-shas.json
+
+      - name: Commit + push site branch (history-pruned to 10 commits)
+        working-directory: .site
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo "no site changes"; exit 0
+          fi
+          ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          trig="${{ github.event_name }}"
+          git commit -m "site: rebuild ($trig) ${ts}"
+
+          # History prune to 10 commits.
+          total="$(git rev-list --count HEAD)"
+          if [ "${total}" -gt 10 ]; then
+            target="$(git rev-list --max-count=10 HEAD | tail -n 1)"
+            git replace --graft "${target}"
+            pip install --quiet git-filter-repo
+            git filter-repo --force --refs HEAD
+            git for-each-ref --format='delete %(refname)' refs/replace/ | git update-ref --stdin
+          fi
+
+          if git ls-remote --exit-code --heads origin site >/dev/null 2>&1; then
+            git push --force-with-lease origin HEAD:site
+          else
+            git push origin HEAD:site
+          fi
