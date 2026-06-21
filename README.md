@@ -8,6 +8,27 @@ and the public boards portal.
 Currently **private**; may go public once the curation pipeline + public
 portal are stable.
 
+## 🔎 Live portal — **<https://fastled.github.io/boards/>**
+
+Public query UI (works even though this repo is private — the `site`
+branch is published via GitHub Pages from a Team-plan account). Searchable
+by VID, VID:PID, vendor-name fragment, or product-name fragment. Backed
+by `site.db` (SQLite over HTTP, served alongside `index.html`).
+
+| Endpoint | URL |
+|---|---|
+| Demo query UI                       | <https://fastled.github.io/boards/> |
+| Raw SQLite database                 | <https://fastled.github.io/boards/site.db> |
+| Build provenance + counts (`_meta`) | <https://fastled.github.io/boards/_meta.json> |
+| Severity-bucketed warnings folder   | <https://fastled.github.io/boards/warnings/> |
+
+Quick examples to try in the portal:
+- VID box: `303a` → Espressif Systems
+- VID box: `16c0` → PJRC (Teensy)  *(re-attribution via `other` branch override)*
+- VID:PID box: `303a:1001` → primary board + 36 alternates (genuine PID collision)
+- VID:PID box: `16c0:0483` → Teensy 4.0
+- Product-name fragment: `teensy` → all Teensy entries
+
 ## What's in here
 
 The repo has a strict split: code on `main`, data on orphan branches.
@@ -81,13 +102,16 @@ since the JSON is ~1–4 KB per board (reproducible, offline-buildable).
 
 ### From the public site
 
-Browse the published portal at the URL listed in `site/manifest.json`
-(once the site branch is live). It exposes:
+Browse the published portal at <https://fastled.github.io/boards/>. It
+exposes:
 
 - VID → vendor name lookup
-- VID:PID → product / board name reverse lookup
-- Board name → likely VID:PID forward lookup (fuzzy)
-- Full per-board JSON download
+- VID:PID → product / board name reverse lookup (primary + all alternates)
+- Vendor-name fragment → matching VIDs (fuzzy)
+- Product-name fragment → matching VID:PIDs (fuzzy)
+
+The portal loads `site.db` once via `fetch()`, then runs every query
+client-side in sql.js (WASM). Zero server, fully cacheable.
 
 ### From curl / scripts
 
