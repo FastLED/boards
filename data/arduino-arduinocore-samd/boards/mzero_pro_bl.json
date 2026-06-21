@@ -1,0 +1,77 @@
+{
+  "bootloader": {
+    "file": "mzero/Bootloader_D21_M0_Pro_150427.hex",
+    "low_fuses": "0xff",
+    "size": "0x4000",
+    "tool": {
+      "": "openocd-withbootsize",
+      "default": "openocd-withbootsize"
+    }
+  },
+  "build": {
+    "board": "SAM_ZERO",
+    "core": "arduino",
+    "emu": {
+      "mcu": "atmega2560"
+    },
+    "extra_flags": "-D__SAMD21G18A__ -mthumb {build.usb_flags}",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x804f",
+    "preferred_out_format": "hex",
+    "usb_product": "\"Arduino M0 Pro\"",
+    "variant": "arduino_mzero",
+    "variant_system_lib": "",
+    "vid": "0x2a03"
+  },
+  "name": "Arduino M0 Pro (Native USB Port)",
+  "pid": {
+    "0": "0x004d",
+    "1": "0x804d",
+    "2": "0x004f",
+    "3": "0x804f"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "true",
+    "protocol": "stk500v2",
+    "speed": "57600",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x004d",
+      "vid": "0x2a03"
+    },
+    "1": {
+      "pid": "0x804d",
+      "vid": "0x2a03"
+    },
+    "2": {
+      "pid": "0x004f",
+      "vid": "0x2a03"
+    },
+    "3": {
+      "pid": "0x804f",
+      "vid": "0x2a03"
+    },
+    "4": {
+      "board": "mzero_pro_bl"
+    }
+  },
+  "vid": {
+    "0": "0x2a03",
+    "1": "0x2a03",
+    "2": "0x2a03",
+    "3": "0x2a03"
+  }
+}

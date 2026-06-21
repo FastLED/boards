@@ -1,0 +1,8 @@
+{
+  "boards_count": 13,
+  "branch": "main",
+  "fetched_at": "2026-06-21T04:35:58.902865+00:00",
+  "owner": "arduino",
+  "repo": "ArduinoCore-mbed",
+  "source_url": "https://raw.githubusercontent.com/arduino/ArduinoCore-mbed/main/boards.txt"
+}

@@ -1,0 +1,746 @@
+{
+  "build": {
+    "board": "GenL1",
+    "core": "arduino",
+    "flash_offset": "0x0",
+    "mcu": "cortex-m3",
+    "series": "STM32L1xx",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "GENERIC_L100C6UX": {
+        "": "Generic L100C6Ux",
+        "build": {
+          "board": "GENERIC_L100C6UX",
+          "product_line": "STM32L100xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L100.svd"
+        },
+        "upload": {
+          "maximum_data_size": "4096",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L100C6UXA": {
+        "": "Generic L100C6UxA",
+        "build": {
+          "board": "GENERIC_L100C6UXA",
+          "product_line": "STM32L100xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L100.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L151C6TX": {
+        "": "Generic L151C6Tx",
+        "build": {
+          "board": "GENERIC_L151C6TX",
+          "product_line": "STM32L151xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L151C6TXA": {
+        "": "Generic L151C6TxA",
+        "build": {
+          "board": "GENERIC_L151C6TXA",
+          "product_line": "STM32L151xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L151C6UX": {
+        "": "Generic L151C6Ux",
+        "build": {
+          "board": "GENERIC_L151C6UX",
+          "product_line": "STM32L151xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L151C6UXA": {
+        "": "Generic L151C6UxA",
+        "build": {
+          "board": "GENERIC_L151C6UXA",
+          "product_line": "STM32L151xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L151C8TX": {
+        "": "Generic L151C8Tx",
+        "build": {
+          "board": "GENERIC_L151C8TX",
+          "product_line": "STM32L151xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L151C8TXA": {
+        "": "Generic L151C8TxA",
+        "build": {
+          "board": "GENERIC_L151C8TXA",
+          "product_line": "STM32L151xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L151C8UX": {
+        "": "Generic L151C8Ux",
+        "build": {
+          "board": "GENERIC_L151C8UX",
+          "product_line": "STM32L151xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L151C8UXA": {
+        "": "Generic L151C8UxA",
+        "build": {
+          "board": "GENERIC_L151C8UXA",
+          "product_line": "STM32L151xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L151CBTX": {
+        "": "Generic L151CBTx",
+        "build": {
+          "board": "GENERIC_L151CBTX",
+          "product_line": "STM32L151xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L151CBTXA": {
+        "": "Generic L151CBTxA",
+        "build": {
+          "board": "GENERIC_L151CBTXA",
+          "product_line": "STM32L151xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L151CBUX": {
+        "": "Generic L151CBUx",
+        "build": {
+          "board": "GENERIC_L151CBUX",
+          "product_line": "STM32L151xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L151CBUXA": {
+        "": "Generic L151CBUxA",
+        "build": {
+          "board": "GENERIC_L151CBUXA",
+          "product_line": "STM32L151xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L151RETX": {
+        "": "Generic L151RETx",
+        "build": {
+          "board": "GENERIC_L151RETX",
+          "product_line": "STM32L151xE",
+          "variant": "STM32L1xx/L151RET_L152RET_L162RET"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "81920",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_L151ZDTX": {
+        "": "Generic L151ZDTx",
+        "build": {
+          "board": "GENERIC_L151ZDTX",
+          "product_line": "STM32L151xD",
+          "variant": "STM32L1xx/L151ZDT_L152ZDT_L162ZDT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "upload": {
+          "maximum_data_size": "49152",
+          "maximum_size": "393216"
+        }
+      },
+      "GENERIC_L152C6TX": {
+        "": "Generic L152C6Tx",
+        "build": {
+          "board": "GENERIC_L152C6TX",
+          "product_line": "STM32L152xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L152C6TXA": {
+        "": "Generic L152C6TxA",
+        "build": {
+          "board": "GENERIC_L152C6TXA",
+          "product_line": "STM32L152xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L152C6UX": {
+        "": "Generic L152C6Ux",
+        "build": {
+          "board": "GENERIC_L152C6UX",
+          "product_line": "STM32L152xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L152C6UXA": {
+        "": "Generic L152C6UxA",
+        "build": {
+          "board": "GENERIC_L152C6UXA",
+          "product_line": "STM32L152xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_L152C8TX": {
+        "": "Generic L152C8Tx",
+        "build": {
+          "board": "GENERIC_L152C8TX",
+          "product_line": "STM32L152xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L152C8TXA": {
+        "": "Generic L152C8TxA",
+        "build": {
+          "board": "GENERIC_L152C8TXA",
+          "product_line": "STM32L152xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L152C8UX": {
+        "": "Generic L152C8Ux",
+        "build": {
+          "board": "GENERIC_L152C8UX",
+          "product_line": "STM32L152xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "10240",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L152C8UXA": {
+        "": "Generic L152C8UxA",
+        "build": {
+          "board": "GENERIC_L152C8UXA",
+          "product_line": "STM32L152xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_L152CBTX": {
+        "": "Generic L152CBTx",
+        "build": {
+          "board": "GENERIC_L152CBTX",
+          "product_line": "STM32L152xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L152CBTXA": {
+        "": "Generic L152CBTxA",
+        "build": {
+          "board": "GENERIC_L152CBTXA",
+          "product_line": "STM32L152xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L152CBUX": {
+        "": "Generic L152CBUx",
+        "build": {
+          "board": "GENERIC_L152CBUX",
+          "product_line": "STM32L152xB",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L152CBUXA": {
+        "": "Generic L152CBUxA",
+        "build": {
+          "board": "GENERIC_L152CBUXA",
+          "product_line": "STM32L152xBA",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_L152RETX": {
+        "": "Generic L152RETx",
+        "build": {
+          "board": "GENERIC_L152RETX",
+          "product_line": "STM32L152xE",
+          "variant": "STM32L1xx/L151RET_L152RET_L162RET"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "81920",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_L152ZDTX": {
+        "": "Generic L152ZDTx",
+        "build": {
+          "board": "GENERIC_L152ZDTX",
+          "product_line": "STM32L152xD",
+          "variant": "STM32L1xx/L151ZDT_L152ZDT_L162ZDT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L152.svd"
+        },
+        "upload": {
+          "maximum_data_size": "49152",
+          "maximum_size": "393216"
+        }
+      },
+      "GENERIC_L162RETX": {
+        "": "Generic L162RETx",
+        "build": {
+          "board": "GENERIC_L162RETX",
+          "product_line": "STM32L162xE",
+          "variant": "STM32L1xx/L151RET_L152RET_L162RET"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L162.svd"
+        },
+        "upload": {
+          "maximum_data_size": "81920",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_L162ZDTX": {
+        "": "Generic L162ZDTx",
+        "build": {
+          "board": "GENERIC_L162ZDTX",
+          "product_line": "STM32L162xD",
+          "variant": "STM32L1xx/L151ZDT_L152ZDT_L162ZDT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L162.svd"
+        },
+        "upload": {
+          "maximum_data_size": "49152",
+          "maximum_size": "393216"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    }
+  },
+  "name": "Generic STM32L1 series",
+  "openocd": {
+    "target": "stm32l1"
+  },
+  "pid": {
+    "0": "0x5740"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483"
+  }
+}

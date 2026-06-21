@@ -1,0 +1,8 @@
+{
+  "boards_count": 38,
+  "branch": "master",
+  "fetched_at": "2026-06-21T04:36:00.214468+00:00",
+  "owner": "esp8266",
+  "repo": "Arduino",
+  "source_url": "https://raw.githubusercontent.com/esp8266/Arduino/master/boards.txt"
+}

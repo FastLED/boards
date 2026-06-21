@@ -1,0 +1,8 @@
+{
+  "boards_count": 342,
+  "branch": "master",
+  "fetched_at": "2026-06-21T04:35:59.874498+00:00",
+  "owner": "espressif",
+  "repo": "arduino-esp32",
+  "source_url": "https://raw.githubusercontent.com/espressif/arduino-esp32/master/boards.txt"
+}

@@ -1,0 +1,8 @@
+{
+  "boards_count": 7,
+  "branch": "main",
+  "fetched_at": "2026-06-21T04:35:59.174120+00:00",
+  "owner": "arduino",
+  "repo": "ArduinoCore-renesas",
+  "source_url": "https://raw.githubusercontent.com/arduino/ArduinoCore-renesas/main/boards.txt"
+}

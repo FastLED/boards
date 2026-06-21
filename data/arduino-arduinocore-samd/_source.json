@@ -1,0 +1,8 @@
+{
+  "boards_count": 18,
+  "branch": "master",
+  "fetched_at": "2026-06-21T04:35:58.376263+00:00",
+  "owner": "arduino",
+  "repo": "ArduinoCore-samd",
+  "source_url": "https://raw.githubusercontent.com/arduino/ArduinoCore-samd/master/boards.txt"
+}

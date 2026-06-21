@@ -1,0 +1,8 @@
+{
+  "boards_count": 147,
+  "branch": "master",
+  "fetched_at": "2026-06-21T04:36:01.784360+00:00",
+  "owner": "earlephilhower",
+  "repo": "arduino-pico",
+  "source_url": "https://raw.githubusercontent.com/earlephilhower/arduino-pico/master/boards.txt"
+}

@@ -1,0 +1,8 @@
+{
+  "boards_count": 8,
+  "branch": "main",
+  "fetched_at": "2026-06-21T04:36:01.202439+00:00",
+  "owner": "SiliconLabs",
+  "repo": "arduino",
+  "source_url": "https://raw.githubusercontent.com/SiliconLabs/arduino/main/boards.txt"
+}

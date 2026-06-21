@@ -1,0 +1,222 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "ESP32_S3_USB_OTG",
+    "boot": "qio",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "0",
+    "core": "esp32",
+    "defines": "",
+    "dfu_on_boot": "0",
+    "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "8MB",
+    "loop_core": "-DARDUINO_RUNNING_CORE=1",
+    "mcu": "esp32s3",
+    "memory_type": "qio_qspi",
+    "msc_on_boot": "0",
+    "partitions": "default",
+    "tarch": "xtensa",
+    "target": "esp32s3",
+    "usb_mode": "0",
+    "variant": "esp32s3usbotg"
+  },
+  "menu": {
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "PartitionScheme": {
+      "custom": {
+        "": "Custom",
+        "build": {
+          "partitions": ""
+        },
+        "upload": {
+          "maximum_size": "8388608"
+        }
+      },
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "default_8MB": {
+        "": "8M with spiffs (3MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "min_spiffs": {
+        "": "Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS)",
+        "build": {
+          "partitions": "min_spiffs"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      }
+    },
+    "USBMode": {
+      "default": {
+        "": "USB-OTG",
+        "build": {
+          "cdc_on_boot": "0",
+          "usb_mode": "0"
+        }
+      },
+      "hwcdc": {
+        "": "Hardware CDC and JTAG",
+        "build": {
+          "cdc_on_boot": "1",
+          "usb_mode": "1"
+        }
+      }
+    },
+    "UploadMode": {
+      "cdc": {
+        "": "USB-OTG CDC (TinyUSB)",
+        "upload": {
+          "use_1200bps_touch": "true",
+          "wait_for_upload_port": "true"
+        }
+      },
+      "default": {
+        "": "UART0 / Hardware CDC",
+        "upload": {
+          "use_1200bps_touch": "false",
+          "wait_for_upload_port": "false"
+        }
+      }
+    }
+  },
+  "name": "ESP32-S3-USB-OTG",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "speed": "921600",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "M5STACK_NANOC6",
+    "boot": "qio",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "1",
+    "core": "esp32",
+    "defines": "",
+    "f_cpu": "160000000L",
+    "flash_freq": "80m",
+    "flash_mode": "qio",
+    "flash_size": "4MB",
+    "mcu": "esp32c6",
+    "partitions": "default",
+    "tarch": "riscv32",
+    "target": "esp",
+    "variant": "m5stack_nanoc6"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      },
+      "default": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      }
+    },
+    "CPUFreq": {
+      "10": {
+        "": "10MHz",
+        "build": {
+          "f_cpu": "10000000L"
+        }
+      },
+      "160": {
+        "": "160MHz (WiFi)",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "20": {
+        "": "20MHz",
+        "build": {
+          "f_cpu": "20000000L"
+        }
+      },
+      "40": {
+        "": "40MHz",
+        "build": {
+          "f_cpu": "40000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "FlashFreq": {
+      "40": {
+        "": "40MHz",
+        "build": {
+          "flash_freq": "40m"
+        }
+      },
+      "80": {
+        "": "80MHz",
+        "build": {
+          "flash_freq": "80m"
+        }
+      }
+    },
+    "FlashMode": {
+      "dio": {
+        "": "DIO",
+        "build": {
+          "boot": "dio",
+          "flash_mode": "dio"
+        }
+      },
+      "qio": {
+        "": "QIO",
+        "build": {
+          "boot": "qio",
+          "flash_mode": "dio"
+        }
+      }
+    },
+    "FlashSize": {
+      "4M": {
+        "": "4MB (32Mb)",
+        "build": {
+          "flash_size": "4MB"
+        }
+      }
+    },
+    "JTAGAdapter": {
+      "bridge": {
+        "": "ESP USB Bridge",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32c6-bridge.cfg"
+        }
+      },
+      "builtin": {
+        "": "Integrated USB JTAG",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32c6-builtin.cfg"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "copy_jtag_files": "0"
+        }
+      },
+      "external": {
+        "": "FTDI Adapter",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32c6-ftdi.cfg"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "zigbee": {
+        "": "Zigbee 4MB with spiffs",
+        "build": {
+          "partitions": "zigbee"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "zigbee_zczr": {
+        "": "Zigbee ZCZR 4MB with spiffs",
+        "build": {
+          "partitions": "zigbee_zczr"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    },
+    "ZigbeeMode": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "zigbee_libs": "",
+          "zigbee_mode": ""
+        }
+      },
+      "ed": {
+        "": "Zigbee ED (end device)",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.ed -lzboss_stack.ed -lzboss_port.native",
+          "zigbee_mode": "-DZIGBEE_MODE_ED"
+        }
+      },
+      "zczr": {
+        "": "Zigbee ZCZR (coordinator/router)",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.zczr -lzboss_stack.zczr -lzboss_port.native",
+          "zigbee_mode": "-DZIGBEE_MODE_ZCZR"
+        }
+      }
+    }
+  },
+  "name": "M5NanoC6",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

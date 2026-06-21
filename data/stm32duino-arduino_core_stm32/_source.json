@@ -1,0 +1,8 @@
+{
+  "boards_count": 41,
+  "branch": "main",
+  "fetched_at": "2026-06-21T04:36:00.838421+00:00",
+  "owner": "stm32duino",
+  "repo": "Arduino_Core_STM32",
+  "source_url": "https://raw.githubusercontent.com/stm32duino/Arduino_Core_STM32/main/boards.txt"
+}

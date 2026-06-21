@@ -1,0 +1,86 @@
+{
+  "bootloader": {
+    "tool": "bootburn"
+  },
+  "build": {
+    "board": "NRF52832_FEATHER",
+    "core": "nRF5",
+    "extra_flags": "-DNRF52832_XXAA -DNRF52",
+    "f_cpu": "64000000",
+    "ldscript": "nrf52832_s132_v6.ld",
+    "mcu": "cortex-m4",
+    "openocdscript": "scripts/openocd/daplink_nrf52.cfg",
+    "usb_manufacturer": "\"Adafruit\"",
+    "usb_product": "\"Feather nRF52832\"",
+    "variant": "feather_nrf52832"
+  },
+  "menu": {
+    "debug": {
+      "l0": {
+        "": "Level 0 (Release)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=0"
+        }
+      },
+      "l1": {
+        "": "Level 1 (Error Message)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=1"
+        }
+      },
+      "l2": {
+        "": "Level 2 (Full Debug)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=2"
+        }
+      },
+      "l3": {
+        "": "Level 3 (Segger SystemView)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=3",
+          "sysview_flags": "-DCFG_SYSVIEW=1"
+        }
+      }
+    },
+    "debug_output": {
+      "rtt": {
+        "": "Segger RTT",
+        "build": {
+          "logger_flags": "-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL"
+        }
+      },
+      "serial": {
+        "": "Serial",
+        "build": {
+          "logger_flags": "-DCFG_LOGGER=0"
+        }
+      },
+      "serial1": {
+        "": "Serial1",
+        "build": {
+          "logger_flags": "-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG"
+        }
+      }
+    },
+    "softdevice": {
+      "s132v6": {
+        "": "S132 6.1.1",
+        "build": {
+          "sd_fwid": "0x00B7",
+          "sd_name": "s132",
+          "sd_version": "6.1.1"
+        }
+      }
+    }
+  },
+  "name": "Adafruit Feather nRF52832",
+  "upload": {
+    "maximum_data_size": "51712",
+    "maximum_size": "290816",
+    "native_usb": "false",
+    "protocol": "nrfutil",
+    "tool": "nrfutil",
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "boards_count": 2,
+  "branch": "master",
+  "fetched_at": "2026-06-21T04:35:58.636954+00:00",
+  "owner": "arduino",
+  "repo": "ArduinoCore-megaavr",
+  "source_url": "https://raw.githubusercontent.com/arduino/ArduinoCore-megaavr/master/boards.txt"
+}

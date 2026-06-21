@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "branch": "arduino",
+  "status": "initialized-empty",
+  "generated_at": null,
+  "description": "Parsed JSON form of boards.txt from upstream Arduino cores (AVR, SAMD, Espressif, Adafruit nRF52, STM32duino, Silicon Labs).",
+  "sources": [{"name": "arduino/ArduinoCore-avr", "url": "https://github.com/arduino/ArduinoCore-avr"}, {"name": "arduino/ArduinoCore-samd", "url": "https://github.com/arduino/ArduinoCore-samd"}, {"name": "espressif/arduino-esp32", "url": "https://github.com/espressif/arduino-esp32"}, {"name": "adafruit/Adafruit_nRF52_Arduino", "url": "https://github.com/adafruit/Adafruit_nRF52_Arduino"}, {"name": "stm32duino/Arduino_Core_STM32", "url": "https://github.com/stm32duino/Arduino_Core_STM32"}, {"name": "SiliconLabs/arduino", "url": "https://github.com/SiliconLabs/arduino"}],
+  "note": "This branch is bot-pushed only. Direct human edits are blocked by branch protection. To regenerate, run the matching workflow on main: .github/workflows/sync-arduino.yml"
+}
