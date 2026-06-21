@@ -11,7 +11,9 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: write   # for the site-branch force-push
+  pages: write      # for actions/deploy-pages
+  id-token: write   # for actions/deploy-pages (OIDC to GH Pages)
 
 concurrency:
   group: build-site
@@ -20,6 +22,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Standard GH Pages environment binding — exposes the deployed URL as
+    # an output and links it from the workflow run summary.
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy_pages.outputs.page_url }}
     steps:
       - name: Checkout main (tools live here)
         uses: actions/checkout@v4
@@ -72,30 +79,50 @@ jobs:
             --out .site \
             --source-shas /tmp/source-shas.json
 
-      - name: Commit + push site branch (history-pruned to 10 commits)
+      - name: Force-push site as a fresh orphan commit
+        id: push_site
         working-directory: .site
+        # Same orphan-commit pattern as the data branches: single commit,
+        # no history accumulation, GH UI stays at "1 commit" instead of
+        # growing N-behind-main forever.
         run: |
           set -euo pipefail
           git add -A
-          if git diff --cached --quiet; then
-            echo "no site changes"; exit 0
+          TREE=$(git write-tree)
+          REMOTE_TREE=""
+          if git ls-remote --exit-code --heads origin site >/dev/null 2>&1; then
+            REMOTE_TREE=$(git rev-parse "origin/site^{tree}" 2>/dev/null || true)
+          fi
+          if [ -n "$REMOTE_TREE" ] && [ "$TREE" = "$REMOTE_TREE" ]; then
+            echo "tree unchanged ($TREE); skipping push"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           trig="${{ github.event_name }}"
-          git commit -m "site: rebuild ($trig) ${ts}"
-
-          # History prune to 10 commits.
-          total="$(git rev-list --count HEAD)"
-          if [ "${total}" -gt 10 ]; then
-            target="$(git rev-list --max-count=10 HEAD | tail -n 1)"
-            git replace --graft "${target}"
-            pip install --quiet git-filter-repo
-            git filter-repo --force --refs HEAD
-            git for-each-ref --format='delete %(refname)' refs/replace/ | git update-ref --stdin
-          fi
-
+          NEW=$(git commit-tree "$TREE" -m "site: rebuild ($trig) ${ts}")
+          echo "new orphan: $NEW (tree $TREE)"
           if git ls-remote --exit-code --heads origin site >/dev/null 2>&1; then
-            git push --force-with-lease origin HEAD:site
+            git push --force origin "$NEW:refs/heads/site"
           else
-            git push origin HEAD:site
+            git push origin "$NEW:refs/heads/site"
           fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # ────────────────────────────────────────────────────────────────────
+      # Deploy the same site/ contents to GitHub Pages. The site branch is
+      # kept as the auditable snapshot ("git checkout site" → exact bytes
+      # that are live); Pages is the public publication path. Both views
+      # come from the same .site/ directory the builder just wrote.
+      # ────────────────────────────────────────────────────────────────────
+
+      - name: Upload Pages artifact
+        if: steps.push_site.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .site
+
+      - name: Deploy to GitHub Pages
+        id: deploy_pages
+        if: steps.push_site.outputs.changed == 'true'
+        uses: actions/deploy-pages@v4
