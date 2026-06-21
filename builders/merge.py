@@ -2,48 +2,95 @@
 # /// script
 # requires-python = ">=3.10"
 # ///
-"""Merge the normalized records from extract_{vendors,arduino,platformio,other}.py
-into a single authoritative `{vid_vendor, vidpid}` table set.
+"""Merge normalized records from extract_{vendors,arduino,platformio,other}.py
+into authoritative {vid_vendor, vidpid} tables with severity-tiered conflict
+handling.
 
-Merge order (strict priority): **vendors -> arduino -> platformio -> other**.
-Within a layer, first-seen-wins. Across layers, first-layer-wins, with one
-exception: entries listed under `vid_overrides` / `vidpid_overrides` in the
-`other` layer UNCONDITIONALLY replace whatever earlier layers assigned —
-this is how Teensy gets to read as "PJRC (Teensy)" instead of inheriting
-"Van Ooijen Technische Informatica" (the registered owner of VID 0x16C0)
-from a generic upstream.
+## Merge order (strict priority)
 
-Conflicts (two layers disagree on the vendor or product name) are NOT a
-build-stopper: they get appended to `<errors-dir>/<kind>.log` for human
-review, and the higher-priority entry stays in the table.
+  vendors -> arduino -> platformio -> other
 
-Vendor-name HINT records (those carrying `"hint": true`) are treated as
-weak: they fill a VID's vendor only if no non-hint source has supplied
-one. Conflicts among hints don't generate error log entries.
+`other` layer overrides (`vid_overrides` / `vidpid_overrides` in
+`overrides.json`) UNCONDITIONALLY replace whatever earlier layers said —
+this is how Teensy gets to read as "PJRC (Teensy)" instead of the
+registered VOTI owner. Override entries never generate log entries.
 
-Output: `<out>` JSON file with shape
+## Conflict handling for PRODUCT names (vidpid table)
+
+For each VID:PID, when two sources disagree the merger compares names by
+string similarity and routes the conflict to one of three tiers:
+
+  - sim >= 0.85  : minor diff (case/parens/sub-suffix). Silent winner;
+                   logged to warnings/minor.log. Loser dropped.
+  - 0.50 <= sim < 0.85 : sub-variant of same family (Pico vs Pico W).
+                   Silent winner; logged to warnings/family.log. Loser
+                   dropped.
+  - sim < 0.50   : genuinely different products. Both kept in the table
+                   (multi-row vidpid). The HIGHER-SCORING name is marked
+                   primary; the lower-scoring becomes an alternate
+                   (is_primary=0). Logged to warnings/distinct.log.
+
+## "Professional name" scorer
+
+Tiebreaks at sim<0.5 use score_name() which prefers names carrying a
+canonical chip / part designator over pure marketing names. Examples:
+
+  "Nordic nRF52840 DK"  -> (1, 0, 18)  -- nRF52840 is a chip token
+  "Particle Photon"     -> (0, 0, 15)  -- no chip token
+  -> "Nordic nRF52840 DK" wins; "Particle Photon" becomes alternate.
+
+Tuple comparison: (chip_tokens, spec_paren_bonus, length). Bigger wins.
+Length is the final tiebreak so deterministic ordering holds.
+
+## Output shape
+
     {
-      "generated_at":  "ISO-8601 UTC",
-      "vid_vendor":    {"303a": {"vendor": "...", "source": "..."}},
-      "vidpid":        {"303a4002": {"vid": "303a", "pid": "4002",
-                                     "product": "...", "source": "..."}}
+      "generated_at": "ISO-8601 UTC",
+      "vid_vendor":   {"303a": {"vendor": "...", "source": "..."}},
+      "vidpid":       [{"vidpid":"303a4002", "vid":"303a", "pid":"4002",
+                        "product":"...", "source":"...",
+                        "is_primary": true|false, "score": [n, ...]}],
+      "stats":        {...}
     }
 
-Plus per-kind conflict logs under `--errors-dir`:
-  - vendor-conflicts.log
-  - product-conflicts.log
+The vidpid value is now a LIST (was a dict in v1) — multiple entries
+per VIDPID can appear when genuinely-different products collide.
 """
 
 from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import difflib
 import json
 import pathlib
+import re
 import sys
 from typing import Any
 
 LAYER_ORDER = ["vendors", "arduino", "platformio", "other"]
+
+SIM_MINOR    = 0.85
+SIM_FAMILY   = 0.50
+
+_CHIP_TOKEN_RE = re.compile(r"\b(?:[A-Za-z]+\d+\w*|\d+[A-Za-z]+\w*)\b")
+_SPEC_UNITS = ("MB", "KB", "MHZ", "RAM", "FLASH", "PSRAM", "GHZ")
+
+
+def score_name(name: str) -> tuple[int, int, int]:
+    """Higher tuple = more 'professional' name. Tuple comparison:
+    (chip_tokens, spec_paren_bonus, length)."""
+    chip = len(_CHIP_TOKEN_RE.findall(name))
+    bonus = 0
+    if "(" in name:
+        up = name.upper()
+        if any(u in up for u in _SPEC_UNITS):
+            bonus = 1
+    return (chip, bonus, len(name))
+
+
+def _similarity(a: str, b: str) -> float:
+    return difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
 
 def _load(path: pathlib.Path) -> dict[str, Any]:
@@ -57,25 +104,113 @@ def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def merge(layer_files: list[pathlib.Path], errors_dir: pathlib.Path) -> dict[str, Any]:
+def merge(layer_files: list[pathlib.Path], warnings_dir: pathlib.Path,
+          errors_dir: pathlib.Path) -> dict[str, Any]:
+    warnings_dir.mkdir(parents=True, exist_ok=True)
     errors_dir.mkdir(parents=True, exist_ok=True)
-    vendor_log = errors_dir / "vendor-conflicts.log"
-    product_log = errors_dir / "product-conflicts.log"
-    # Truncate at start so this run's log is self-contained.
-    vendor_log.write_text("", encoding="utf-8")
-    product_log.write_text("", encoding="utf-8")
+    minor_log    = warnings_dir / "minor.log"
+    family_log   = warnings_dir / "family.log"
+    distinct_log = warnings_dir / "distinct.log"
+    vendor_log   = warnings_dir / "vendor.log"
+    for f in (minor_log, family_log, distinct_log, vendor_log):
+        f.write_text("", encoding="utf-8")
 
     vid_vendor: dict[str, dict[str, str]] = {}
-    vidpid:    dict[str, dict[str, str]] = {}
+    vidpid_rows: dict[str, list[dict]] = {}
     other_data: dict[str, Any] | None = None
-    layer_counts = {l: {"vendors": 0, "products": 0, "hint_vendors": 0} for l in LAYER_ORDER}
+    layer_counts = {l: {"vendors": 0, "products": 0, "hint_vendors": 0}
+                    for l in LAYER_ORDER}
+    severity_counts = {"minor": 0, "family": 0,
+                       "distinct_kept_both": 0, "distinct_alt_dropped": 0}
 
-    # 1. Walk layers in strict order, first-wins, log conflicts.
     by_layer = {}
     for f in layer_files:
         data = _load(f)
         layer = data.get("layer") or f.stem
         by_layer[layer] = data
+
+    def ingest_product(rec: dict, layer: str) -> None:
+        vid = rec.get("vid"); pid = rec.get("pid")
+        product = rec.get("product")
+        if not vid or not pid or not isinstance(product, str):
+            return
+        product = product.strip()
+        if not product:
+            return
+        key = f"{vid}{pid}"
+        new_score = score_name(product)
+        src = rec.get("source", layer)
+
+        existing = vidpid_rows.get(key, [])
+        if not existing:
+            vidpid_rows[key] = [{
+                "vidpid": key, "vid": vid, "pid": pid,
+                "product": product, "source": src, "layer": layer,
+                "is_primary": True, "score": list(new_score),
+            }]
+            return
+
+        primary = next((e for e in existing if e.get("is_primary")), existing[0])
+        if primary["product"] == product:
+            return  # exact duplicate
+
+        sim = _similarity(primary["product"], product)
+        if sim >= SIM_MINOR:
+            severity_counts["minor"] += 1
+            with minor_log.open("a", encoding="utf-8") as f:
+                f.write(
+                    f"minor vidpid=0x{vid}:0x{pid} sim={sim:.2f} "
+                    f"kept={primary['product']!r} (from {primary['source']}/{primary['layer']}) "
+                    f"dropped={product!r} (from {src}/{layer})\n"
+                )
+            return
+
+        if sim >= SIM_FAMILY:
+            severity_counts["family"] += 1
+            with family_log.open("a", encoding="utf-8") as f:
+                f.write(
+                    f"family vidpid=0x{vid}:0x{pid} sim={sim:.2f} "
+                    f"kept={primary['product']!r} (from {primary['source']}/{primary['layer']}) "
+                    f"dropped={product!r} (from {src}/{layer})\n"
+                )
+            return
+
+        # sim < SIM_FAMILY → genuinely different products. Score-based.
+        prim_score = tuple(primary.get("score") or score_name(primary["product"]))
+        if new_score > prim_score:
+            primary["is_primary"] = False
+            new_entry = {
+                "vidpid": key, "vid": vid, "pid": pid,
+                "product": product, "source": src, "layer": layer,
+                "is_primary": True, "score": list(new_score),
+            }
+            existing.insert(0, new_entry)
+            severity_counts["distinct_kept_both"] += 1
+            with distinct_log.open("a", encoding="utf-8") as f:
+                f.write(
+                    f"distinct vidpid=0x{vid}:0x{pid} sim={sim:.2f} "
+                    f"PROMOTED new={product!r} (score={new_score}, from {src}/{layer}) "
+                    f"PREVIOUS-PRIMARY-DEMOTED-TO-ALT={primary['product']!r} (score={prim_score})\n"
+                )
+            return
+
+        # Else: keep existing primary; add new as alternate (or score-tied alt).
+        existing.append({
+            "vidpid": key, "vid": vid, "pid": pid,
+            "product": product, "source": src, "layer": layer,
+            "is_primary": False, "score": list(new_score),
+        })
+        if new_score == prim_score:
+            severity_counts["distinct_kept_both"] += 1
+        else:
+            severity_counts["distinct_alt_dropped"] += 1
+        with distinct_log.open("a", encoding="utf-8") as f:
+            f.write(
+                f"distinct vidpid=0x{vid}:0x{pid} sim={sim:.2f} "
+                f"primary-kept={primary['product']!r} (score={prim_score}, "
+                f"from {primary['source']}/{primary['layer']}) "
+                f"alternate={product!r} (score={new_score}, from {src}/{layer})\n"
+            )
 
     for layer in LAYER_ORDER:
         data = by_layer.get(layer)
@@ -84,63 +219,42 @@ def merge(layer_files: list[pathlib.Path], errors_dir: pathlib.Path) -> dict[str
         if layer == "other":
             other_data = data
 
-        # Vendor pass: non-hint first, then hints (so authoritative entries
-        # claim the slot before weak hints try).
-        all_vendor_recs = data.get("vendors") or []
-        non_hint = [r for r in all_vendor_recs if not r.get("hint")]
-        hints    = [r for r in all_vendor_recs if r.get("hint")]
+        all_v = data.get("vendors") or []
+        non_hint = [r for r in all_v if not r.get("hint")]
+        hints    = [r for r in all_v if r.get("hint")]
 
         for rec in non_hint:
-            vid = rec.get("vid")
-            name = rec.get("vendor")
+            vid = rec.get("vid"); name = rec.get("vendor")
             if not vid or not isinstance(name, str):
                 continue
             layer_counts[layer]["vendors"] += 1
-            existing = vid_vendor.get(vid)
-            if existing is None:
+            ex = vid_vendor.get(vid)
+            if ex is None:
                 vid_vendor[vid] = {"vendor": name, "source": rec.get("source", layer),
                                    "layer": layer}
                 continue
-            # Already set; first-wins. Log only if names actually differ.
-            if existing["vendor"] != name:
+            if ex["vendor"] != name:
                 with vendor_log.open("a", encoding="utf-8") as f:
-                    f.write(f"conflict vid=0x{vid}: kept={existing['vendor']!r} "
-                            f"(from {existing['source']}/{existing['layer']}) "
-                            f"vs new={name!r} (from {rec.get('source')}/{layer})\n")
+                    f.write(
+                        f"vendor vid=0x{vid} kept={ex['vendor']!r} "
+                        f"(from {ex['source']}/{ex['layer']}) "
+                        f"dropped={name!r} (from {rec.get('source')}/{layer})\n"
+                    )
 
         for rec in hints:
-            vid = rec.get("vid")
-            name = rec.get("vendor")
+            vid = rec.get("vid"); name = rec.get("vendor")
             if not vid or not isinstance(name, str):
                 continue
             layer_counts[layer]["hint_vendors"] += 1
             if vid in vid_vendor:
-                continue  # hints never overwrite a real entry; no error logged
+                continue
             vid_vendor[vid] = {"vendor": name, "source": rec.get("source", layer),
                                "layer": layer, "hint": True}
 
-        # Product pass: first-wins; log differences.
         for rec in (data.get("products") or []):
-            vid = rec.get("vid")
-            pid = rec.get("pid")
-            product = rec.get("product")
-            if not vid or not pid or not isinstance(product, str):
-                continue
-            key = f"{vid}{pid}"
             layer_counts[layer]["products"] += 1
-            existing = vidpid.get(key)
-            if existing is None:
-                vidpid[key] = {"vid": vid, "pid": pid, "product": product,
-                               "source": rec.get("source", layer), "layer": layer}
-                continue
-            if existing["product"] != product:
-                with product_log.open("a", encoding="utf-8") as f:
-                    f.write(f"conflict vidpid=0x{vid}:0x{pid}: "
-                            f"kept={existing['product']!r} "
-                            f"(from {existing['source']}/{existing['layer']}) "
-                            f"vs new={product!r} (from {rec.get('source')}/{layer})\n")
+            ingest_product(rec, layer)
 
-    # 2. Apply `other` layer overrides — these UNCONDITIONALLY replace.
     if other_data:
         for vid, vendor in (other_data.get("vid_overrides") or {}).items():
             prior = vid_vendor.get(vid, {}).get("vendor")
@@ -148,56 +262,77 @@ def merge(layer_files: list[pathlib.Path], errors_dir: pathlib.Path) -> dict[str
                                "layer": "other", "override": True,
                                "replaced": prior}
         for vidpid_key, product in (other_data.get("vidpid_overrides") or {}).items():
-            prior = vidpid.get(vidpid_key, {}).get("product")
             vid = vidpid_key[:4]; pid = vidpid_key[4:]
-            vidpid[vidpid_key] = {"vid": vid, "pid": pid, "product": product,
-                                  "source": "other:overrides.json",
-                                  "layer": "other", "override": True,
-                                  "replaced": prior}
+            vidpid_rows[vidpid_key] = [{
+                "vidpid": vidpid_key, "vid": vid, "pid": pid,
+                "product": product, "source": "other:overrides.json",
+                "layer": "other", "is_primary": True, "override": True,
+                "score": list(score_name(product)),
+            }]
 
-    # 3. Sort keys for deterministic output.
     vid_vendor = dict(sorted(vid_vendor.items()))
-    vidpid     = dict(sorted(vidpid.items()))
+    flat_vidpid: list[dict] = []
+    for key in sorted(vidpid_rows):
+        rows = vidpid_rows[key]
+        rows.sort(key=lambda e: (not e.get("is_primary"),
+                                  -sum(e.get("score") or [0]),
+                                  e.get("source", "")))
+        flat_vidpid.extend(rows)
 
-    # Summary to stderr.
+    def _wc(p: pathlib.Path) -> int:
+        return sum(1 for _ in p.read_text(encoding='utf-8').splitlines())
+    log_counts = {
+        "minor.log":    _wc(minor_log),
+        "family.log":   _wc(family_log),
+        "distinct.log": _wc(distinct_log),
+        "vendor.log":   _wc(vendor_log),
+    }
+
     for layer, counts in layer_counts.items():
         if any(counts.values()):
             print(f"merge[{layer}]: vendors={counts['vendors']} "
                   f"hints={counts['hint_vendors']} products={counts['products']}",
                   file=sys.stderr)
-    vendor_conflicts = sum(1 for _ in vendor_log.read_text(encoding='utf-8').splitlines())
-    product_conflicts = sum(1 for _ in product_log.read_text(encoding='utf-8').splitlines())
-    print(f"merge: {len(vid_vendor)} vendors, {len(vidpid)} products in final tables",
-          file=sys.stderr)
-    print(f"merge: {vendor_conflicts} vendor-name conflicts, "
-          f"{product_conflicts} product-name conflicts logged to {errors_dir}",
-          file=sys.stderr)
+    primary_count = sum(1 for e in flat_vidpid if e.get("is_primary"))
+    alt_count = len(flat_vidpid) - primary_count
+    print(f"merge: {len(vid_vendor)} vendors, {primary_count} primary vidpid + "
+          f"{alt_count} alternates", file=sys.stderr)
+    print(f"merge: warnings: minor={log_counts['minor.log']} "
+          f"family={log_counts['family.log']} "
+          f"distinct={log_counts['distinct.log']} "
+          f"vendor={log_counts['vendor.log']}", file=sys.stderr)
 
     return {
         "generated_at": _now_iso(),
-        "vid_vendor": vid_vendor,
-        "vidpid": vidpid,
+        "vid_vendor":   vid_vendor,
+        "vidpid":       flat_vidpid,
         "stats": {
-            "total_vids": len(vid_vendor),
-            "total_vidpids": len(vidpid),
-            "vendor_conflicts_logged": vendor_conflicts,
-            "product_conflicts_logged": product_conflicts,
-            "per_layer": layer_counts,
+            "total_vids":          len(vid_vendor),
+            "total_vidpid_keys":   len(vidpid_rows),
+            "total_vidpid_rows":   len(flat_vidpid),
+            "vidpid_alternates":   alt_count,
+            "warnings":            log_counts,
+            "severity_counts":     severity_counts,
+            "per_layer":           layer_counts,
         },
     }
 
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--normalized-dir", required=True, type=pathlib.Path,
-                   help="directory containing vendors.json/arduino.json/"
-                        "platformio.json/other.json from each extractor")
+    p.add_argument("--normalized-dir", required=True, type=pathlib.Path)
     p.add_argument("--out",            required=True, type=pathlib.Path)
-    p.add_argument("--errors-dir",     required=True, type=pathlib.Path)
+    p.add_argument("--warnings-dir",   type=pathlib.Path)
+    p.add_argument("--errors-dir",     type=pathlib.Path)
     args = p.parse_args()
 
+    if args.warnings_dir is None and args.errors_dir is None:
+        p.error("--warnings-dir or --errors-dir required")
+    warnings_dir = args.warnings_dir or (args.errors_dir.parent / "warnings")
+    errors_dir   = args.errors_dir   or (args.warnings_dir.parent / "errors")
+
     layer_files = [args.normalized_dir / f"{l}.json" for l in LAYER_ORDER]
-    result = merge(layer_files, args.errors_dir)
+    result = merge(layer_files, warnings_dir, errors_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2, ensure_ascii=False),
                         encoding="utf-8")

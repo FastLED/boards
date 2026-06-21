@@ -94,8 +94,10 @@ def orchestrate(
     workdir.mkdir(parents=True, exist_ok=True)
     normalized = workdir / "normalized"
     normalized.mkdir(parents=True, exist_ok=True)
-    errors_dir = out_dir / "errors"
+    errors_dir   = out_dir / "errors"      # hard failures (parse fails, etc.)
+    warnings_dir = out_dir / "warnings"    # conflict logs from merger
     errors_dir.mkdir(parents=True, exist_ok=True)
+    warnings_dir.mkdir(parents=True, exist_ok=True)
     merged_path = workdir / "merged.json"
 
     # 1-4: extractors
@@ -107,11 +109,12 @@ def orchestrate(
             "--out", str(normalized / f"{layer}.json"),
         )
 
-    # 5: merge
+    # 5: merge (writes severity-bucketed conflict logs to warnings/, NOT errors/)
     _run_script(
         HERE / "merge.py",
         "--normalized-dir", str(normalized),
         "--out",            str(merged_path),
+        "--warnings-dir",   str(warnings_dir),
         "--errors-dir",     str(errors_dir),
     )
 
@@ -133,19 +136,22 @@ def orchestrate(
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
     stats = merged.get("stats", {})
     meta = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at":   _now_iso(),
         "trigger":        os.environ.get("GITHUB_EVENT_NAME", "manual"),
         "totals": {
-            "vendors":         stats.get("total_vids", 0),
-            "products":        stats.get("total_vidpids", 0),
-            "vendor_conflicts_logged":  stats.get("vendor_conflicts_logged", 0),
-            "product_conflicts_logged": stats.get("product_conflicts_logged", 0),
+            "vendors":               stats.get("total_vids", 0),
+            "vidpid_keys":           stats.get("total_vidpid_keys", 0),
+            "vidpid_rows":           stats.get("total_vidpid_rows", 0),
+            "vidpid_alternates":     stats.get("vidpid_alternates", 0),
         },
+        "warnings":         stats.get("warnings", {}),
+        "severity_counts":  stats.get("severity_counts", {}),
         "per_layer_counts": stats.get("per_layer", {}),
-        "errors_folder": "errors/",
-        "database":      "site.db",
-        "demo":          "index.html",
+        "errors_folder":    "errors/",
+        "warnings_folder":  "warnings/",
+        "database":         "site.db",
+        "demo":             "index.html",
     }
     (out_dir / "_meta.json").write_text(
         json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"

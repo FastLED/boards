@@ -48,15 +48,23 @@ CREATE TABLE vid_vendor (
 );
 CREATE INDEX idx_vid_vendor_vendor ON vid_vendor (vendor COLLATE NOCASE);
 
+-- vidpid is multi-row per key: one row marked is_primary=1 is the
+-- merger's preferred name; additional rows (is_primary=0) carry
+-- alternate names for genuinely-different products that share the same
+-- VID:PID (e.g. several RP2040 boards all using Raspberry Pi's default
+-- Pico PIDs because their vendors never registered their own).
 CREATE TABLE vidpid (
-  vidpid  TEXT PRIMARY KEY,
-  vid     TEXT NOT NULL,
-  pid     TEXT NOT NULL,
-  product TEXT NOT NULL,
-  source  TEXT NOT NULL
+  vidpid     TEXT NOT NULL,        -- "303a4002" concatenated 8-hex
+  vid        TEXT NOT NULL,
+  pid        TEXT NOT NULL,
+  product    TEXT NOT NULL,
+  source     TEXT NOT NULL,
+  is_primary INTEGER NOT NULL DEFAULT 1
 );
+CREATE INDEX idx_vidpid_vidpid  ON vidpid (vidpid);
 CREATE INDEX idx_vidpid_vid     ON vidpid (vid);
 CREATE INDEX idx_vidpid_product ON vidpid (product COLLATE NOCASE);
+CREATE INDEX idx_vidpid_primary ON vidpid (vidpid, is_primary DESC);
 
 -- FTS5 mirrors: external-content tables that follow the base tables.
 -- Both the key columns (vid/vidpid/pid) and the human-name columns are
@@ -72,7 +80,14 @@ CREATE VIRTUAL TABLE vidpid_fts
 def build(merged_path: pathlib.Path, out_path: pathlib.Path) -> dict[str, int]:
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
     vid_vendor = merged.get("vid_vendor") or {}
-    vidpid     = merged.get("vidpid") or {}
+    # vidpid is now a LIST of row dicts (v2 schema). Tolerate the old v1
+    # dict shape (`{key: rec}`) for callers that still emit the older
+    # format — convert to a list with everything marked as primary.
+    vidpid_raw = merged.get("vidpid") or []
+    if isinstance(vidpid_raw, dict):
+        vidpid = [{**rec, "is_primary": True} for rec in vidpid_raw.values()]
+    else:
+        vidpid = vidpid_raw
 
     if out_path.exists():
         out_path.unlink()
@@ -87,10 +102,11 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path) -> dict[str, int]:
             [(vid, rec["vendor"], rec.get("source", "")) for vid, rec in vid_vendor.items()],
         )
         conn.executemany(
-            "INSERT INTO vidpid (vidpid, vid, pid, product, source) "
-            "VALUES (?, ?, ?, ?, ?)",
-            [(key, rec["vid"], rec["pid"], rec["product"], rec.get("source", ""))
-             for key, rec in vidpid.items()],
+            "INSERT INTO vidpid (vidpid, vid, pid, product, source, is_primary) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            [(rec["vidpid"], rec["vid"], rec["pid"], rec["product"],
+              rec.get("source", ""), 1 if rec.get("is_primary") else 0)
+             for rec in vidpid],
         )
         # Populate the FTS mirrors.
         conn.execute(

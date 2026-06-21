@@ -141,7 +141,11 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     out.className = '';
     let html = headerHtml || '';
     for (const r of results) {
-      html += `<div class="hit">${fmtPair(r.vid, r.pid)} &mdash; <span class="v">${escapeHtml(r.product)}</span>${fmtSrc(r.source)}</div>`;
+      // is_primary: 1 → main entry; 0 → alternate (multi-row vidpid case).
+      const altTag = (r.is_primary === 0)
+        ? ' <span class="src" style="color:#c44">(alternate)</span>'
+        : '';
+      html += `<div class="hit">${fmtPair(r.vid, r.pid)} &mdash; <span class="v">${escapeHtml(r.product)}</span>${altTag}${fmtSrc(r.source)}</div>`;
     }
     out.innerHTML = html;
   }
@@ -181,19 +185,25 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       out.className='err'; out.innerHTML='VID:PID must be hex digits (e.g. <code>303a:1001</code>).'; return;
     }
     if (cleaned.length === 8) {
-      const exact = rows('SELECT vid, pid, product, source FROM vidpid WHERE vidpid = ?', [cleaned]);
+      // Multi-row aware: primary first (is_primary=1), then alternates.
+      const exact = rows(
+        'SELECT vid, pid, product, source, is_primary FROM vidpid WHERE vidpid = ? '
+        + 'ORDER BY is_primary DESC, product',
+        [cleaned]
+      );
       if (exact.length) {
-        // Enrich with vendor name from vid_vendor if known.
         const v = rows('SELECT vendor FROM vid_vendor WHERE vid = ?', [exact[0].vid]);
+        const altNote = exact.length > 1
+          ? ` &mdash; <span class="src">${exact.length - 1} alternate(s)</span>` : '';
         const hdr = v.length
-          ? `<div class="stat">vendor: <span class="v">${escapeHtml(v[0].vendor)}</span> (0x${escapeHtml(exact[0].vid)})</div>`
-          : `<div class="stat">vendor unknown for 0x${escapeHtml(exact[0].vid)}</div>`;
+          ? `<div class="stat">vendor: <span class="v">${escapeHtml(v[0].vendor)}</span> (0x${escapeHtml(exact[0].vid)})${altNote}</div>`
+          : `<div class="stat">vendor unknown for 0x${escapeHtml(exact[0].vid)}${altNote}</div>`;
         return renderProduct(out, exact, hdr);
       }
     }
-    // Prefix match on the concatenated key
     const r = rows(
-      'SELECT vid, pid, product, source FROM vidpid WHERE vidpid LIKE ? ORDER BY vidpid LIMIT 50',
+      'SELECT vid, pid, product, source, is_primary FROM vidpid WHERE vidpid LIKE ? '
+      + 'ORDER BY vidpid, is_primary DESC LIMIT 50',
       [`${cleaned}%`]
     );
     renderProduct(out, r, `<div class="stat">${r.length} match(es) for prefix <code>${escapeHtml(cleaned)}</code>:</div>`);
@@ -205,7 +215,8 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
     }
     const r = rows(
-      "SELECT vid, pid, product, source FROM vidpid WHERE product LIKE ? ORDER BY product LIMIT 80",
+      "SELECT vid, pid, product, source, is_primary FROM vidpid WHERE product LIKE ? "
+      + "ORDER BY product, is_primary DESC LIMIT 80",
       [`%${name}%`]
     );
     renderProduct(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
