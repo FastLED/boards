@@ -1,0 +1,61 @@
+[
+  {
+    "_comment": "PJRC Teensy USB VID:PID table, manually curated 2026-06-21.",
+    "_provenance": [
+      "VID 0x16C0 sub-allocated from VOTI to PJRC for the Teensy family.",
+      "VID 0x1FC9 owned by NXP Semiconductors (IMXRT family ROM bootloader).",
+      "USB-mode PIDs (0x16C0:0x048X / 0x04DX / 0x0476) sourced verbatim from PaulStoffregen/cores/teensy4/usb_desc.h (table is byte-identical in teensy3/usb_desc.h).",
+      "HalfKay + rebootor PIDs (0x16C0:0x0478 / 0x0477) sourced from PaulStoffregen/teensy_loader_cli/teensy_loader_cli.c (hardcoded across every per-OS code branch, lines 290/324/337/476/511/669/707/787/814).",
+      "NXP IMXRT serial-download PID (0x1FC9:0x0135 for MIMXRT1062, i.e. Teensy 4.0/4.1) cross-confirmed by: adafruit/tinyuf2/ports/mimxrt10xx/Makefile (SDP_MIMXRT1062_PID=0x0135), phoenix-rtos/phoenix-rtos-hostutils/psu/imxrt-flash.sdp (WAIT 0x1fc9 0x0135), molejar/pyMBoot/mboot/connection/usb.py ('IMXRT': (0x1FC9, 0x0135)).",
+      "PJRC udev rule (https://www.pjrc.com/teensy/00-teensy.rules) confirms VID 0x1FC9 + PID 013* range with a wildcard.",
+      "All Teensy variants (3.0/3.1/3.2/3.5/3.6/LC/4.0/4.1) share the SAME runtime PID table — the PID is determined by the USB-type Arduino-IDE config, NOT by the chip. To disambiguate which Teensy a user has, read the USB Product String."
+    ],
+    "_skip": "ignored by extract_other.py (only records with vid+pid+vendor/product fields are ingested)"
+  },
+
+  {"vid": "1fc9", "vendor": "NXP Semiconductors",
+   "_source": "well-known USB-IF allocation (NXP)"},
+
+  {"vid": "16c0", "pid": "0483", "product": "Teensy (Serial mode)",
+   "_source": "teensy4/usb_desc.h USB_SERIAL; teensy_loader_cli.c:337"},
+  {"vid": "16c0", "pid": "0482", "product": "Teensy (HID mode)",
+   "_source": "teensy4/usb_desc.h USB_HID"},
+  {"vid": "16c0", "pid": "0485", "product": "Teensy (MIDI mode)",
+   "_source": "teensy4/usb_desc.h USB_MIDI / USB_MIDI4 / USB_MIDI16"},
+  {"vid": "16c0", "pid": "0486", "product": "Teensy (Raw HID mode)",
+   "_source": "teensy4/usb_desc.h USB_RAWHID"},
+  {"vid": "16c0", "pid": "0487", "product": "Teensy (Serial+Keyboard+Mouse+Joystick mode)",
+   "_source": "teensy4/usb_desc.h USB_SERIAL_HID"},
+  {"vid": "16c0", "pid": "0488", "product": "Teensy (FlightSim Controls mode)",
+   "_source": "teensy4/usb_desc.h USB_FLIGHTSIM / USB_FLIGHTSIM_JOYSTICK"},
+  {"vid": "16c0", "pid": "0489", "product": "Teensy (MIDI+Serial mode)",
+   "_source": "teensy4/usb_desc.h USB_MIDI_SERIAL / USB_MIDI4_SERIAL / USB_MIDI16_SERIAL"},
+  {"vid": "16c0", "pid": "048a", "product": "Teensy (MIDI+Audio+Serial mode)",
+   "_source": "teensy4/usb_desc.h USB_MIDI_AUDIO_SERIAL / USB_MIDI16_AUDIO_SERIAL"},
+  {"vid": "16c0", "pid": "048b", "product": "Teensy (Dual Serial mode)",
+   "_source": "teensy4/usb_desc.h USB_DUAL_SERIAL"},
+  {"vid": "16c0", "pid": "048c", "product": "Teensy (Triple Serial mode)",
+   "_source": "teensy4/usb_desc.h USB_TRIPLE_SERIAL"},
+  {"vid": "16c0", "pid": "0476", "product": "Teensy (Everything mode)",
+   "_source": "teensy4/usb_desc.h USB_EVERYTHING — all interfaces enabled"},
+  {"vid": "16c0", "pid": "04d0", "product": "Teensy (Keyboard Only mode)",
+   "_source": "teensy4/usb_desc.h USB_KEYBOARDONLY"},
+  {"vid": "16c0", "pid": "04d1", "product": "Teensy (MTP Disk mode)",
+   "_source": "teensy4/usb_desc.h USB_MTPDISK"},
+  {"vid": "16c0", "pid": "04d2", "product": "Teensy (Audio mode)",
+   "_source": "teensy4/usb_desc.h USB_AUDIO"},
+  {"vid": "16c0", "pid": "04d3", "product": "Teensy (Touchscreen mode)",
+   "_source": "teensy4/usb_desc.h USB_TOUCHSCREEN"},
+  {"vid": "16c0", "pid": "04d4", "product": "Teensy (HID + Touchscreen mode)",
+   "_source": "teensy4/usb_desc.h USB_HID_TOUCHSCREEN"},
+  {"vid": "16c0", "pid": "04d5", "product": "Teensy (MTP Disk + Serial mode)",
+   "_source": "teensy4/usb_desc.h USB_MTPDISK_SERIAL"},
+
+  {"vid": "16c0", "pid": "0478", "product": "Teensy (HalfKay bootloader)",
+   "_source": "teensy_loader_cli.c:290,476,669,787 — open_usb_device(0x16C0, 0x0478)"},
+  {"vid": "16c0", "pid": "0477", "product": "Teensy (rebootor helper)",
+   "_source": "teensy_loader_cli.c:324,511,707,814 — rebootor handle"},
+
+  {"vid": "1fc9", "pid": "0135", "product": "Teensy 4.x (NXP IMXRT1062 ROM bootloader, serial-download mode)",
+   "_source": "adafruit/tinyuf2/ports/mimxrt10xx/Makefile SDP_MIMXRT1062_PID=0x0135; phoenix-rtos/imxrt-flash.sdp; pyMBoot 'IMXRT' tuple"}
+]

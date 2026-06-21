@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "description": "Layer-4 overrides applied AFTER vendors/arduino/platformio. Entries here UNCONDITIONALLY replace the vendor or product name an earlier layer assigned. Used for re-attribution cases where the registered VID owner is not the recognizable consumer brand.",
+  "vid_overrides": {
+    "16c0": "PJRC (Teensy)"
+  },
+  "vidpid_overrides": {}
+}
