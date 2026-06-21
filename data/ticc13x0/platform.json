@@ -1,0 +1,62 @@
+{
+  "name": "ticc13x0",
+  "title": "TI CC13x0",
+  "description": "Texas Instruments CC13x0 wireless MCUs with ARM Cortex-M3 core",
+  "homepage": "https://www.ti.com/product/CC1310",
+  "license": "Apache-2.0",
+  "keywords": [
+    "dev-platform",
+    "ARM",
+    "Cortex-M",
+    "TI",
+    "SimpleLink",
+    "CC1310",
+    "CC13x0",
+    "CC13xx",
+    "Texas Instruments",
+    "RF",
+    "Radio"
+  ],
+  "engines": {
+    "platformio": "^5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nanosonde/platform-ticc13x0.git"
+  },
+  "version": "0.1.0",
+  "frameworks": {
+    "arduino": {
+      "package": "framework-energia-ticc13x0",
+      "script": "builder/frameworks/energia.py"
+    }
+  },
+  "packages": {
+    "toolchain-gccarmnoneeabi": {
+      "type": "toolchain",
+      "version": ">=1.60301.0,<1.60400.0"
+    },
+    "framework-energia-ticc13x0": {
+      "type": "framework",
+      "optional": true,
+      "version": "~1.0.5200"
+    },
+    "tool-openocd": {
+      "type": "uploader",
+      "optional": true,
+      "version": "~2.1000.0"
+    },
+    "tool-jlink": {
+      "type": "uploader",
+      "optional": true,
+      "owner": "platformio",
+      "version": "^1.63208.0"
+    },
+    "tool-dslite": {
+      "type": "uploader",
+      "optional": true,
+      "owner": "platformio",
+      "version": "^1.80200.1400"
+    }
+  }
+}

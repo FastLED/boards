@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "branch": "platformio",
+  "status": "initialized-empty",
+  "generated_at": null,
+  "description": "Slim mirror of platformio/platform-*/boards/*.json (Apache-2.0) and platform.json files.",
+  "sources": [{"name": "platformio/platform-*", "url": "https://github.com/platformio", "note": "37 platform repos; one boards/ directory per platform"}],
+  "note": "This branch is bot-pushed only. Direct human edits are blocked by branch protection. To regenerate, run the matching workflow on main: .github/workflows/sync-platformio.yml"
+}

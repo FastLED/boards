@@ -1,0 +1,64 @@
+{
+  "name": "chipsalliance",
+  "version": "1.3.0",
+  "title": "CHIPS Alliance",
+  "description": "The CHIPS Alliance develops high-quality, open source hardware designs relevant to silicon devices and FPGAs.",
+  "homepage": "https://chipsalliance.org",
+  "license": "Apache-2.0",
+  "keywords": [
+    "dev-platform",
+    "Western Digital",
+    "Swerv",
+    "RISC-V"
+  ],
+  "engines": {
+    "platformio": "^6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/platformio/platform-chipsalliance.git"
+  },
+  "frameworks": {
+    "wd-riscv-sdk": {
+      "package": "framework-wd-riscv-sdk",
+      "script": "builder/frameworks/wd-riscv-sdk.py",
+      "description": "The WD Firmware package contains firmware applications and Processor Support Package (PSP) for various cores, alongside demos which support all features",
+      "homepage": "https://github.com/westerndigitalcorporation/riscv-fw-infrastructure",
+      "title": "WD-Firmware"
+    },
+    "freertos": {
+      "package": "framework-wd-riscv-sdk",
+      "script": "builder/frameworks/freertos.py",
+      "title": "FreeRTOS"
+    }
+  },
+  "packages": {
+    "toolchain-riscv": {
+      "type": "toolchain",
+      "owner": "platformio",
+      "version": "~1.80300.0"
+    },
+    "framework-wd-riscv-sdk": {
+      "type": "framework",
+      "optional": false,
+      "owner": "platformio",
+      "version": "0.0.0-alpha+sha.ca4b2392d8"
+    },
+    "tool-openocd-riscv-chipsalliance": {
+      "type": "uploader",
+      "owner": "platformio",
+      "version": "~1.1100.0"
+    },
+    "tool-verilator-swervolf": {
+      "type": "debugger",
+      "owner": "platformio",
+      "version": "~0.0.0"
+    },
+    "tool-whisper": {
+      "type": "debugger",
+      "optional": true,
+      "owner": "platformio",
+      "version": "^1.0.0"
+    }
+  }
+}

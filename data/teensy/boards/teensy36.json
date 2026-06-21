@@ -1,0 +1,35 @@
+{
+  "build": {
+    "arduino": {
+      "ldscript": "mk66fx1m0.ld"
+    },
+    "core": "teensy3",
+    "cpu": "cortex-m4",
+    "extra_flags": "-D__MK66FX1M0__ -DARDUINO_TEENSY36",
+    "f_cpu": "180000000L",
+    "mcu": "mk66fx1m0"
+  },
+  "connectivity": [
+    "can"
+  ],
+  "debug": {
+    "jlink_device": "MK66FX1M0xxx18",
+    "svd_path": "MK66F18.svd"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "Teensy 3.6",
+  "upload": {
+    "maximum_ram_size": 262144,
+    "maximum_size": 1048576,
+    "protocol": "teensy-gui",
+    "protocols": [
+      "teensy-cli",
+      "teensy-gui",
+      "jlink"
+    ]
+  },
+  "url": "https://www.pjrc.com/store/teensy36.html",
+  "vendor": "Teensy"
+}

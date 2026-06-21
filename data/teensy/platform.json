@@ -1,0 +1,98 @@
+{
+  "name": "teensy",
+  "title": "Teensy",
+  "description": "Teensy is a complete USB-based microcontroller development system, in a very small footprint, capable of implementing many types of projects. All programming is done via the USB port. No special programmer is needed, only a standard USB cable and a PC or Macintosh with a USB port.",
+  "homepage": "https://www.pjrc.com/teensy",
+  "license": "Apache-2.0",
+  "keywords": [
+      "dev-platform",
+      "ARM",
+      "AVR",
+      "Cortex-M",
+      "NXP Semiconductors",
+      "Microchip"
+  ],
+  "engines": {
+    "platformio": "^6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/platformio/platform-teensy.git"
+  },
+  "version": "5.1.0",
+  "frameworks": {
+    "arduino": {
+      "package": "framework-arduinoteensy",
+      "script": "builder/frameworks/arduino.py"
+    },
+    "zephyr": {
+      "package": "framework-zephyr",
+      "script": "builder/frameworks/zephyr.py"
+    }
+  },
+  "packages": {
+    "toolchain-atmelavr": {
+      "type": "toolchain",
+      "optional": false,
+      "owner": "platformio",
+      "version": "~1.50400.0",
+      "optionalVersions": [">=1.60301.0,<1.80000.0"]
+    },
+    "toolchain-gccarmnoneeabi": {
+      "type": "toolchain",
+      "optional": true,
+      "owner": "platformio",
+      "version": "~1.80201.0"
+    },
+    "toolchain-gccarmnoneeabi-teensy": {
+      "type": "toolchain",
+      "optional": false,
+      "owner": "platformio",
+      "version": "~1.110301.0"
+    },
+    "framework-arduinoteensy": {
+      "type": "framework",
+      "optional": true,
+      "owner": "platformio",
+      "version": "~1.160.0"
+    },
+    "framework-zephyr": {
+      "type": "framework",
+      "optional": true,
+      "owner": "platformio",
+      "version": "~2.20701.0"
+    },
+    "tool-teensy": {
+      "type": "uploader",
+      "optional": true,
+      "owner": "platformio",
+      "version": "<2"
+    },
+    "tool-jlink": {
+      "type": "uploader",
+      "optional": true,
+      "owner": "platformio",
+      "version": "^1.63208.0"
+    },
+    "tool-cmake": {
+      "optional": true,
+      "owner": "platformio",
+      "version": "~3.21.0"
+    },
+    "tool-dtc": {
+      "optional": true,
+      "owner": "platformio",
+      "version": "~1.4.7"
+    },
+    "tool-ninja": {
+      "optional": true,
+      "owner": "platformio",
+      "version": "^1.7.0"
+    },
+    "tool-gperf": {
+      "optional": true,
+      "owner": "platformio",
+      "version": "^3.0.0"
+    }
+  }
+}

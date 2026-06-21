@@ -1,0 +1,42 @@
+{
+  "name": "linux_arm",
+  "title": "Linux ARM",
+  "description": "Linux ARM is a Unix-like and mostly POSIX-compliant computer operating system (OS) assembled under the model of free and open-source software development and distribution. Using host OS (Mac OS X, Linux ARM) you can build native application for Linux ARM platform.",
+  "homepage": "https://registry.platformio.org/platforms/platformio/linux_arm",
+  "license": "Apache-2.0",
+  "keywords": [
+    "dev-platform",
+    "Linux",
+    "ARM"
+  ],
+  "engines": {
+    "platformio": "^6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/platformio/platform-linux_arm.git"
+  },
+  "version": "1.6.0",
+  "frameworks": {
+    "wiringpi": {
+      "package": "framework-wiringpi",
+      "script": "builder/frameworks/wiringpi.py",
+      "description": "WiringPi is a GPIO access library written in C for the BCM2835 used in the Raspberry Pi. It's designed to be familiar to people who have used the Arduino 'wiring' system",
+      "url": "http://wiringpi.com",
+      "title": "WiringPi"
+    }
+  },
+  "packages": {
+    "toolchain-gccarmlinuxgnueabi": {
+      "type": "toolchain",
+      "owner": "platformio",
+      "version": "~1.40802.0"
+    },
+    "framework-wiringpi": {
+      "type": "framework",
+      "optional": true,
+      "owner": "platformio",
+      "version": "~1.242.0"
+    }
+  }
+}
