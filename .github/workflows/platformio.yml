@@ -92,18 +92,33 @@ jobs:
           path: /tmp/conflicts.log
           if-no-files-found: ignore
 
-      - name: Commit + push platformio branch
+      - name: Force-push as a fresh orphan commit
         working-directory: .data
+        # Each sync replaces the platformio branch with a SINGLE orphan
+        # commit whose tree contains the cumulative (skip-on-exists)
+        # working state. No history retained — GH UI no longer reports
+        # "N commits behind main" growing over time. Cumulative data is
+        # preserved because the copy-merge step above kept any existing
+        # files from the prior tip.
         run: |
           set -euo pipefail
           git add -A
-          if git diff --cached --quiet; then
-            echo "no changes"; exit 0
+          TREE=$(git write-tree)
+          # If the new tree matches the current remote tip's tree, exit silently.
+          REMOTE_TREE=""
+          if git ls-remote --exit-code --heads origin platformio >/dev/null 2>&1; then
+            REMOTE_TREE=$(git rev-parse "origin/platformio^{tree}" 2>/dev/null || true)
+          fi
+          if [ -n "$REMOTE_TREE" ] && [ "$TREE" = "$REMOTE_TREE" ]; then
+            echo "tree unchanged ($TREE); skipping push"
+            exit 0
           fi
           ts="$(date -u +%Y-%m-%d)"
-          git commit -m "sync(platformio): ${ts}" -m "from builders/platformio.py via workflow_dispatch"
+          NEW=$(git commit-tree "$TREE" -m "sync(platformio): ${ts}" \
+                                         -m "from builders/platformio.py via workflow_dispatch")
+          echo "new orphan: $NEW (tree $TREE)"
           if git ls-remote --exit-code --heads origin platformio >/dev/null 2>&1; then
-            git push --force-with-lease origin HEAD:platformio
+            git push --force origin "$NEW:refs/heads/platformio"
           else
-            git push origin HEAD:platformio
+            git push origin "$NEW:refs/heads/platformio"
           fi
