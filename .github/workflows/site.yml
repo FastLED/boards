@@ -70,14 +70,17 @@ jobs:
             (cd .site && git checkout --orphan site && git rm -rf . 2>/dev/null || true)
           fi
 
-      - name: Run site builder
+      - name: Run site builder (extractors -> merge -> sqlite -> bundle)
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
+          # The new orchestrator chains: extract_{vendors,arduino,platformio,
+          # other}.py -> merge.py -> build_sqlite.py -> templates/index.html
+          # + sql.js download. Errors logged under .site/errors/.
           uv run --no-project --script builders/site.py \
             --data-root .branches \
             --out .site \
-            --source-shas /tmp/source-shas.json
+            --workdir /tmp/site-work
 
       - name: Force-push site as a fresh orphan commit
         id: push_site

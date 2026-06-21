@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FastLED/boards — USB VID:PID Lookup</title>
+<style>
+:root { --bg:#fafafa; --fg:#222; --muted:#888; --hi:#1268d1; --hi-bg:#e6f0ff; --border:#ddd; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#181a1f; --fg:#e6e9ed; --muted:#9aa1ab; --hi:#6fb1ff;
+          --hi-bg:#1c2940; --border:#333; }
+}
+html,body { background:var(--bg); color:var(--fg); margin:0; padding:0;
+  font:14px/1.5 -apple-system, system-ui, sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:1.4rem 1.2rem 4rem; }
+h1 { margin:0 0 .2rem; font-size:1.4rem; font-weight:700; }
+.sub { color:var(--muted); margin:0 0 1.5rem; font-size:.85rem; }
+.row { display:flex; gap:.6rem; margin:.6rem 0 1rem; align-items:center; flex-wrap:wrap; }
+input[type=text] { font:13px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding:.5rem .6rem; border:1px solid var(--border); border-radius:6px;
+  background:var(--bg); color:var(--fg); min-width:13ch; }
+label { display:flex; flex-direction:column; gap:.25rem; font-size:.78rem;
+  color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+section { margin:1.5rem 0; padding:1rem 1.2rem; border:1px solid var(--border);
+  border-radius:8px; background:var(--bg); }
+section h2 { margin:0 0 .6rem; font-size:1.05rem; font-weight:600; }
+.stat { font-size:.78rem; color:var(--muted); }
+.hit { padding:.4rem .55rem; margin:.25rem 0; border-radius:5px;
+  background:transparent; border:1px solid var(--border); }
+.hit + .hit { margin-top:.3rem; }
+.hit:hover { background:var(--hi-bg); }
+.k { font:13px ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--hi); }
+.v { font-weight:500; }
+.src { color:var(--muted); font-size:.75rem; margin-left:.5rem; }
+.empty { color:var(--muted); font-style:italic; padding:.4rem 0; }
+.head-info { display:flex; gap:1.2rem; font-size:.8rem; color:var(--muted);
+  margin:.3rem 0 1rem; }
+code { background:var(--hi-bg); padding:.1rem .3rem; border-radius:3px;
+  font-family:ui-monospace, monospace; font-size:.85em; }
+footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
+  border-top:1px solid var(--border); padding-top:1rem; }
+.err { color:#c44; padding:.4rem 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>FastLED/boards &mdash; USB VID:PID Lookup</h1>
+  <p class="sub">Live query over the published <code>site.db</code>. Powered by sql.js (WASM, runs entirely in your browser).</p>
+  <div class="head-info">
+    <span id="dbStatus">loading database…</span>
+    <span id="dbCounts"></span>
+  </div>
+
+  <section>
+    <h2>Vendor lookup (by VID)</h2>
+    <div class="row">
+      <label>VID (hex) <input id="vidIn" type="text" placeholder="303a" maxlength="6" autocomplete="off"></label>
+      <label>or vendor name fragment <input id="vendorIn" type="text" placeholder="espressif" autocomplete="off"></label>
+    </div>
+    <div id="vendorOut" class="empty">Enter a 4-hex VID (e.g. <code>303a</code>) or a name fragment (e.g. <code>arduino</code>).</div>
+  </section>
+
+  <section>
+    <h2>Product lookup (by VID:PID or name)</h2>
+    <div class="row">
+      <label>VID:PID (hex) <input id="vidpidIn" type="text" placeholder="303a:1001" maxlength="9" autocomplete="off"></label>
+      <label>or product name fragment <input id="productIn" type="text" placeholder="teensy" autocomplete="off"></label>
+    </div>
+    <div id="productOut" class="empty">Enter a VID:PID like <code>16c0:0483</code> or a name fragment like <code>esp32</code>.</div>
+  </section>
+
+  <footer>
+    Source data merged from PlatformIO + Arduino cores + vendor allocation registries.
+    Curated overrides (Teensy, etc.) applied via the <code>other</code> branch.
+    Repo: <a href="https://github.com/FastLED/boards">FastLED/boards</a>.
+    Database is rebuilt and republished by the <code>Build site</code> workflow on every data-branch refresh.
+  </footer>
+</div>
+
+<script src="sql-wasm.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const norm4 = (s) => (s || '').trim().toLowerCase().replace(/^0x/, '').padStart(4, '0').slice(-4);
+  const isHex = (s, n) => new RegExp(`^[0-9a-f]{1,${n}}$`).test(s.toLowerCase().replace(/^0x/, ''));
+
+  let db = null;
+
+  async function init() {
+    try {
+      const SQL = await initSqlJs({ locateFile: f => f });
+      const resp = await fetch('site.db');
+      if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching site.db`);
+      const buf = await resp.arrayBuffer();
+      db = new SQL.Database(new Uint8Array(buf));
+      const nv = db.exec("SELECT COUNT(*) FROM vid_vendor")[0].values[0][0];
+      const np = db.exec("SELECT COUNT(*) FROM vidpid")[0].values[0][0];
+      $('dbStatus').textContent = 'database loaded';
+      $('dbCounts').textContent = `${nv.toLocaleString()} vendors / ${np.toLocaleString()} products`;
+      wireUp();
+    } catch (e) {
+      $('dbStatus').innerHTML = `<span class="err">failed: ${escapeHtml(e.message)}</span>`;
+      console.error(e);
+    }
+  }
+
+  function rows(sql, params) {
+    const stmt = db.prepare(sql);
+    stmt.bind(params || []);
+    const out = [];
+    while (stmt.step()) out.push(stmt.getAsObject());
+    stmt.free();
+    return out;
+  }
+
+  function fmtVid(v)    { return `<span class="k">0x${escapeHtml(v)}</span>`; }
+  function fmtPair(v,p) { return `<span class="k">0x${escapeHtml(v)}:0x${escapeHtml(p)}</span>`; }
+  function fmtSrc(s)    { return s ? `<span class="src">${escapeHtml(s)}</span>` : ''; }
+
+  function renderVendor(out, results, headerHtml) {
+    if (!results.length) {
+      out.className = 'empty';
+      out.innerHTML = 'no matches';
+      return;
+    }
+    out.className = '';
+    let html = headerHtml || '';
+    for (const r of results) {
+      html += `<div class="hit">${fmtVid(r.vid)} &mdash; <span class="v">${escapeHtml(r.vendor)}</span>${fmtSrc(r.source)}</div>`;
+    }
+    out.innerHTML = html;
+  }
+
+  function renderProduct(out, results, headerHtml) {
+    if (!results.length) {
+      out.className = 'empty';
+      out.innerHTML = 'no matches';
+      return;
+    }
+    out.className = '';
+    let html = headerHtml || '';
+    for (const r of results) {
+      html += `<div class="hit">${fmtPair(r.vid, r.pid)} &mdash; <span class="v">${escapeHtml(r.product)}</span>${fmtSrc(r.source)}</div>`;
+    }
+    out.innerHTML = html;
+  }
+
+  function searchVendorByVid(input) {
+    const out = $('vendorOut');
+    if (!input) { out.className='empty'; out.innerHTML='Enter a 4-hex VID or a name fragment.'; return; }
+    if (!isHex(input, 4)) { out.className='err'; out.innerHTML='VID must be 1-4 hex digits.'; return; }
+    const vid = norm4(input);
+    const exact = rows('SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
+    if (exact.length) return renderVendor(out, exact, `<div class="stat">exact match for VID 0x${vid}:</div>`);
+    // Fallback: prefix match
+    const pref = rows(
+      'SELECT vid, vendor, source FROM vid_vendor WHERE vid LIKE ? ORDER BY vid LIMIT 50',
+      [`${vid.replace(/0+$/, '')}%`]
+    );
+    renderVendor(out, pref, `<div class="stat">no exact match; ${pref.length} prefix match(es):</div>`);
+  }
+
+  function searchVendorByName(name) {
+    const out = $('vendorOut');
+    if (!name || name.length < 2) {
+      out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
+    }
+    const r = rows(
+      "SELECT vid, vendor, source FROM vid_vendor WHERE vendor LIKE ? ORDER BY vendor LIMIT 50",
+      [`%${name}%`]
+    );
+    renderVendor(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
+  }
+
+  function searchProductByVidPid(input) {
+    const out = $('productOut');
+    if (!input) { out.className='empty'; out.innerHTML='Enter a VID:PID or a name fragment.'; return; }
+    const cleaned = input.toLowerCase().replace(/^0x/, '').replace(/[:\s]/g, '');
+    if (!/^[0-9a-f]{1,8}$/.test(cleaned)) {
+      out.className='err'; out.innerHTML='VID:PID must be hex digits (e.g. <code>303a:1001</code>).'; return;
+    }
+    if (cleaned.length === 8) {
+      const exact = rows('SELECT vid, pid, product, source FROM vidpid WHERE vidpid = ?', [cleaned]);
+      if (exact.length) {
+        // Enrich with vendor name from vid_vendor if known.
+        const v = rows('SELECT vendor FROM vid_vendor WHERE vid = ?', [exact[0].vid]);
+        const hdr = v.length
+          ? `<div class="stat">vendor: <span class="v">${escapeHtml(v[0].vendor)}</span> (0x${escapeHtml(exact[0].vid)})</div>`
+          : `<div class="stat">vendor unknown for 0x${escapeHtml(exact[0].vid)}</div>`;
+        return renderProduct(out, exact, hdr);
+      }
+    }
+    // Prefix match on the concatenated key
+    const r = rows(
+      'SELECT vid, pid, product, source FROM vidpid WHERE vidpid LIKE ? ORDER BY vidpid LIMIT 50',
+      [`${cleaned}%`]
+    );
+    renderProduct(out, r, `<div class="stat">${r.length} match(es) for prefix <code>${escapeHtml(cleaned)}</code>:</div>`);
+  }
+
+  function searchProductByName(name) {
+    const out = $('productOut');
+    if (!name || name.length < 2) {
+      out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
+    }
+    const r = rows(
+      "SELECT vid, pid, product, source FROM vidpid WHERE product LIKE ? ORDER BY product LIMIT 80",
+      [`%${name}%`]
+    );
+    renderProduct(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
+  }
+
+  function debounced(fn, ms = 120) {
+    let t;
+    return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  }
+
+  function wireUp() {
+    $('vidIn').addEventListener('input', debounced(e => searchVendorByVid(e.target.value)));
+    $('vendorIn').addEventListener('input', debounced(e => searchVendorByName(e.target.value)));
+    $('vidpidIn').addEventListener('input', debounced(e => searchProductByVidPid(e.target.value)));
+    $('productIn').addEventListener('input', debounced(e => searchProductByName(e.target.value)));
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
