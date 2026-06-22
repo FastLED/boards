@@ -594,15 +594,35 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
     return out
 
 
+# First-word tokens that appear in many display names but are NOT
+# real vendors — e.g. "Generic" is the umbrella label for many
+# upstream-anonymous boards across all sublayers. Excluded from the
+# name-derived vendor set so we don't accidentally label everything
+# "Generic" boards with vendor "Generic".
+_NON_VENDOR_NAME_FIRST_WORDS = frozenset({
+    "generic", "atmega", "attiny", "stm32", "esp32", "esp8266",
+    "nucleo", "disco", "discovery", "blue", "black", "tiny", "mini",
+})
+
+
 def _vendor_canonical_by_first_token(boards: list[dict]) -> dict[str, str]:
-    """Build {first_word_lower → canonical vendor name} from every board
-    that has an explicit `.vendor` populated. Prefers the SHORTEST canonical
-    on collision so e.g. "Arduino" wins over "Arduino LLC" — keeps
-    derived vendors clean. Used to derive vendor + name_search on boards
-    whose upstream JSON didn't populate `.vendor` but whose `.name`
-    starts with a recognized vendor.
+    """Build {first_word_lower → canonical vendor name} from two sources:
+
+      1. Boards with an explicit `.vendor` field — strong signal, take
+         the SHORTEST canonical on collision so "Arduino" wins over
+         "Arduino LLC".
+      2. First-word of `.name` across the corpus, when alphabetic and
+         appearing in ≥3 boards. Catches vendors whose upstream JSONs
+         don't populate `.vendor` (Pimoroni, Raspberry, Heltec, …)
+         but who consistently put themselves at the head of every
+         board name.
+
+    Explicit-vendor entries override name-derived ones. The
+    _NON_VENDOR_NAME_FIRST_WORDS set filters out umbrella labels like
+    "Generic" / "STM32" that recur often but aren't real vendors.
     """
     canon: dict[str, str] = {}
+    # Pass 1: explicit .vendor (strong signal)
     for b in boards:
         v = b.get("vendor")
         if isinstance(v, str) and v.strip():
@@ -613,6 +633,33 @@ def _vendor_canonical_by_first_token(boards: list[dict]) -> dict[str, str]:
             first = parts[0].lower()
             if first not in canon or len(v_clean) < len(canon[first]):
                 canon[first] = v_clean
+
+    # Pass 2: name-first-word, only when alphabetic + frequent + not
+    # explicitly excluded as a non-vendor umbrella label.
+    from collections import Counter
+    name_first_counts: Counter[str] = Counter()
+    name_first_canonical: dict[str, str] = {}
+    for b in boards:
+        name = b.get("name") or ""
+        toks = name.split()
+        if not toks:
+            continue
+        first = toks[0]
+        first_lc = first.lower()
+        if not first_lc.isalpha():
+            continue
+        if first_lc in _NON_VENDOR_NAME_FIRST_WORDS:
+            continue
+        name_first_counts[first_lc] += 1
+        # Stash the canonical (original casing) of the first seen
+        if first_lc not in name_first_canonical:
+            name_first_canonical[first_lc] = first
+    for first_lc, n in name_first_counts.items():
+        if n < 3:
+            continue
+        if first_lc in canon:
+            continue  # explicit vendor wins
+        canon[first_lc] = name_first_canonical[first_lc]
     return canon
 
 
