@@ -1,0 +1,123 @@
+/* The single search row: query input + mode dropdown + result overlay. */
+
+.uni {
+  flex: 1;
+  min-width: 280px;
+}
+
+.uni input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 15px;
+  padding: 0.6rem 0.7rem;
+}
+
+.uni-anchor {
+  position: relative;
+}
+
+.uni-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.6rem 0 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.uni-hint kbd {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: var(--border);
+  color: var(--fg);
+  font: 0.7rem ui-monospace, monospace;
+  border: 1px solid var(--muted);
+}
+
+.uni-overlay {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: min(70vh, 640px);
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  padding: 0.85rem 1rem;
+}
+
+.uni-overlay[hidden] {
+  display: none;
+}
+
+.uni-overlay.empty {
+  font-style: italic;
+  color: var(--muted);
+}
+
+.uni-overlay.err {
+  color: #c44;
+}
+
+.search-row {
+  align-items: flex-end;
+}
+
+.mode {
+  min-width: 11ch;
+}
+
+.mode select {
+  font-size: 14px;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.cat {
+  margin: 1rem 0 0;
+}
+
+.cat-head {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.3rem;
+  font-weight: 600;
+}
+
+.best .hit {
+  border-color: var(--hi);
+  background: var(--hi-bg);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: var(--border);
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.4rem;
+  vertical-align: 1px;
+}
+
+.tag.vendor { background: #3a6ea5; color: #fff; }
+.tag.product { background: #5a8f3a; color: #fff; }
+.tag.board { background: #885aa5; color: #fff; }
+
+.why {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-left: 0.4rem;
+}

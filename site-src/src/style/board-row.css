@@ -1,0 +1,84 @@
+/* A single board result row: name + metadata + chips + action buttons. */
+
+.board-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  margin: 0.25rem 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  flex-wrap: wrap;
+}
+
+.board-row:hover {
+  background: var(--hi-bg);
+}
+
+.board-name {
+  font-weight: 600;
+}
+
+.board-meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.board-chip {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 10px;
+  background: var(--border);
+  color: var(--fg);
+  margin-right: 0.3rem;
+  font-family: ui-monospace, monospace;
+}
+
+.board-chip-row {
+  margin-top: 0.3rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.board-chip.board-chip-fw   { background: #5a8f3a; color: #fff; }
+.board-chip.board-chip-conn { background: #3a6ea5; color: #fff; }
+
+.board-spacer {
+  flex: 1;
+  min-width: 0.5rem;
+}
+
+.btn {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.32rem 0.7rem;
+  border-radius: 5px;
+  border: 1px solid var(--hi);
+  background: var(--hi);
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  white-space: nowrap;
+  transition: filter 0.12s;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--hi);
+}
+
+.btn.secondary:hover {
+  background: var(--hi-bg);
+}
+
+.btn + .btn {
+  margin-left: 0.35rem;
+}

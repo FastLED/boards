@@ -1,0 +1,10 @@
+node_modules/
+dist/
+public/site.db
+public/_meta.json
+public/boards/
+public/warnings/
+public/errors/
+public/sqlite3.wasm
+public/sqlite.worker.js
+public/vfs-http-worker.js

@@ -102,6 +102,8 @@ CREATE TABLE boards (
   name            TEXT NOT NULL,
   vendor          TEXT,
   mcu             TEXT,
+  architecture    TEXT,        -- e.g. "cortex-m7", "xtensa", "riscv", "avr"
+  bit_width       INTEGER,     -- 8 / 16 / 32
   frequency_mhz   INTEGER,
   flash_kb        INTEGER,
   ram_kb          INTEGER,
@@ -119,11 +121,14 @@ CREATE TABLE boards (
 CREATE INDEX idx_boards_board_id ON boards (board_id COLLATE NOCASE);
 CREATE INDEX idx_boards_layer    ON boards (layer, sublayer);
 
--- FTS5 mirror so name / vendor / mcu searches stay cheap under byte-range
--- loading (LIKE '%foo%' would scan every page). Includes frameworks +
--- connectivity so queries like "wifi" or "arduino" hit the index too.
+-- FTS5 mirror so name / vendor / mcu / architecture / connectivity /
+-- frameworks searches stay cheap under byte-range loading (LIKE '%foo%'
+-- would scan every page). Architecture is stored with `-` separators
+-- ("cortex-m7") so the default unicode61 tokenizer splits it into
+-- ["cortex", "m7"], letting users search either token.
 CREATE VIRTUAL TABLE boards_fts USING fts5(
-  board_id, name, vendor, mcu, sublayer, frameworks, connectivity,
+  board_id, name, vendor, mcu, architecture, sublayer,
+  frameworks, connectivity,
   content='boards', content_rowid='rowid'
 );
 """
@@ -136,7 +141,9 @@ def _board_rows(boards: list[dict]) -> list[tuple]:
         vidpids = ", ".join(f"{v}:{p}" for v, p in (b.get("vidpids") or []))
         rows.append((
             b["board_id"], b["layer"], b["sublayer"], b["name"],
-            b.get("vendor"), b.get("mcu"), b.get("frequency_mhz"),
+            b.get("vendor"), b.get("mcu"),
+            b.get("architecture"), b.get("bit_width"),
+            b.get("frequency_mhz"),
             b.get("flash_kb"), b.get("ram_kb"),
             b.get("upload_speed"), b.get("upload_protocol"),
             b.get("core"), b.get("variant"),
@@ -187,10 +194,11 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         if boards:
             conn.executemany(
                 "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
-                "mcu, frequency_mhz, flash_kb, ram_kb, upload_speed, "
-                "upload_protocol, core, variant, homepage, frameworks, "
-                "connectivity, debug_tool, vidpids, upstream_blob) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "mcu, architecture, bit_width, frequency_mhz, flash_kb, "
+                "ram_kb, upload_speed, upload_protocol, core, variant, "
+                "homepage, frameworks, connectivity, debug_tool, vidpids, "
+                "upstream_blob) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 _board_rows(boards),
             )
         # Populate the FTS mirrors.
@@ -204,9 +212,10 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         )
         conn.execute(
             "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, "
-            "                        sublayer, frameworks, connectivity) "
+            "                        architecture, sublayer, frameworks, "
+            "                        connectivity) "
             "SELECT rowid, board_id, name, COALESCE(vendor,''), "
-            "       COALESCE(mcu,''), sublayer, "
+            "       COALESCE(mcu,''), COALESCE(architecture,''), sublayer, "
             "       COALESCE(frameworks,''), COALESCE(connectivity,'') "
             "FROM boards"
         )

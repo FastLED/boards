@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FastLED/boards — USB VID:PID Lookup</title>
+    <link rel="preload" href="_meta.json" as="fetch" />
+    <link rel="preload" href="site.db" as="fetch" />
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>FastLED/boards &mdash; USB VID:PID Lookup</h1>
+      <p class="sub">
+        Live query over the published <code>site.db</code>. Powered by
+        <a href="https://github.com/zackees/memex">memex</a>'s
+        <code>sqlite-wasm-http</code> client (WASM, runs entirely in your
+        browser).
+      </p>
+      <div class="head-info">
+        <span id="dbStatus">loading database…</span>
+        <span id="dbCounts"></span>
+      </div>
+      <div class="head-info">
+        <span>
+          SQLite DB:
+          <a id="dbLink" href="site.db">
+            <code>https://fastled.github.io/boards/site.db</code>
+          </a>
+        </span>
+        <span><a id="dbLinkRaw" href="site.db" download>download</a></span>
+      </div>
+
+      <section>
+        <h2>Search</h2>
+        <div class="uni-anchor">
+          <div class="row search-row">
+            <label class="uni">
+              Query
+              <input
+                id="uniIn"
+                type="text"
+                autocomplete="off"
+                autofocus
+                placeholder="esp32dev, espressif, 303a, 303a:1001, teensy, wifi, arduino…"
+              />
+            </label>
+            <label class="mode">
+              Looking for
+              <select id="modeIn" autocomplete="off">
+                <option value="anything" selected>Anything</option>
+                <option value="board">Boards</option>
+                <option value="vendor">Vendors</option>
+                <option value="product">Products</option>
+              </select>
+            </label>
+          </div>
+          <div id="uniOut" class="uni-overlay" hidden></div>
+        </div>
+        <p class="uni-hint">
+          Type anything — a vendor name, product name, board name or id,
+          MCU, framework, connectivity feature, VID, or VID:PID. Case and
+          punctuation (<code>0x</code>, <code>:</code>, spaces, dashes) are
+          ignored, so <code>303a:1001</code>, <code>303A1001</code>, and
+          <code>0x303a 1001</code> all hit the same product. Press
+          <kbd>Esc</kbd> to dismiss the results.
+        </p>
+      </section>
+
+      <div
+        id="boardJsonModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="boardJsonTitle"
+      >
+        <div class="modal-body">
+          <header>
+            <span class="title" id="boardJsonTitle"></span>
+            <button id="boardJsonCopy" class="btn secondary" type="button">
+              ⧉ copy
+            </button>
+            <button class="close" id="boardJsonClose" aria-label="close">
+              &times;
+            </button>
+          </header>
+          <pre id="boardJsonBody">loading…</pre>
+        </div>
+      </div>
+
+      <footer>
+        Source data merged from PlatformIO + Arduino cores + vendor
+        allocation registries. Curated overrides (Teensy, etc.) applied via
+        the <code>other</code> branch. Repo:
+        <a href="https://github.com/FastLED/boards">FastLED/boards</a>.
+        Database is rebuilt and republished by the <code>Build site</code>
+        workflow on every data-branch refresh.
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

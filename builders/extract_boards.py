@@ -137,6 +137,108 @@ def _str_or_none(v: Any) -> str | None:
     return None
 
 
+# MCU prefix → (architecture, bit_width). Hand-maintained from the
+# canonical MCU family databases; covers every chip family present in
+# the platformio + arduino data branches at the time of writing.
+#
+# `architecture` is intentionally written with `-` so the default FTS5
+# tokenizer splits "cortex-m7" into the searchable tokens "cortex" + "m7";
+# the same goes for "cortex-m0plus", "cortex-m33", etc. Users can search
+# either the full name or just the family token.
+_MCU_PREFIX_TABLE: list[tuple[str, str, int]] = [
+    # (prefix, architecture, bit_width)
+    # NXP i.MX RT (Teensy 4.x)
+    ("imxrt",       "cortex-m7",     32),
+    # STM32 by series (high to low first so the more specific prefix wins)
+    ("stm32h",      "cortex-m7",     32),
+    ("stm32f7",     "cortex-m7",     32),
+    ("stm32f4",     "cortex-m4",     32),
+    ("stm32l4",     "cortex-m4",     32),
+    ("stm32f3",     "cortex-m4",     32),
+    ("stm32g4",     "cortex-m4",     32),
+    ("stm32f1",     "cortex-m3",     32),
+    ("stm32f2",     "cortex-m3",     32),
+    ("stm32l1",     "cortex-m3",     32),
+    ("stm32g0",     "cortex-m0plus", 32),
+    ("stm32f0",     "cortex-m0",     32),
+    ("stm32l0",     "cortex-m0plus", 32),
+    ("stm32u5",     "cortex-m33",    32),
+    ("stm32",       "cortex-m",      32),  # any other STM32
+    # Atmel SAM / Microchip
+    ("samd21",      "cortex-m0plus", 32),
+    ("samd51",      "cortex-m4",     32),
+    ("samd",        "cortex-m",      32),
+    ("samc",        "cortex-m0plus", 32),
+    ("same",        "cortex-m4",     32),
+    ("sam3",        "cortex-m3",     32),
+    # Nordic
+    ("nrf52840",    "cortex-m4",     32),
+    ("nrf52833",    "cortex-m4",     32),
+    ("nrf52832",    "cortex-m4",     32),
+    ("nrf52",       "cortex-m4",     32),
+    ("nrf53",       "cortex-m33",    32),
+    ("nrf51",       "cortex-m0",     32),
+    ("nrf",         "cortex-m",      32),
+    # Raspberry Pi
+    ("rp2040",      "cortex-m0plus", 32),
+    ("rp2350",      "cortex-m33",    32),
+    # NXP Kinetis (Teensy 3.x)
+    ("mk20dx",      "cortex-m4",     32),
+    ("mk64",        "cortex-m4",     32),
+    ("mk66",        "cortex-m4",     32),
+    ("mkl26",       "cortex-m0plus", 32),
+    ("mkl",         "cortex-m0plus", 32),
+    ("mk",          "cortex-m4",     32),
+    # TI
+    ("cc32",        "cortex-m4",     32),
+    ("cc26",        "cortex-m4",     32),
+    ("cc13",        "cortex-m4",     32),
+    ("tm4c",        "cortex-m4",     32),
+    ("msp432",      "cortex-m4",     32),
+    ("msp430",      "msp430",        16),
+    # Silicon Labs
+    ("efr32mg2",    "cortex-m33",    32),
+    ("efr32",       "cortex-m4",     32),
+    ("efm32",       "cortex-m",      32),
+    # Espressif — Xtensa LX6/LX7 vs RISC-V
+    # NB: order matters; check the RISC-V parts (c/h suffix) before the
+    # generic esp32 fallback.
+    ("esp32-c", "riscv",   32),
+    ("esp32c",  "riscv",   32),
+    ("esp32-h", "riscv",   32),
+    ("esp32h",  "riscv",   32),
+    ("esp32-s", "xtensa",  32),
+    ("esp32s",  "xtensa",  32),
+    ("esp32",   "xtensa",  32),
+    ("esp8266", "xtensa",  32),
+    # Renesas (Arduino UNO R4, Portenta C33)
+    ("ra4",         "cortex-m33",    32),
+    ("ra6",         "cortex-m33",    32),
+    # SiFive / RISC-V
+    ("fe310",       "riscv",         32),
+    ("fe3",         "riscv",         32),
+    # Atmel AVR / Microchip 8-bit
+    ("atmega",      "avr",            8),
+    ("atxmega",     "avr",            8),
+    ("attiny",      "avr",            8),
+    ("at90",        "avr",            8),
+    # 8051 family (Nuvoton etc.)
+    ("n76",         "8051",           8),
+]
+
+
+def _derive_arch_bits(mcu: str | None) -> tuple[str | None, int | None]:
+    """Return (architecture, bit_width) inferred from the MCU string.
+    Both fall back to None when the chip family isn't recognised."""
+    if not mcu:
+        return None, None
+    m = mcu.lower().strip()
+    for prefix, arch, bits in _MCU_PREFIX_TABLE:
+        if m.startswith(prefix):
+            return arch, bits
+    return None, None
+
+
 def _unquote(s: Any) -> str | None:
     if not isinstance(s, str):
         return None
@@ -200,6 +302,8 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
                 if vid and pid:
                     vidpids.append([vid, pid])
 
+        mcu_str = _str_or_none(build.get("mcu"))
+        arch, bits = _derive_arch_bits(mcu_str)
         repo, blob = _platformio_upstream(root / plat, board_id)
         out.append({
             "layer":            "platformio",
@@ -207,7 +311,9 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             "board_id":         board_id,
             "name":             (b.get("name") or board_id).strip(),
             "vendor":           _str_or_none(b.get("vendor")),
-            "mcu":              _str_or_none(build.get("mcu")),
+            "mcu":              mcu_str,
+            "architecture":     arch,
+            "bit_width":        bits,
             "frequency_mhz":    _f_cpu_mhz(build.get("f_cpu")),
             "flash_kb":         _bytes_to_kb(upload.get("maximum_size")),
             "ram_kb":           _bytes_to_kb(upload.get("maximum_ram_size")),
@@ -272,13 +378,17 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
         # Arduino boards run under the Arduino framework by definition;
         # mark frameworks accordingly so the UI can show it as a chip.
         frameworks_csv = "arduino"
+        mcu_str = _str_or_none(build.get("mcu"))
+        arch, bits = _derive_arch_bits(mcu_str)
         out.append({
             "layer":            "arduino",
             "sublayer":         core,
             "board_id":         board_id,
             "name":             name,
             "vendor":           None,
-            "mcu":              _str_or_none(build.get("mcu")),
+            "mcu":              mcu_str,
+            "architecture":     arch,
+            "bit_width":        bits,
             "frequency_mhz":    _f_cpu_mhz(build.get("f_cpu")),
             "flash_kb":         _bytes_to_kb(upload.get("maximum_size")),
             # `maximum_data_size` is what Arduino calls available RAM.

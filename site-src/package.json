@@ -1,0 +1,19 @@
+{
+  "name": "fastled-boards-portal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Client bundle for the FastLED/boards portal — SQLite over HTTP byte-range loading via memex's sqlite-wasm-http pattern, built with Vite.",
+  "scripts": {
+    "postinstall": "node scripts/patch-sqlite-wasm-http.mjs",
+    "dev": "vite",
+    "build": "node scripts/patch-sqlite-wasm-http.mjs && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "sqlite-wasm-http": "1.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}

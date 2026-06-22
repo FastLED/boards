@@ -1,0 +1,161 @@
+/* Page-level theme tokens + layout primitives. */
+
+:root {
+  --bg: #fafafa;
+  --fg: #222;
+  --muted: #888;
+  --hi: #1268d1;
+  --hi-bg: #e6f0ff;
+  --border: #ddd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181a1f;
+    --fg: #e6e9ed;
+    --muted: #9aa1ab;
+    --hi: #6fb1ff;
+    --hi-bg: #1c2940;
+    --border: #333;
+  }
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  padding: 0;
+  font: 14px/1.5 -apple-system, system-ui, sans-serif;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.4rem 1.2rem 4rem;
+}
+
+h1 {
+  margin: 0 0 0.2rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.sub {
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+  font-size: 0.85rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.6rem 0 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+input[type='text'] {
+  font: 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  min-width: 13ch;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+section {
+  margin: 1.5rem 0;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+section h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.stat {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.hit {
+  padding: 0.4rem 0.55rem;
+  margin: 0.25rem 0;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.hit + .hit {
+  margin-top: 0.3rem;
+}
+
+.hit:hover {
+  background: var(--hi-bg);
+}
+
+.k {
+  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--hi);
+}
+
+.v {
+  font-weight: 500;
+}
+
+.src {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+  padding: 0.4rem 0;
+}
+
+.head-info {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0.3rem 0 1rem;
+}
+
+code {
+  background: var(--hi-bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+}
+
+footer {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-top: 3rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.err {
+  color: #c44;
+  padding: 0.4rem 0;
+}
