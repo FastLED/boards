@@ -12,26 +12,33 @@ product, source) triples for the VID:PID lookup. This script pulls the
 relative path of the source JSON so site.py can copy it into the
 published bundle and the UI can deep-link to it via GitHub Pages.
 
-Output shape (each board includes the raw upstream JSON as `json_text` so
-build_sqlite.py can inline it into the database — when the client uses
-sql.js-httpvfs, "View JSON" becomes a single SQL query against the
-range-fetched DB, no per-file copies in the bundle):
+Output shape (structured fields only — the raw upstream JSON is NOT
+copied into the bundle; users follow `upstream_blob` to view it):
 
     {
       "layer": "boards",
       "boards": [
         {
-          "layer":         "platformio",     # or "arduino"
-          "sublayer":      "espressif32",    # platform or core slug
-          "board_id":      "esp32dev",
-          "name":          "Espressif ESP32 Dev Module",
-          "vendor":        "Espressif",
-          "mcu":           "esp32",
-          "frequency_mhz": 240,
-          "vidpids":       [["303a", "0002"]],
-          "upstream_repo": "https://github.com/platformio/platform-espressif32",
-          "upstream_blob": "https://github.com/platformio/platform-espressif32/tree/HEAD/boards/esp32dev.json",
-          "json_text":     "{ ... raw upstream JSON ... }"
+          "layer":            "platformio",  # or "arduino"
+          "sublayer":         "espressif32", # platform or core slug
+          "board_id":         "esp32dev",
+          "name":             "Espressif ESP32 Dev Module",
+          "vendor":           "Espressif",
+          "mcu":              "esp32",
+          "frequency_mhz":    240,
+          "flash_kb":         4096,
+          "ram_kb":           320,
+          "upload_speed":     460800,
+          "upload_protocol":  null,
+          "core":             "esp32",
+          "variant":          "esp32",
+          "homepage":         "https://en.wikipedia.org/wiki/ESP32",
+          "frameworks":       "arduino,espidf",
+          "connectivity":     "bluetooth,can,ethernet,wifi",
+          "debug_tool":       "esp-wroom-32.cfg",
+          "vidpids":          [["303a", "0002"]],
+          "upstream_repo":    "https://github.com/platformio/platform-espressif32",
+          "upstream_blob":    "https://github.com/platformio/platform-espressif32/tree/HEAD/boards/esp32dev.json"
         }
       ]
     }
@@ -98,6 +105,38 @@ def _f_cpu_mhz(s: Any) -> int | None:
     return hz // 1_000_000 or None
 
 
+def _int_or_none(v: Any) -> int | None:
+    if isinstance(v, (int, float)):
+        return int(v) if v else None
+    if isinstance(v, str):
+        try:
+            return int(v.strip())
+        except ValueError:
+            return None
+    return None
+
+
+def _bytes_to_kb(v: Any) -> int | None:
+    """Bytes → KB (e.g. 4194304 → 4096). Returns None for falsy/invalid."""
+    n = _int_or_none(v)
+    return None if n is None or n <= 0 else max(1, n // 1024)
+
+
+def _csv_or_none(v: Any) -> str | None:
+    """Normalize a list of strings to a sorted CSV; returns None when empty."""
+    if not isinstance(v, list):
+        return None
+    items = sorted({s.strip().lower() for s in v
+                    if isinstance(s, str) and s.strip()})
+    return ",".join(items) if items else None
+
+
+def _str_or_none(v: Any) -> str | None:
+    if isinstance(v, str) and v.strip():
+        return v.strip()
+    return None
+
+
 def _unquote(s: Any) -> str | None:
     if not isinstance(s, str):
         return None
@@ -144,13 +183,15 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
         plat = board_json.parts[-3]
         board_id = board_json.stem
         try:
-            raw = board_json.read_text(encoding="utf-8")
-            b = json.loads(raw)
+            b = json.loads(board_json.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
             print(f"boards[platformio:skip]: {board_json}: {e}", file=sys.stderr)
             continue
 
         build = b.get("build") or {}
+        upload = b.get("upload") or {}
+        debug = b.get("debug") or {}
+
         vidpids: list[list[str]] = []
         for entry in (build.get("hwids") or []):
             if isinstance(entry, (list, tuple)) and len(entry) >= 2:
@@ -161,17 +202,27 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
 
         repo, blob = _platformio_upstream(root / plat, board_id)
         out.append({
-            "layer":         "platformio",
-            "sublayer":      plat,
-            "board_id":      board_id,
-            "name":          (b.get("name") or board_id).strip(),
-            "vendor":        (b.get("vendor") or "").strip() or None,
-            "mcu":           (build.get("mcu") or "").strip() or None,
-            "frequency_mhz": _f_cpu_mhz(build.get("f_cpu")),
-            "vidpids":       vidpids,
-            "upstream_repo": repo,
-            "upstream_blob": blob,
-            "json_text":     raw,
+            "layer":            "platformio",
+            "sublayer":         plat,
+            "board_id":         board_id,
+            "name":             (b.get("name") or board_id).strip(),
+            "vendor":           _str_or_none(b.get("vendor")),
+            "mcu":              _str_or_none(build.get("mcu")),
+            "frequency_mhz":    _f_cpu_mhz(build.get("f_cpu")),
+            "flash_kb":         _bytes_to_kb(upload.get("maximum_size")),
+            "ram_kb":           _bytes_to_kb(upload.get("maximum_ram_size")),
+            "upload_speed":     _int_or_none(upload.get("speed")),
+            "upload_protocol":  _str_or_none(upload.get("protocol")),
+            "core":             _str_or_none(build.get("core")),
+            "variant":          _str_or_none(build.get("variant")),
+            "homepage":         _str_or_none(b.get("url")),
+            "frameworks":       _csv_or_none(b.get("frameworks")),
+            "connectivity":     _csv_or_none(b.get("connectivity")),
+            "debug_tool":       _str_or_none(debug.get("openocd_board")
+                                              or debug.get("default_tool")),
+            "vidpids":          vidpids,
+            "upstream_repo":    repo,
+            "upstream_blob":    blob,
         })
     return out
 
@@ -204,27 +255,40 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
         core = board_json.parts[-3]
         board_id = board_json.stem
         try:
-            raw = board_json.read_text(encoding="utf-8")
-            b = json.loads(raw)
+            b = json.loads(board_json.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
             print(f"boards[arduino:skip]: {board_json}: {e}", file=sys.stderr)
             continue
 
         build = b.get("build") or {}
+        upload = b.get("upload") or {}
         name = (b.get("name") or _unquote(build.get("usb_product")) or board_id).strip()
         upstream = ARDUINO_UPSTREAM.get(core)
+        # Arduino boards run under the Arduino framework by definition;
+        # mark frameworks accordingly so the UI can show it as a chip.
+        frameworks_csv = "arduino"
         out.append({
-            "layer":         "arduino",
-            "sublayer":      core,
-            "board_id":      board_id,
-            "name":          name,
-            "vendor":        None,
-            "mcu":           (build.get("mcu") or "").strip() or None,
-            "frequency_mhz": _f_cpu_mhz(build.get("f_cpu")),
-            "vidpids":       _arduino_vidpids(b),
-            "upstream_repo": upstream,
-            "upstream_blob": upstream,   # cores share one boards.txt → repo-level only
-            "json_text":     raw,
+            "layer":            "arduino",
+            "sublayer":         core,
+            "board_id":         board_id,
+            "name":             name,
+            "vendor":           None,
+            "mcu":              _str_or_none(build.get("mcu")),
+            "frequency_mhz":    _f_cpu_mhz(build.get("f_cpu")),
+            "flash_kb":         _bytes_to_kb(upload.get("maximum_size")),
+            # `maximum_data_size` is what Arduino calls available RAM.
+            "ram_kb":           _bytes_to_kb(upload.get("maximum_data_size")),
+            "upload_speed":     _int_or_none(upload.get("speed")),
+            "upload_protocol":  _str_or_none(upload.get("protocol")),
+            "core":             _str_or_none(build.get("core")),
+            "variant":          _str_or_none(build.get("variant")),
+            "homepage":         None,
+            "frameworks":       frameworks_csv,
+            "connectivity":     None,
+            "debug_tool":       None,
+            "vidpids":          _arduino_vidpids(b),
+            "upstream_repo":    upstream,
+            "upstream_blob":    upstream,
         })
     return out
 

@@ -24,17 +24,14 @@ online-data SQLite + zackees memex sqlite-over-HTTP patterns):
     vidpid_fts:     FTS5(vidpid, vid, pid, product)
 
     boards:
-      board_id      TEXT          -- e.g. "esp32dev"
-      layer         TEXT          -- "platformio" | "arduino"
-      sublayer      TEXT          -- platform name or core slug
-      name          TEXT          -- "Espressif ESP32 Dev Module"
-      vendor        TEXT          -- nullable
-      mcu           TEXT          -- nullable
-      frequency_mhz INTEGER       -- nullable
-      vidpids       TEXT          -- "303a:0002, 1234:5678" pretty CSV
-      upstream_blob TEXT          -- upstream link (may be repo-root for arduino)
-      json_blob     TEXT          -- full upstream board JSON, served via SQL
-    boards_fts:     FTS5(board_id, name, vendor, mcu, sublayer)
+      board_id, layer, sublayer, name, vendor, mcu,
+      frequency_mhz, flash_kb, ram_kb,
+      upload_speed, upload_protocol, core, variant,
+      homepage, frameworks (CSV), connectivity (CSV), debug_tool,
+      vidpids (pretty CSV), upstream_blob
+      -- NO raw JSON column. Users follow upstream_blob to view originals.
+    boards_fts: FTS5(board_id, name, vendor, mcu, sublayer,
+                     frameworks, connectivity)
 
 Output is `<out>/site.db` — the browser uses sql.js-httpvfs to read it via
 HTTP Range requests, so only the pages a query actually touches travel
@@ -51,6 +48,11 @@ import sys
 
 
 SCHEMA_SQL = """
+-- page_size must be set BEFORE any table exists. 1024 is sqlite-wasm-http's
+-- recommended size — smaller pages = finer-grained HTTP range fetches and
+-- better HTTP/2 multiplexing (typical query reads 5-10 pages in parallel
+-- instead of 5-10 sequential larger ones).
+PRAGMA page_size    = 1024;
 PRAGMA journal_mode = OFF;
 PRAGMA synchronous  = OFF;
 
@@ -88,41 +90,59 @@ CREATE VIRTUAL TABLE vid_vendor_fts
 CREATE VIRTUAL TABLE vidpid_fts
   USING fts5(vidpid, vid, pid, product, content='vidpid', content_rowid='rowid');
 
--- Per-board metadata + raw upstream JSON. json_blob carries the full board
--- definition as text so the portal "View JSON" button is a single SQL
--- read — no per-file copies in the bundle.
+-- Per-board structured metadata. Common useful fields are projected into
+-- their own columns so the search path doesn't have to skip past anything
+-- — the table stays dense and every page touched returns multiple rows
+-- of useful data. The raw upstream JSON is NOT stored here; users follow
+-- the `upstream_blob` URL to view the original on GitHub.
 CREATE TABLE boards (
-  board_id      TEXT NOT NULL,
-  layer         TEXT NOT NULL,
-  sublayer      TEXT NOT NULL,
-  name          TEXT NOT NULL,
-  vendor        TEXT,
-  mcu           TEXT,
-  frequency_mhz INTEGER,
-  vidpids       TEXT,
-  upstream_blob TEXT,
-  json_blob     TEXT
+  board_id        TEXT NOT NULL,
+  layer           TEXT NOT NULL,
+  sublayer        TEXT NOT NULL,
+  name            TEXT NOT NULL,
+  vendor          TEXT,
+  mcu             TEXT,
+  frequency_mhz   INTEGER,
+  flash_kb        INTEGER,
+  ram_kb          INTEGER,
+  upload_speed    INTEGER,
+  upload_protocol TEXT,
+  core            TEXT,
+  variant         TEXT,
+  homepage        TEXT,
+  frameworks      TEXT,        -- CSV: "arduino,espidf"
+  connectivity    TEXT,        -- CSV: "bluetooth,can,ethernet,wifi"
+  debug_tool      TEXT,
+  vidpids         TEXT,
+  upstream_blob   TEXT
 );
 CREATE INDEX idx_boards_board_id ON boards (board_id COLLATE NOCASE);
 CREATE INDEX idx_boards_layer    ON boards (layer, sublayer);
 
 -- FTS5 mirror so name / vendor / mcu searches stay cheap under byte-range
--- loading (LIKE '%foo%' would scan every page).
+-- loading (LIKE '%foo%' would scan every page). Includes frameworks +
+-- connectivity so queries like "wifi" or "arduino" hit the index too.
 CREATE VIRTUAL TABLE boards_fts USING fts5(
-  board_id, name, vendor, mcu, sublayer,
+  board_id, name, vendor, mcu, sublayer, frameworks, connectivity,
   content='boards', content_rowid='rowid'
 );
 """
 
 
 def _board_rows(boards: list[dict]) -> list[tuple]:
+    """Returns rows for the structured `boards` table."""
     rows = []
     for b in boards:
         vidpids = ", ".join(f"{v}:{p}" for v, p in (b.get("vidpids") or []))
         rows.append((
             b["board_id"], b["layer"], b["sublayer"], b["name"],
             b.get("vendor"), b.get("mcu"), b.get("frequency_mhz"),
-            vidpids or None, b.get("upstream_blob"), b.get("json_text"),
+            b.get("flash_kb"), b.get("ram_kb"),
+            b.get("upload_speed"), b.get("upload_protocol"),
+            b.get("core"), b.get("variant"),
+            b.get("homepage"), b.get("frameworks"),
+            b.get("connectivity"), b.get("debug_tool"),
+            vidpids or None, b.get("upstream_blob"),
         ))
     return rows
 
@@ -167,8 +187,10 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         if boards:
             conn.executemany(
                 "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
-                "mcu, frequency_mhz, vidpids, upstream_blob, json_blob) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "mcu, frequency_mhz, flash_kb, ram_kb, upload_speed, "
+                "upload_protocol, core, variant, homepage, frameworks, "
+                "connectivity, debug_tool, vidpids, upstream_blob) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 _board_rows(boards),
             )
         # Populate the FTS mirrors.
@@ -181,9 +203,12 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
             "SELECT rowid, vidpid, vid, pid, product FROM vidpid"
         )
         conn.execute(
-            "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, sublayer) "
+            "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, "
+            "                        sublayer, frameworks, connectivity) "
             "SELECT rowid, board_id, name, COALESCE(vendor,''), "
-            "       COALESCE(mcu,''), sublayer FROM boards"
+            "       COALESCE(mcu,''), sublayer, "
+            "       COALESCE(frameworks,''), COALESCE(connectivity,'') "
+            "FROM boards"
         )
         conn.commit()
         conn.execute("VACUUM")

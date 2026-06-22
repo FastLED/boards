@@ -3,6 +3,18 @@
 <head>
 <meta charset="utf-8">
 <title>FastLED/boards — USB VID:PID Lookup</title>
+<!-- Preload everything init() needs so download starts during HTML parse.
+     `crossorigin` is intentionally omitted: these are same-origin and the
+     actual request from the script/fetch is same-origin without
+     credentials, so adding crossorigin to the preload causes a
+     credentials-mode mismatch and the preload gets discarded. -->
+<link rel="preload" href="_meta.json"     as="fetch">
+<link rel="preload" href="memex.js"       as="script">
+<link rel="preload" href="memex-141.js"   as="script">
+<link rel="preload" href="memex-272.js"   as="script">
+<link rel="preload" href="memex-676.js"   as="script">
+<link rel="preload" href="memex-901.js"   as="script">
+<link rel="preload" href="sqlite3.wasm"   as="fetch" type="application/wasm">
 <style>
 :root { --bg:#fafafa; --fg:#222; --muted:#888; --hi:#1268d1; --hi-bg:#e6f0ff; --border:#ddd; }
 @media (prefers-color-scheme: dark) {
@@ -86,21 +98,9 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
 .btn.secondary { background:transparent; color:var(--hi); }
 .btn.secondary:hover { background:var(--hi-bg); }
 .btn + .btn { margin-left:.35rem; }
-#boardJsonModal { position:fixed; inset:0; background:rgba(0,0,0,.55);
-  display:none; align-items:center; justify-content:center; z-index:100; padding:1rem; }
-#boardJsonModal.open { display:flex; }
-#boardJsonModal .modal-body { background:var(--bg); color:var(--fg);
-  border-radius:8px; max-width:880px; width:100%; max-height:85vh;
-  display:flex; flex-direction:column; border:1px solid var(--border); }
-#boardJsonModal header { display:flex; align-items:center; gap:.6rem;
-  padding:.7rem 1rem; border-bottom:1px solid var(--border); }
-#boardJsonModal header .title { font-weight:600; font-size:.95rem; flex:1;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-#boardJsonModal pre { margin:0; padding:1rem; overflow:auto; flex:1;
-  font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-  background:var(--bg); color:var(--fg); white-space:pre; }
-#boardJsonModal .close { background:transparent; border:none; color:var(--fg);
-  font-size:1.4rem; line-height:1; cursor:pointer; padding:0 .3rem; }
+.board-chip-row { margin-top:.3rem; display:flex; flex-wrap:wrap; gap:.25rem; }
+.board-chip.board-chip-fw   { background:#5a8f3a; color:#fff; }
+.board-chip.board-chip-conn { background:#3a6ea5; color:#fff; }
 </style>
 </head>
 <body>
@@ -164,11 +164,11 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       </label>
     </div>
     <div id="boardOut" class="empty">
-      Type a board name (or board id, mcu, or vendor). Click
-      <span class="btn" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">View JSON</span>
-      on any result to inspect the full board definition; the
-      <span class="btn secondary" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">↗ source</span>
-      link goes to the upstream repo.
+      Type a board name (or board id, mcu, vendor, framework, or
+      connectivity feature like <code>wifi</code> or <code>can</code>).
+      Each result shows the board's structured data inline; click
+      <span class="btn" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">↗ source</span>
+      to view the original definition upstream.
     </div>
   </section>
 
@@ -180,16 +180,6 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   </footer>
 </div>
 
-<div id="boardJsonModal" role="dialog" aria-modal="true" aria-labelledby="boardJsonTitle">
-  <div class="modal-body">
-    <header>
-      <span class="title" id="boardJsonTitle"></span>
-      <button id="boardJsonCopy" class="btn secondary" type="button">⧉ copy</button>
-      <button class="close" id="boardJsonClose" aria-label="close">&times;</button>
-    </header>
-    <pre id="boardJsonBody">loading…</pre>
-  </div>
-</div>
 
 <script type="module">
 import { openMemexDb, query as _memexQuery } from './memex.js';
@@ -218,28 +208,62 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
 
   async function init() {
     try {
+      // Two independent fetches kicked off in parallel: the small _meta.json
+      // (so we can show vendor/product/board counts WITHOUT a COUNT(*) query
+      // — counting `boards` used to scan the whole table) and the DB worker
+      // (which downloads sqlite3.wasm + memex chunks before any SQL works).
+      const metaPromise = fetch('_meta.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null);
+
       // memex's openMemexDb threads `Accept-Encoding: identity` into every
       // ranged fetch, which is required for GH Pages to honor Range
       // (without it, Fastly returns the gzipped full file with HTTP 200).
       // See https://github.com/zackees/memex/blob/main/IMPLEMENT.md
+      // maxPageSize must match the DB's PRAGMA page_size — build is 1024.
       const url = new URL('site.db', location.href).href;
-      const handle = await openMemexDb(url, { maxPageSize: 4096, cacheSize: 4096 });
+      const dbPromise = openMemexDb(url, { maxPageSize: 1024, cacheSize: 8192 });
+
+      // Wire the UI BEFORE the DB finishes loading so the user can type while
+      // sqlite3.wasm + chunks are still arriving. Each search helper checks
+      // dbReady before running and re-runs whatever was typed last once the
+      // DB is up.
+      wireUp();
+
+      const [meta, handle] = await Promise.all([metaPromise, dbPromise]);
       db = handle.db;
       _close = handle.close;
-      const cv = await rows('SELECT COUNT(*) AS n FROM vid_vendor');
-      const cp = await rows('SELECT COUNT(*) AS n FROM vidpid');
-      let bc = 0;
-      try { bc = (await rows('SELECT COUNT(*) AS n FROM boards'))[0].n; } catch {}
+      dbReady = true;
+
+      const t = (meta && meta.totals) || {};
+      const cv = Number(t.vendors || 0);
+      const cp = Number(t.vidpid_rows || t.vidpid_keys || 0);
+      const bc = Number(t.boards || 0);
       $('dbStatus').textContent = 'database loaded (HTTP range-fetched)';
-      $('dbCounts').textContent = `${cv[0].n.toLocaleString()} vendors / `
-        + `${cp[0].n.toLocaleString()} products / `
+      $('dbCounts').textContent = `${cv.toLocaleString()} vendors / `
+        + `${cp.toLocaleString()} products / `
         + `${bc.toLocaleString()} boards`;
-      wireUp();
+
+      // Replay anything the user already typed while we were loading.
+      replayPending();
     } catch (e) {
       $('dbStatus').innerHTML = `<span class="err">failed: ${escapeHtml(e.message)}</span>`;
       console.error(e);
     }
   }
+
+  let dbReady = false;
+  // Latest-typed value per input — replayed once the DB comes online.
+  const _pendingByInput = new Map();
+  function replayPending() {
+    for (const [inputId, value] of _pendingByInput) {
+      const handler = _replayMap[inputId];
+      if (handler && value) handler(value).catch(err => console.error(err));
+    }
+    _pendingByInput.clear();
+  }
+  // Filled in wireUp() — maps input id → async fn that runs the search.
+  const _replayMap = {};
 
   // memex's query returns {columns: string[], rows: any[][]} — convert
   // each row to {col: value} so the rest of the code keeps using o.field.
@@ -603,7 +627,9 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
     const r = await rows(
       'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
-      '       b.vendor, b.mcu, b.frequency_mhz, b.vidpids, b.upstream_blob ' +
+      '       b.vendor, b.mcu, b.frequency_mhz, b.flash_kb, b.ram_kb, ' +
+      '       b.upload_speed, b.core, b.variant, b.homepage, ' +
+      '       b.frameworks, b.connectivity, b.vidpids, b.upstream_blob ' +
       'FROM boards b ' +
       'JOIN boards_fts f ON f.rowid = b.rowid ' +
       'WHERE boards_fts MATCH ? ' +
@@ -620,11 +646,19 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     let html = `<div class="stat">${r.length} board(s) match "${escapeHtml(q)}":</div>`;
     for (const b of r) html += renderBoardRow(b);
     out.innerHTML = html;
-    out.querySelectorAll('button[data-rowid]').forEach(btn => {
-      btn.addEventListener('click', () => openBoardJson(
-        parseInt(btn.getAttribute('data-rowid'), 10),
-        btn.getAttribute('data-title')));
-    });
+  }
+
+  function _kb(v) {
+    if (!v) return null;
+    if (v >= 1024) return (v / 1024).toFixed(v % 1024 === 0 ? 0 : 1) + ' MB';
+    return v + ' KB';
+  }
+
+  function _csvChips(csv, kind) {
+    if (!csv) return '';
+    return csv.split(',').map(s =>
+      `<span class="board-chip board-chip-${kind}">${escapeHtml(s.trim())}</span>`
+    ).join('');
   }
 
   function renderBoardRow(b) {
@@ -632,49 +666,26 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     const meta = [];
     if (b.mcu)            meta.push(escapeHtml(b.mcu));
     if (b.frequency_mhz)  meta.push(`${b.frequency_mhz} MHz`);
+    if (b.flash_kb)       meta.push(`${_kb(b.flash_kb)} flash`);
+    if (b.ram_kb)         meta.push(`${_kb(b.ram_kb)} RAM`);
     if (b.vidpids)        meta.push(escapeHtml(b.vidpids));
     const metaStr = meta.length ? `<div class="board-meta">${meta.join(' · ')}</div>` : '';
-    const chip = `<span class="board-chip">${escapeHtml(b.layer)}/${escapeHtml(b.sublayer)}</span>`;
-    const title = `${b.layer}/${b.sublayer}/${b.board_id}.json`;
-    const viewBtn = `<button class="btn" data-rowid="${b.rowid}" ` +
-      `data-title="${escapeHtml(title)}">View JSON</button>`;
+    const chips = _csvChips(b.frameworks, 'fw') + _csvChips(b.connectivity, 'conn');
+    const chipsRow = chips ? `<div class="board-chip-row">${chips}</div>` : '';
+    const layerChip = `<span class="board-chip">${escapeHtml(b.layer)}/${escapeHtml(b.sublayer)}</span>`;
     const srcBtn = b.upstream_blob
-      ? `<a class="btn secondary" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
+      ? `<a class="btn" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
+      : '';
+    const homepageBtn = b.homepage
+      ? `<a class="btn secondary" href="${escapeHtml(b.homepage)}" target="_blank" rel="noopener">↗ homepage</a>`
       : '';
     return `<div class="board-row">` +
-      `<div>${chip}${vendor}<span class="board-name">${escapeHtml(b.name)}</span> ` +
-      `<span class="board-meta">(${escapeHtml(b.board_id)})</span>${metaStr}</div>` +
-      `<div class="board-spacer"></div>${viewBtn}${srcBtn}</div>`;
+      `<div class="board-main">${layerChip}${vendor}` +
+      `<span class="board-name">${escapeHtml(b.name)}</span> ` +
+      `<span class="board-meta">(${escapeHtml(b.board_id)})</span>` +
+      `${metaStr}${chipsRow}</div>` +
+      `<div class="board-spacer"></div>${homepageBtn}${srcBtn}</div>`;
   }
-
-  let lastJsonRowid = null;
-  async function openBoardJson(rowid, title) {
-    const modal = $('boardJsonModal');
-    $('boardJsonTitle').textContent = title || `boards.rowid=${rowid}`;
-    $('boardJsonCopy').style.display = 'none';
-    $('boardJsonBody').textContent = 'loading…';
-    modal.classList.add('open');
-    lastJsonRowid = rowid;
-    try {
-      const r = await rows('SELECT json_blob FROM boards WHERE rowid = ?', [rowid]);
-      if (lastJsonRowid !== rowid) return;
-      const text = (r[0] && r[0].json_blob) || '';
-      let pretty = text;
-      try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
-      $('boardJsonBody').textContent = pretty;
-      $('boardJsonCopy').style.display = '';
-      $('boardJsonCopy').onclick = async () => {
-        try { await navigator.clipboard.writeText(pretty);
-              $('boardJsonCopy').textContent = '✓ copied';
-              setTimeout(() => { $('boardJsonCopy').textContent = '⧉ copy'; }, 1500);
-        } catch {}
-      };
-    } catch (e) {
-      $('boardJsonBody').textContent = `failed to load board #${rowid}\n\n${e.message}`;
-    }
-  }
-
-  function closeBoardJson() { $('boardJsonModal').classList.remove('open'); }
 
   // Each search issues several FTS5 lookups that round-trip through HTTP
   // range requests; debounce a bit longer than for the old in-memory DB.
@@ -687,17 +698,26 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     return (e) => { fn(e).catch(err => console.error(err)); };
   }
 
+  // Wrap a search function so that:
+  // - Before the DB is ready, the latest typed value is remembered and
+  //   replayed once init finishes.
+  // - After the DB is ready, the search runs immediately on each input.
+  function gated(inputId, fn) {
+    _replayMap[inputId] = fn;   // for replay after init
+    return (e) => {
+      const v = e.target.value;
+      if (!dbReady) { _pendingByInput.set(inputId, v); return; }
+      fn(v).catch(err => console.error(err));
+    };
+  }
+
   function wireUp() {
-    $('uniIn').addEventListener('input', debounced(asyncHandler(e => universalSearch(e.target.value))));
-    $('vidIn').addEventListener('input', debounced(asyncHandler(e => searchVendorByVid(e.target.value))));
-    $('vendorIn').addEventListener('input', debounced(asyncHandler(e => searchVendorByName(e.target.value))));
-    $('vidpidIn').addEventListener('input', debounced(asyncHandler(e => searchProductByVidPid(e.target.value))));
-    $('productIn').addEventListener('input', debounced(asyncHandler(e => searchProductByName(e.target.value))));
-    $('boardIn').addEventListener('input', debounced(asyncHandler(e => searchBoards(e.target.value))));
-    $('boardJsonClose').addEventListener('click', closeBoardJson);
-    $('boardJsonModal').addEventListener('click', e => {
-      if (e.target.id === 'boardJsonModal') closeBoardJson();
-    });
+    $('uniIn').addEventListener('input', debounced(gated('uniIn', universalSearch)));
+    $('vidIn').addEventListener('input', debounced(gated('vidIn', searchVendorByVid)));
+    $('vendorIn').addEventListener('input', debounced(gated('vendorIn', searchVendorByName)));
+    $('vidpidIn').addEventListener('input', debounced(gated('vidpidIn', searchProductByVidPid)));
+    $('productIn').addEventListener('input', debounced(gated('productIn', searchProductByName)));
+    $('boardIn').addEventListener('input', debounced(gated('boardIn', searchBoards)));
     // Universal-search overlay: dismiss on Esc / click outside; re-show on
     // focus if there's still text in the input.
     $('uniIn').addEventListener('keydown', e => {
@@ -718,9 +738,7 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       hideUniOverlay();
     });
     document.addEventListener('keydown', e => {
-      if (e.key !== 'Escape') return;
-      if ($('boardJsonModal').classList.contains('open')) { closeBoardJson(); return; }
-      if (!$('uniOut').hasAttribute('hidden')) hideUniOverlay();
+      if (e.key === 'Escape' && !$('uniOut').hasAttribute('hidden')) hideUniOverlay();
     });
     $('uniIn').focus();
   }
