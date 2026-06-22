@@ -184,7 +184,18 @@ export async function searchUniversal(text, query) {
     const bByName = await query(
       `SELECT ${BOARD_COLUMNS} ` +
         'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
-        'WHERE boards_fts MATCH ? ORDER BY b.name COLLATE NOCASE LIMIT 20',
+        // ORDER BY rank uses FTS5's built-in BM25 so name matches
+        // float to the top. With ORDER BY b.name we'd just take
+        // alphabetically-first 20 hits, dropping highly-relevant
+        // boards like "Seeed Tiny BLE" out of a Tiny BLE search.
+        //
+        // HISTORICAL: BM25 ordering had been used here previously,
+        // then degraded to ORDER BY name (allegedly for perf — the
+        // hit was livable). Restoring it because the perf cost is
+        // dwarfed by the search-quality recovery; see
+        // tests/test_board_name_combos.py for the regression that
+        // exposed the degradation.
+        'WHERE boards_fts MATCH ? ORDER BY rank LIMIT 20',
       [fts],
     );
     for (const r of bByName) {
@@ -297,7 +308,10 @@ export async function searchBoard(text, query) {
   const rows = await query(
     `SELECT ${BOARD_COLUMNS} ` +
       'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
-      'WHERE boards_fts MATCH ? ORDER BY b.name COLLATE NOCASE LIMIT 20',
+      // ORDER BY rank — see HISTORICAL note in searchUniversal above.
+      // BM25 keeps name-matched boards at the top instead of taking
+      // an alphabetical slice that drops the relevant hits.
+      'WHERE boards_fts MATCH ? ORDER BY rank LIMIT 20',
     [fts]);
   const nameLc = q.toLowerCase();
   const boards = rows.map((row) => ({
