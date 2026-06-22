@@ -671,11 +671,11 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       // (typing 'esp32dev' returns esp32dev variants) the relevance
       // ordering doesn't help — exact matches sort adjacent anyway.
       'ORDER BY b.name COLLATE NOCASE ' +
-      // LIMIT 15: an autocomplete-style cap. Each matched row is one
-      // page read on the CDN (~50 ms RTT) — 20 was ~1.0-1.4 s on broad
-      // queries like 'arduino' (matches ~700 boards), 15 keeps it
-      // ≤ 1.5 s. User can type more chars to narrow further.
-      'LIMIT 15',
+      // LIMIT 20: autocomplete cap. Specific searches (e.g.
+      // "esp32dev") return ~400-700 ms; broad concept searches
+      // ("wifi" / "can" / "arduino" match hundreds of boards each)
+      // settle around 1.0-1.7 s depending on CDN cache state.
+      'LIMIT 20',
       [fts]
     );
     if (!r.length) {
