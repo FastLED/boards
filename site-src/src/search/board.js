@@ -7,6 +7,7 @@ import {
   hideUniOverlay,
   renderCombined,
   showUniOverlay,
+  showUniOverlaySpinner,
 } from '../render/overlay.js';
 import { ftsQuery } from '../util/fts.js';
 import { searchBoard } from './engine.js';
@@ -25,6 +26,7 @@ export async function boardOnly(raw) {
     showUniOverlay('nothing to search.', 'empty');
     return;
   }
+  showUniOverlaySpinner();
   const data = await searchBoard(q, query);
   renderCombined(q, data);
 }

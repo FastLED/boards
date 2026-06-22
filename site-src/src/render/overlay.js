@@ -23,6 +23,22 @@ export function hideUniOverlay() {
 }
 
 /**
+ * Show a small spinner inside the overlay while the search awaits.
+ * Placed where the results will eventually land so the user's gaze
+ * stays in one spot — renderCombined() (or showUniOverlay('no
+ * matches…')) overwrites the spinner the moment the query resolves.
+ */
+export function showUniOverlaySpinner() {
+  showUniOverlay(
+    '<div class="spinner-row" role="status" aria-live="polite">' +
+      '<span class="spinner" aria-hidden="true"></span>' +
+      '<span>Searching…</span>' +
+    '</div>',
+    'loading',
+  );
+}
+
+/**
  * Render any combination of categories into the overlay. Single-mode
  * searches leave the other arrays empty. Best Hits is a score-ranked
  * union threshold-filtered to ≥ 600.

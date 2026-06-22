@@ -63,6 +63,43 @@
   color: #c44;
 }
 
+/* Spinner state — fires for any in-flight search. Replaced by
+   renderCombined() or the empty-state message when the query
+   resolves, so the spinner is only visible for the duration of
+   the await. Kept compact so a 5ms cached query flicker is
+   visually quiet, while a multi-hundred-ms FTS5 query shows
+   real motion. */
+.uni-overlay.loading {
+  color: var(--muted);
+}
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: uni-spin 0.7s linear infinite;
+}
+@keyframes uni-spin {
+  to { transform: rotate(360deg); }
+}
+/* Respect reduced-motion preferences — keep the spinner but stop
+   the rotation so it doesn't trigger vestibular disorders. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: currentColor;
+    opacity: 0.4;
+  }
+}
+
 .search-row {
   align-items: flex-end;
 }
