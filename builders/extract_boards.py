@@ -49,6 +49,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import re
 import sys
 from typing import Any
 
@@ -289,6 +290,25 @@ def _is_numeric(s: str) -> bool:
     return False
 
 
+_TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
+
+
+def _filter_stop_tokens(s: str) -> str:
+    """Tokenize `s` using the same alphanumeric+underscore rule
+    FTS5's unicode61 tokenizer uses, drop tokens whose lowercase form
+    is in _STOP_WORDS, and rejoin with spaces.
+
+    Token-level filter applied at INDEX time. Must stay in lockstep
+    with the JS ftsQuery() filter at QUERY time (site-src/src/util/
+    fts.js) so the same words are stripped on both sides — otherwise
+    queries would contain tokens that can't possibly match the
+    filtered index.
+    """
+    tokens = _TOKEN_RE.findall(s)
+    kept = [t for t in tokens if t.lower() not in _STOP_WORDS]
+    return " ".join(kept)
+
+
 def _collect_keywords(obj: Any, sink: set[str], max_len: int = 200) -> None:
     """Recursively walk the per-board JSON and gather every string value
     that looks like it could be a search term users would type. Used to
@@ -302,6 +322,10 @@ def _collect_keywords(obj: Any, sink: set[str], max_len: int = 200) -> None:
       - URLs (http:// or https://)
       - template placeholders (contain `{` or `}`)
       - purely numeric literals (parseable as int / 0x-int / float)
+      - whole-string stop-word matches
+    Then the surviving string is tokenized and stop tokens are
+    stripped at token level too, so a multi-word string like
+    "Default with spiffs" becomes "with spiffs" before it's added.
     Dict KEYS are intentionally NOT collected — they're schema labels
     (menu, build, hwids, …) and would only add noise.
     """
@@ -318,7 +342,10 @@ def _collect_keywords(obj: Any, sink: set[str], max_len: int = 200) -> None:
             return
         if sl in _STOP_WORDS:
             return
-        sink.add(s)
+        filtered = _filter_stop_tokens(s)
+        if not filtered.strip():
+            return
+        sink.add(filtered)
     elif isinstance(obj, dict):
         for v in obj.values():
             _collect_keywords(v, sink, max_len)
