@@ -11,11 +11,13 @@ Runs (in order):
   4. extract_other.py      on  <data-root>/other/      -> normalized/other.json
   5. merge.py              -> merged.json + errors/{vendor,product}-conflicts.log
   6. extract_boards.py     on  <data-root>            -> normalized/boards.json
-  7. copies each platformio/arduino board JSON into <out>/boards/<layer>/<...>.json
-  8. build_sqlite.py       -> <out>/site.db (includes the `boards` table)
-  9. copies templates/index.html      -> <out>/index.html
- 10. downloads pinned sql-wasm.js/.wasm assets from the GitHub release
- 11. writes <out>/_meta.json + <out>/errors/  (the errors folder ships with
+                                                          (json_text inlined)
+  7. build_sqlite.py       -> <out>/site.db (boards + boards_fts, json_blob
+                              column carries each upstream board JSON)
+  8. copies templates/index.html      -> <out>/index.html
+  9. downloads sql.js-httpvfs (index.js + sqlite.worker.js + sql-wasm.wasm)
+     so the portal can serve the DB via HTTP Range requests
+ 10. writes <out>/_meta.json + <out>/errors/  (the errors folder ships with
      the site so humans can inspect what was logged)
 
 Each extractor / merger / builder is also runnable standalone — this script
@@ -36,9 +38,9 @@ import sys
 import urllib.request
 
 
-SQLJS_VERSION = "1.10.3"
-SQLJS_BASE = ("https://github.com/sql-js/sql.js/releases/download/"
-              f"v{SQLJS_VERSION}/sqljs-wasm.zip")
+SQLJS_HTTPVFS_VERSION = "0.8.12"
+SQLJS_HTTPVFS_BASE = ("https://cdn.jsdelivr.net/npm/"
+                      f"sql.js-httpvfs@{SQLJS_HTTPVFS_VERSION}/dist")
 HERE = pathlib.Path(__file__).resolve().parent
 
 
@@ -59,59 +61,27 @@ def _ssl_ctx() -> ssl.SSLContext:
     return c
 
 
-def _copy_board_jsons(boards: list[dict], data_root: pathlib.Path,
-                       out_dir: pathlib.Path) -> int:
-    """Stage each upstream board JSON into <out>/boards/<layer>/<src_relpath>.
-
-    The data branches put their per-board JSONs at either
-    `<branch-root>/data/<sublayer>/boards/<id>.json` or directly at
-    `<branch-root>/<sublayer>/boards/<id>.json` (depending on the sync).
-    Tolerate both."""
-    copied = 0
-    missing = 0
-    for b in boards:
-        layer = b["layer"]
-        relpath = b["src_relpath"]
-        src_data = data_root / layer / "data" / relpath
-        src_flat = data_root / layer / relpath
-        src = src_data if src_data.is_file() else (src_flat if src_flat.is_file() else None)
-        if src is None:
-            missing += 1
-            continue
-        dst = out_dir / "boards" / layer / relpath
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, dst)
-        copied += 1
-    print(f"site: staged {copied} board JSONs into {out_dir/'boards'} "
-          f"({missing} missing)", file=sys.stderr)
-    return copied
+_HTTPVFS_ASSETS = ("index.js", "sqlite.worker.js", "sql-wasm.wasm")
 
 
-def _download_sqljs(out_dir: pathlib.Path) -> None:
-    """Fetch sql-wasm.js + sql-wasm.wasm from the pinned sql.js release."""
-    import io, zipfile
-    req = urllib.request.Request(SQLJS_BASE, headers={
-        "User-Agent": "fbuild-bot/1.0 (+https://github.com/FastLED/boards)"
-    })
-    print(f"site: downloading {SQLJS_BASE}", file=sys.stderr)
-    with urllib.request.urlopen(req, timeout=60, context=_ssl_ctx()) as r:
-        blob = r.read()
-    with zipfile.ZipFile(io.BytesIO(blob)) as zf:
-        js_entry = wasm_entry = None
-        for n in zf.namelist():
-            if n.endswith("/sql-wasm.js") or n == "sql-wasm.js":
-                js_entry = n
-            elif n.endswith("/sql-wasm.wasm") or n == "sql-wasm.wasm":
-                wasm_entry = n
-        if not js_entry or not wasm_entry:
-            raise RuntimeError(
-                f"sqljs archive missing sql-wasm.{{js,wasm}}: entries={zf.namelist()[:6]}"
-            )
-        (out_dir / "sql-wasm.js").write_bytes(zf.read(js_entry))
-        (out_dir / "sql-wasm.wasm").write_bytes(zf.read(wasm_entry))
-    print(f"site: staged sql-wasm.js ({(out_dir/'sql-wasm.js').stat().st_size:,} B) + "
-          f"sql-wasm.wasm ({(out_dir/'sql-wasm.wasm').stat().st_size:,} B)",
-          file=sys.stderr)
+def _download_sqljs_httpvfs(out_dir: pathlib.Path) -> None:
+    """Fetch sql.js-httpvfs (index.js + sqlite.worker.js + sql-wasm.wasm)
+    from jsdelivr. Staged as <out>/sql-httpvfs.js + <out>/sqlite.worker.js
+    + <out>/sql-wasm.wasm so the portal serves them same-origin."""
+    for asset in _HTTPVFS_ASSETS:
+        url = f"{SQLJS_HTTPVFS_BASE}/{asset}"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "fbuild-bot/1.0 (+https://github.com/FastLED/boards)"
+        })
+        print(f"site: downloading {url}", file=sys.stderr)
+        with urllib.request.urlopen(req, timeout=60, context=_ssl_ctx()) as r:
+            blob = r.read()
+        # Rename index.js -> sql-httpvfs.js so its purpose is obvious in the
+        # bundle; the other two keep their package names because the worker
+        # internally references sql-wasm.wasm by that path.
+        out_name = "sql-httpvfs.js" if asset == "index.js" else asset
+        (out_dir / out_name).write_bytes(blob)
+        print(f"site: staged {out_name} ({len(blob):,} B)", file=sys.stderr)
 
 
 def orchestrate(
@@ -148,21 +118,16 @@ def orchestrate(
         "--errors-dir",     str(errors_dir),
     )
 
-    # 6: per-board metadata extraction
+    # 6: per-board metadata extraction (json_text inlined into each record)
     boards_path = normalized / "boards.json"
     _run_script(
         HERE / "extract_boards.py",
         "--in",  str(data_root),
         "--out", str(boards_path),
     )
-
-    # 7: copy each board JSON into the published bundle so the portal's
-    # "View JSON" button is a static fetch.
     boards_data = json.loads(boards_path.read_text(encoding="utf-8"))
-    boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
-                                       data_root, out_dir)
 
-    # 8: sqlite (now includes the `boards` table)
+    # 7: sqlite (boards + boards_fts + json_blob)
     _run_script(
         HERE / "build_sqlite.py",
         "--merged", str(merged_path),
@@ -170,18 +135,18 @@ def orchestrate(
         "--out",    str(out_dir / "site.db"),
     )
 
-    # 9: copy demo HTML
+    # 8: copy demo HTML
     shutil.copyfile(HERE / "templates" / "index.html", out_dir / "index.html")
 
-    # 10: sql.js
+    # 9: sql.js-httpvfs
     if not skip_sqljs:
-        _download_sqljs(out_dir)
+        _download_sqljs_httpvfs(out_dir)
 
-    # 11: _meta.json
+    # 10: _meta.json
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
     stats = merged.get("stats", {})
     meta = {
-        "schema_version": 3,
+        "schema_version": 4,
         "generated_at":   _now_iso(),
         "trigger":        os.environ.get("GITHUB_EVENT_NAME", "manual"),
         "totals": {
@@ -190,7 +155,6 @@ def orchestrate(
             "vidpid_rows":           stats.get("total_vidpid_rows", 0),
             "vidpid_alternates":     stats.get("vidpid_alternates", 0),
             "boards":                len(boards_data.get("boards") or []),
-            "board_jsons_copied":    boards_copied,
         },
         "warnings":         stats.get("warnings", {}),
         "severity_counts":  stats.get("severity_counts", {}),
@@ -199,7 +163,8 @@ def orchestrate(
         "warnings_folder":  "warnings/",
         "database":         "site.db",
         "demo":             "index.html",
-        "boards_root":      "boards/",
+        "loader":           "sql-httpvfs.js",
+        "sqljs_httpvfs_version": SQLJS_HTTPVFS_VERSION,
     }
     (out_dir / "_meta.json").write_text(
         json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"

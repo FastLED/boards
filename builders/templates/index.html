@@ -165,14 +165,14 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   <div class="modal-body">
     <header>
       <span class="title" id="boardJsonTitle"></span>
-      <a id="boardJsonRaw" class="btn secondary" target="_blank" rel="noopener">↗ raw</a>
+      <button id="boardJsonCopy" class="btn secondary" type="button">⧉ copy</button>
       <button class="close" id="boardJsonClose" aria-label="close">&times;</button>
     </header>
     <pre id="boardJsonBody">loading…</pre>
   </div>
 </div>
 
-<script src="sql-wasm.js"></script>
+<script src="sql-httpvfs.js"></script>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -181,19 +181,44 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   const norm4 = (s) => (s || '').trim().toLowerCase().replace(/^0x/, '').padStart(4, '0').slice(-4);
   const isHex = (s, n) => new RegExp(`^[0-9a-f]{1,${n}}$`).test(s.toLowerCase().replace(/^0x/, ''));
 
-  let db = null;
+  // FTS5 prefix-AND query from a free-text input. Strips punctuation,
+  // tokenizes on whitespace, appends * to each token. Returns null if
+  // nothing meaningful is left to search for.
+  function ftsQuery(s) {
+    const tokens = (s || '').toLowerCase()
+      .replace(/[^a-z0-9_\s]/g, ' ')
+      .split(/\s+/)
+      .filter(t => t.length > 0);
+    if (!tokens.length) return null;
+    return tokens.map(t => `${t}*`).join(' ');
+  }
+
+  let dbWorker = null;
+  let db = null;   // worker.db proxy — methods return Promises
 
   async function init() {
     try {
-      const SQL = await initSqlJs({ locateFile: f => f });
-      const resp = await fetch('site.db');
-      if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching site.db`);
-      const buf = await resp.arrayBuffer();
-      db = new SQL.Database(new Uint8Array(buf));
-      const nv = db.exec("SELECT COUNT(*) FROM vid_vendor")[0].values[0][0];
-      const np = db.exec("SELECT COUNT(*) FROM vidpid")[0].values[0][0];
-      $('dbStatus').textContent = 'database loaded';
-      $('dbCounts').textContent = `${nv.toLocaleString()} vendors / ${np.toLocaleString()} products`;
+      if (typeof createDbWorker !== 'function') {
+        throw new Error('sql.js-httpvfs not loaded (createDbWorker missing)');
+      }
+      dbWorker = await createDbWorker(
+        [{ from: 'inline', config: {
+            serverMode: 'full',
+            url: 'site.db',
+            requestChunkSize: 4096,
+        }}],
+        'sqlite.worker.js',
+        'sql-wasm.wasm'
+      );
+      db = dbWorker.db;
+      const cv = await rows('SELECT COUNT(*) AS n FROM vid_vendor');
+      const cp = await rows('SELECT COUNT(*) AS n FROM vidpid');
+      let bc = 0;
+      try { bc = (await rows('SELECT COUNT(*) AS n FROM boards'))[0].n; } catch {}
+      $('dbStatus').textContent = 'database loaded (HTTP range-fetched)';
+      $('dbCounts').textContent = `${cv[0].n.toLocaleString()} vendors / `
+        + `${cp[0].n.toLocaleString()} products / `
+        + `${bc.toLocaleString()} boards`;
       wireUp();
     } catch (e) {
       $('dbStatus').innerHTML = `<span class="err">failed: ${escapeHtml(e.message)}</span>`;
@@ -201,13 +226,9 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     }
   }
 
-  function rows(sql, params) {
-    const stmt = db.prepare(sql);
-    stmt.bind(params || []);
-    const out = [];
-    while (stmt.step()) out.push(stmt.getAsObject());
-    stmt.free();
-    return out;
+  // sql.js-httpvfs's worker.db.query returns Array<Object> — already shaped.
+  async function rows(sql, params) {
+    return await db.query(sql, params || []);
   }
 
   function fmtVid(v)    { return `<span class="k">0x${escapeHtml(v)}</span>`; }
@@ -246,34 +267,41 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     out.innerHTML = html;
   }
 
-  function searchVendorByVid(input) {
+  async function searchVendorByVid(input) {
     const out = $('vendorOut');
     if (!input) { out.className='empty'; out.innerHTML='Enter a 4-hex VID or a name fragment.'; return; }
     if (!isHex(input, 4)) { out.className='err'; out.innerHTML='VID must be 1-4 hex digits.'; return; }
     const vid = norm4(input);
-    const exact = rows('SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
+    const exact = await rows('SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
     if (exact.length) return renderVendor(out, exact, `<div class="stat">exact match for VID 0x${vid}:</div>`);
-    // Fallback: prefix match
-    const pref = rows(
-      'SELECT vid, vendor, source FROM vid_vendor WHERE vid LIKE ? ORDER BY vid LIMIT 50',
-      [`${vid.replace(/0+$/, '')}%`]
+    // Prefix lookup via FTS5 (vid column is tokenized so 'abc*' matches 'abc?').
+    const cleaned = input.toLowerCase().replace(/^0x/, '');
+    const pref = await rows(
+      'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv '
+      + 'JOIN vid_vendor_fts f ON f.rowid = vv.rowid '
+      + 'WHERE vid_vendor_fts MATCH ? ORDER BY vv.vid LIMIT 50',
+      [`vid:${cleaned}*`]
     );
     renderVendor(out, pref, `<div class="stat">no exact match; ${pref.length} prefix match(es):</div>`);
   }
 
-  function searchVendorByName(name) {
+  async function searchVendorByName(name) {
     const out = $('vendorOut');
     if (!name || name.length < 2) {
       out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
     }
-    const r = rows(
-      "SELECT vid, vendor, source FROM vid_vendor WHERE vendor LIKE ? ORDER BY vendor LIMIT 50",
-      [`%${name}%`]
+    const fts = ftsQuery(name);
+    if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
+    const r = await rows(
+      'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv '
+      + 'JOIN vid_vendor_fts f ON f.rowid = vv.rowid '
+      + 'WHERE vid_vendor_fts MATCH ? ORDER BY vv.vendor LIMIT 50',
+      [`vendor:${fts}`]
     );
     renderVendor(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
   }
 
-  function searchProductByVidPid(input) {
+  async function searchProductByVidPid(input) {
     const out = $('productOut');
     if (!input) { out.className='empty'; out.innerHTML='Enter a VID:PID or a name fragment.'; return; }
     const cleaned = input.toLowerCase().replace(/^0x/, '').replace(/[:\s]/g, '');
@@ -281,14 +309,13 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       out.className='err'; out.innerHTML='VID:PID must be hex digits (e.g. <code>303a:1001</code>).'; return;
     }
     if (cleaned.length === 8) {
-      // Multi-row aware: primary first (is_primary=1), then alternates.
-      const exact = rows(
+      const exact = await rows(
         'SELECT vid, pid, product, source, is_primary FROM vidpid WHERE vidpid = ? '
         + 'ORDER BY is_primary DESC, product',
         [cleaned]
       );
       if (exact.length) {
-        const v = rows('SELECT vendor FROM vid_vendor WHERE vid = ?', [exact[0].vid]);
+        const v = await rows('SELECT vendor FROM vid_vendor WHERE vid = ?', [exact[0].vid]);
         const altNote = exact.length > 1
           ? ` &mdash; <span class="src">${exact.length - 1} alternate(s)</span>` : '';
         const hdr = v.length
@@ -297,23 +324,27 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
         return renderProduct(out, exact, hdr);
       }
     }
-    const r = rows(
-      'SELECT vid, pid, product, source, is_primary FROM vidpid WHERE vidpid LIKE ? '
-      + 'ORDER BY vidpid, is_primary DESC LIMIT 50',
-      [`${cleaned}%`]
+    const r = await rows(
+      'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp '
+      + 'JOIN vidpid_fts f ON f.rowid = vp.rowid '
+      + 'WHERE vidpid_fts MATCH ? ORDER BY vp.vidpid, vp.is_primary DESC LIMIT 50',
+      [`vidpid:${cleaned}*`]
     );
     renderProduct(out, r, `<div class="stat">${r.length} match(es) for prefix <code>${escapeHtml(cleaned)}</code>:</div>`);
   }
 
-  function searchProductByName(name) {
+  async function searchProductByName(name) {
     const out = $('productOut');
     if (!name || name.length < 2) {
       out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
     }
-    const r = rows(
-      "SELECT vid, pid, product, source, is_primary FROM vidpid WHERE product LIKE ? "
-      + "ORDER BY product, is_primary DESC LIMIT 80",
-      [`%${name}%`]
+    const fts = ftsQuery(name);
+    if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
+    const r = await rows(
+      'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp '
+      + 'JOIN vidpid_fts f ON f.rowid = vp.rowid '
+      + 'WHERE vidpid_fts MATCH ? ORDER BY vp.product, vp.is_primary DESC LIMIT 80',
+      [`product:${fts}`]
     );
     renderProduct(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
   }
@@ -343,7 +374,7 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     }
   }
 
-  function universalSearch(raw) {
+  async function universalSearch(raw) {
     const out = $('uniOut');
     const query = (raw || '').trim();
     if (!query) {
@@ -355,36 +386,38 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     const hex = query.toLowerCase().replace(/^0x/, '').replace(/[:\s\-_]+/g, '');
     const isPureHex = /^[0-9a-f]+$/.test(hex) && hex.length > 0;
     const nameLc = query.toLowerCase();
+    const fts = ftsQuery(query);
     const vendors = [];   // [{row, score, why}]
     const products = [];
     const vidKey = r => r.vid;
     const prodKey = r => `${r.vid}${r.pid}|${r.product}`;
 
-    // 1. Hex-based lookups -------------------------------------------------
+    // 1. Hex-based lookups — direct b-tree hits (cheap under byte-range) ---
     if (isPureHex && hex.length <= 4) {
       const vid = hex.padStart(4, '0');
-      const exact = rows(
+      const exact = await rows(
         'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
       for (const r of exact) bumpOrPush(vendors, vidKey, r, 1000, 'exact VID');
 
       if (hex.length < 4) {
-        const pref = rows(
-          'SELECT vid, vendor, source FROM vid_vendor WHERE vid LIKE ? ' +
-          'ORDER BY vid LIMIT 50', [`${hex}%`]);
+        // FTS5 prefix on the vid column.
+        const pref = await rows(
+          'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
+          'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
+          'WHERE vid_vendor_fts MATCH ? LIMIT 50',
+          [`vid:${hex}*`]);
         for (const r of pref) {
           if (r.vid !== vid) bumpOrPush(vendors, vidKey, r, 400, 'VID prefix');
         }
       }
 
-      // Same-VID products.
-      const vp = rows(
+      const vp = await rows(
         'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
         'WHERE vid = ? ORDER BY is_primary DESC, product LIMIT 50', [vid]);
       for (const r of vp) bumpOrPush(products, prodKey, r, 600, 'same VID');
 
-      // 4-hex could also be a PID — try PID-only too.
       if (hex.length === 4) {
-        const pidHits = rows(
+        const pidHits = await rows(
           'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
           'WHERE pid = ? ORDER BY is_primary DESC, product LIMIT 50', [hex]);
         for (const r of pidHits) {
@@ -393,39 +426,43 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       }
     } else if (isPureHex && hex.length >= 5 && hex.length <= 8) {
       if (hex.length === 8) {
-        const exact = rows(
+        const exact = await rows(
           'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
           'WHERE vidpid = ? ORDER BY is_primary DESC, product', [hex]);
         for (const r of exact) bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID');
         const vid = hex.slice(0, 4);
-        const v = rows(
+        const v = await rows(
           'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
         for (const r of v) bumpOrPush(vendors, vidKey, r, 800, 'vendor of VID:PID');
       } else {
-        const pref = rows(
-          'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
-          'WHERE vidpid LIKE ? ORDER BY is_primary DESC, product LIMIT 50',
-          [`${hex}%`]);
+        const pref = await rows(
+          'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
+          'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
+          'WHERE vidpid_fts MATCH ? ORDER BY vp.is_primary DESC, vp.product LIMIT 50',
+          [`vidpid:${hex}*`]);
         for (const r of pref) bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix');
         const vid = hex.slice(0, 4);
-        const v = rows(
+        const v = await rows(
           'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
         for (const r of v) bumpOrPush(vendors, vidKey, r, 600, 'vendor of VID');
       }
     }
 
-    // 2. Name-based lookups (always — hex like "abc" can appear in names) --
-    if (query.length >= 2) {
-      const vByName = rows(
-        'SELECT vid, vendor, source FROM vid_vendor WHERE vendor LIKE ? ' +
-        'ORDER BY vendor LIMIT 80', [`%${nameLc}%`]);
+    // 2. Name-based lookups via FTS5 ---------------------------------------
+    if (fts && query.length >= 2) {
+      const vByName = await rows(
+        'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
+        'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
+        'WHERE vid_vendor_fts MATCH ? LIMIT 80',
+        [`vendor:${fts}`]);
       for (const r of vByName) {
         bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
       }
-      const pByName = rows(
-        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
-        'WHERE product LIKE ? ORDER BY product, is_primary DESC LIMIT 120',
-        [`%${nameLc}%`]);
+      const pByName = await rows(
+        'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
+        'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
+        'WHERE vidpid_fts MATCH ? LIMIT 120',
+        [`product:${fts}`]);
       for (const r of pByName) {
         bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name');
       }
@@ -506,15 +543,15 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   // per upstream board JSON plus a relative json_url into the published
   // bundle, so "View JSON" is just a fetch against this same origin.
 
-  function hasBoardsTable() {
+  async function hasBoardsTable() {
     try {
-      const r = db.exec(
+      const r = await rows(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='boards'");
-      return r.length > 0 && r[0].values.length > 0;
+      return r.length > 0;
     } catch { return false; }
   }
 
-  function searchBoards(raw) {
+  async function searchBoards(raw) {
     const out = $('boardOut');
     const q = (raw || '').trim();
     if (!q) {
@@ -527,24 +564,22 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       out.innerHTML = 'Enter at least 2 characters.';
       return;
     }
-    if (!hasBoardsTable()) {
+    if (!(await hasBoardsTable())) {
       out.className = 'err';
       out.innerHTML = 'this database was built before board definitions were tracked — wait for the next site rebuild.';
       return;
     }
-    const like = `%${q}%`;
-    const r = rows(
-      'SELECT board_id, layer, sublayer, name, vendor, mcu, frequency_mhz, ' +
-      '       vidpids, json_url, upstream_blob ' +
-      'FROM boards ' +
-      'WHERE name LIKE ? OR board_id LIKE ? OR vendor LIKE ? OR mcu LIKE ? ' +
-      'ORDER BY ' +
-      '  CASE WHEN LOWER(board_id) = LOWER(?) THEN 0 ' +
-      '       WHEN LOWER(name)     = LOWER(?) THEN 1 ' +
-      '       WHEN LOWER(name) LIKE LOWER(?) THEN 2 ELSE 3 END, ' +
-      '  name COLLATE NOCASE ' +
+    const fts = ftsQuery(q);
+    if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
+    const r = await rows(
+      'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
+      '       b.vendor, b.mcu, b.frequency_mhz, b.vidpids, b.upstream_blob ' +
+      'FROM boards b ' +
+      'JOIN boards_fts f ON f.rowid = b.rowid ' +
+      'WHERE boards_fts MATCH ? ' +
+      'ORDER BY bm25(boards_fts), b.name ' +
       'LIMIT 60',
-      [like, like, like, like, q, q, `${q}%`]
+      [fts]
     );
     if (!r.length) {
       out.className = 'empty';
@@ -555,10 +590,9 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     let html = `<div class="stat">${r.length} board(s) match "${escapeHtml(q)}":</div>`;
     for (const b of r) html += renderBoardRow(b);
     out.innerHTML = html;
-    // Wire up the View buttons.
-    out.querySelectorAll('button[data-json-url]').forEach(btn => {
+    out.querySelectorAll('button[data-rowid]').forEach(btn => {
       btn.addEventListener('click', () => openBoardJson(
-        btn.getAttribute('data-json-url'),
+        parseInt(btn.getAttribute('data-rowid'), 10),
         btn.getAttribute('data-title')));
     });
   }
@@ -572,7 +606,7 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     const metaStr = meta.length ? `<div class="board-meta">${meta.join(' · ')}</div>` : '';
     const chip = `<span class="board-chip">${escapeHtml(b.layer)}/${escapeHtml(b.sublayer)}</span>`;
     const title = `${b.layer}/${b.sublayer}/${b.board_id}.json`;
-    const viewBtn = `<button class="btn" data-json-url="${escapeHtml(b.json_url)}" ` +
+    const viewBtn = `<button class="btn" data-rowid="${b.rowid}" ` +
       `data-title="${escapeHtml(title)}">View JSON</button>`;
     const srcBtn = b.upstream_blob
       ? `<a class="btn secondary" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
@@ -583,43 +617,53 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       `<div class="board-spacer"></div>${viewBtn}${srcBtn}</div>`;
   }
 
-  let lastJsonUrl = null;
-  async function openBoardJson(url, title) {
+  let lastJsonRowid = null;
+  async function openBoardJson(rowid, title) {
     const modal = $('boardJsonModal');
-    $('boardJsonTitle').textContent = title || url;
-    $('boardJsonRaw').href = url;
+    $('boardJsonTitle').textContent = title || `boards.rowid=${rowid}`;
+    $('boardJsonCopy').style.display = 'none';
     $('boardJsonBody').textContent = 'loading…';
     modal.classList.add('open');
-    lastJsonUrl = url;
+    lastJsonRowid = rowid;
     try {
-      const resp = await fetch(url, { cache: 'force-cache' });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const text = await resp.text();
-      if (lastJsonUrl !== url) return;   // user switched while we were loading
-      try {
-        $('boardJsonBody').textContent = JSON.stringify(JSON.parse(text), null, 2);
-      } catch {
-        $('boardJsonBody').textContent = text;
-      }
+      const r = await rows('SELECT json_blob FROM boards WHERE rowid = ?', [rowid]);
+      if (lastJsonRowid !== rowid) return;
+      const text = (r[0] && r[0].json_blob) || '';
+      let pretty = text;
+      try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+      $('boardJsonBody').textContent = pretty;
+      $('boardJsonCopy').style.display = '';
+      $('boardJsonCopy').onclick = async () => {
+        try { await navigator.clipboard.writeText(pretty);
+              $('boardJsonCopy').textContent = '✓ copied';
+              setTimeout(() => { $('boardJsonCopy').textContent = '⧉ copy'; }, 1500);
+        } catch {}
+      };
     } catch (e) {
-      $('boardJsonBody').textContent = `failed to load ${url}\n\n${e.message}`;
+      $('boardJsonBody').textContent = `failed to load board #${rowid}\n\n${e.message}`;
     }
   }
 
   function closeBoardJson() { $('boardJsonModal').classList.remove('open'); }
 
-  function debounced(fn, ms = 120) {
+  // Each search issues several FTS5 lookups that round-trip through HTTP
+  // range requests; debounce a bit longer than for the old in-memory DB.
+  function debounced(fn, ms = 220) {
     let t;
     return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
   }
 
+  function asyncHandler(fn) {
+    return (e) => { fn(e).catch(err => console.error(err)); };
+  }
+
   function wireUp() {
-    $('uniIn').addEventListener('input', debounced(e => universalSearch(e.target.value)));
-    $('vidIn').addEventListener('input', debounced(e => searchVendorByVid(e.target.value)));
-    $('vendorIn').addEventListener('input', debounced(e => searchVendorByName(e.target.value)));
-    $('vidpidIn').addEventListener('input', debounced(e => searchProductByVidPid(e.target.value)));
-    $('productIn').addEventListener('input', debounced(e => searchProductByName(e.target.value)));
-    $('boardIn').addEventListener('input', debounced(e => searchBoards(e.target.value)));
+    $('uniIn').addEventListener('input', debounced(asyncHandler(e => universalSearch(e.target.value))));
+    $('vidIn').addEventListener('input', debounced(asyncHandler(e => searchVendorByVid(e.target.value))));
+    $('vendorIn').addEventListener('input', debounced(asyncHandler(e => searchVendorByName(e.target.value))));
+    $('vidpidIn').addEventListener('input', debounced(asyncHandler(e => searchProductByVidPid(e.target.value))));
+    $('productIn').addEventListener('input', debounced(asyncHandler(e => searchProductByName(e.target.value))));
+    $('boardIn').addEventListener('input', debounced(asyncHandler(e => searchBoards(e.target.value))));
     $('boardJsonClose').addEventListener('click', closeBoardJson);
     $('boardJsonModal').addEventListener('click', e => {
       if (e.target.id === 'boardJsonModal') closeBoardJson();

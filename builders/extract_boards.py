@@ -12,7 +12,10 @@ product, source) triples for the VID:PID lookup. This script pulls the
 relative path of the source JSON so site.py can copy it into the
 published bundle and the UI can deep-link to it via GitHub Pages.
 
-Output shape:
+Output shape (each board includes the raw upstream JSON as `json_text` so
+build_sqlite.py can inline it into the database — when the client uses
+sql.js-httpvfs, "View JSON" becomes a single SQL query against the
+range-fetched DB, no per-file copies in the bundle):
 
     {
       "layer": "boards",
@@ -26,16 +29,12 @@ Output shape:
           "mcu":           "esp32",
           "frequency_mhz": 240,
           "vidpids":       [["303a", "0002"]],
-          "src_relpath":   "espressif32/boards/esp32dev.json",  # within layer
           "upstream_repo": "https://github.com/platformio/platform-espressif32",
-          "upstream_blob": "https://github.com/platformio/platform-espressif32/tree/HEAD/boards/esp32dev.json"
+          "upstream_blob": "https://github.com/platformio/platform-espressif32/tree/HEAD/boards/esp32dev.json",
+          "json_text":     "{ ... raw upstream JSON ... }"
         }
       ]
     }
-
-`src_relpath` is the path *under the layer's data/* directory, so site.py
-can compute both the source location (`.branches/<layer>/data/<src_relpath>`)
-and the destination (`.site/boards/<layer>/<src_relpath>`).
 """
 
 from __future__ import annotations
@@ -145,7 +144,8 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
         plat = board_json.parts[-3]
         board_id = board_json.stem
         try:
-            b = json.loads(board_json.read_text(encoding="utf-8"))
+            raw = board_json.read_text(encoding="utf-8")
+            b = json.loads(raw)
         except json.JSONDecodeError as e:
             print(f"boards[platformio:skip]: {board_json}: {e}", file=sys.stderr)
             continue
@@ -169,9 +169,9 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             "mcu":           (build.get("mcu") or "").strip() or None,
             "frequency_mhz": _f_cpu_mhz(build.get("f_cpu")),
             "vidpids":       vidpids,
-            "src_relpath":   f"{plat}/boards/{board_id}.json",
             "upstream_repo": repo,
             "upstream_blob": blob,
+            "json_text":     raw,
         })
     return out
 
@@ -204,7 +204,8 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
         core = board_json.parts[-3]
         board_id = board_json.stem
         try:
-            b = json.loads(board_json.read_text(encoding="utf-8"))
+            raw = board_json.read_text(encoding="utf-8")
+            b = json.loads(raw)
         except json.JSONDecodeError as e:
             print(f"boards[arduino:skip]: {board_json}: {e}", file=sys.stderr)
             continue
@@ -221,9 +222,9 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
             "mcu":           (build.get("mcu") or "").strip() or None,
             "frequency_mhz": _f_cpu_mhz(build.get("f_cpu")),
             "vidpids":       _arduino_vidpids(b),
-            "src_relpath":   f"{core}/boards/{board_id}.json",
             "upstream_repo": upstream,
             "upstream_blob": upstream,   # cores share one boards.txt → repo-level only
+            "json_text":     raw,
         })
     return out
 

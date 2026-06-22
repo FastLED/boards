@@ -24,20 +24,21 @@ online-data SQLite + zackees memex sqlite-over-HTTP patterns):
     vidpid_fts:     FTS5(vidpid, vid, pid, product)
 
     boards:
-      board_id     TEXT          -- e.g. "esp32dev"
-      layer        TEXT          -- "platformio" | "arduino"
-      sublayer     TEXT          -- platform name or core slug
-      name         TEXT          -- "Espressif ESP32 Dev Module"
-      vendor       TEXT          -- nullable
-      mcu          TEXT          -- nullable
-      frequency_mhz INTEGER      -- nullable
-      vidpids      TEXT          -- "303a:0002, 1234:5678" pretty CSV
-      json_url     TEXT          -- relative URL into the site bundle
-      upstream_blob TEXT         -- upstream link (may be repo-root for arduino)
+      board_id      TEXT          -- e.g. "esp32dev"
+      layer         TEXT          -- "platformio" | "arduino"
+      sublayer      TEXT          -- platform name or core slug
+      name          TEXT          -- "Espressif ESP32 Dev Module"
+      vendor        TEXT          -- nullable
+      mcu           TEXT          -- nullable
+      frequency_mhz INTEGER       -- nullable
+      vidpids       TEXT          -- "303a:0002, 1234:5678" pretty CSV
+      upstream_blob TEXT          -- upstream link (may be repo-root for arduino)
+      json_blob     TEXT          -- full upstream board JSON, served via SQL
+    boards_fts:     FTS5(board_id, name, vendor, mcu, sublayer)
 
-Output is `<out>/site.db` (read by sql.js in the browser via HTTP range
-requests; the file is intentionally small enough to download in full —
-~200KB at the time of writing, ~600KB-1MB once `boards` is populated).
+Output is `<out>/site.db` — the browser uses sql.js-httpvfs to read it via
+HTTP Range requests, so only the pages a query actually touches travel
+the wire. The DB can grow to many MB without affecting page-load latency.
 """
 
 from __future__ import annotations
@@ -87,10 +88,9 @@ CREATE VIRTUAL TABLE vid_vendor_fts
 CREATE VIRTUAL TABLE vidpid_fts
   USING fts5(vidpid, vid, pid, product, content='vidpid', content_rowid='rowid');
 
--- Per-board metadata: one row per upstream board JSON. Each row carries a
--- relative json_url that points at the copy site.py stages into the
--- published bundle (e.g. "boards/platformio/espressif32/boards/esp32dev.json"),
--- so the portal "View JSON" button is just a static fetch.
+-- Per-board metadata + raw upstream JSON. json_blob carries the full board
+-- definition as text so the portal "View JSON" button is a single SQL
+-- read — no per-file copies in the bundle.
 CREATE TABLE boards (
   board_id      TEXT NOT NULL,
   layer         TEXT NOT NULL,
@@ -100,12 +100,18 @@ CREATE TABLE boards (
   mcu           TEXT,
   frequency_mhz INTEGER,
   vidpids       TEXT,
-  json_url      TEXT NOT NULL,
-  upstream_blob TEXT
+  upstream_blob TEXT,
+  json_blob     TEXT
 );
-CREATE INDEX idx_boards_name     ON boards (name COLLATE NOCASE);
 CREATE INDEX idx_boards_board_id ON boards (board_id COLLATE NOCASE);
 CREATE INDEX idx_boards_layer    ON boards (layer, sublayer);
+
+-- FTS5 mirror so name / vendor / mcu searches stay cheap under byte-range
+-- loading (LIKE '%foo%' would scan every page).
+CREATE VIRTUAL TABLE boards_fts USING fts5(
+  board_id, name, vendor, mcu, sublayer,
+  content='boards', content_rowid='rowid'
+);
 """
 
 
@@ -113,11 +119,10 @@ def _board_rows(boards: list[dict]) -> list[tuple]:
     rows = []
     for b in boards:
         vidpids = ", ".join(f"{v}:{p}" for v, p in (b.get("vidpids") or []))
-        json_url = f"boards/{b['layer']}/{b['src_relpath']}"
         rows.append((
             b["board_id"], b["layer"], b["sublayer"], b["name"],
             b.get("vendor"), b.get("mcu"), b.get("frequency_mhz"),
-            vidpids or None, json_url, b.get("upstream_blob"),
+            vidpids or None, b.get("upstream_blob"), b.get("json_text"),
         ))
     return rows
 
@@ -162,7 +167,7 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         if boards:
             conn.executemany(
                 "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
-                "mcu, frequency_mhz, vidpids, json_url, upstream_blob) "
+                "mcu, frequency_mhz, vidpids, upstream_blob, json_blob) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 _board_rows(boards),
             )
@@ -174,6 +179,11 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         conn.execute(
             "INSERT INTO vidpid_fts (rowid, vidpid, vid, pid, product) "
             "SELECT rowid, vidpid, vid, pid, product FROM vidpid"
+        )
+        conn.execute(
+            "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, sublayer) "
+            "SELECT rowid, board_id, name, COALESCE(vendor,''), "
+            "       COALESCE(mcu,''), sublayer FROM boards"
         )
         conn.commit()
         conn.execute("VACUUM")
