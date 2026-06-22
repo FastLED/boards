@@ -3,7 +3,11 @@
 // just runs the pure search against the singleton query() and renders.
 
 import { query } from '../db.js';
-import { hideUniOverlay, renderCombined } from '../render/overlay.js';
+import {
+  hideUniOverlay,
+  renderCombined,
+  showUniOverlaySpinner,
+} from '../render/overlay.js';
 import { searchProduct } from './engine.js';
 
 export async function productOnly(raw) {
@@ -12,6 +16,7 @@ export async function productOnly(raw) {
     hideUniOverlay();
     return;
   }
+  showUniOverlaySpinner();
   const data = await searchProduct(q, query);
   renderCombined(q, data);
 }

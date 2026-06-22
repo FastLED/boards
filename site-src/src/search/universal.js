@@ -3,7 +3,11 @@
 // hands the result to renderCombined().
 
 import { query } from '../db.js';
-import { hideUniOverlay, renderCombined } from '../render/overlay.js';
+import {
+  hideUniOverlay,
+  renderCombined,
+  showUniOverlaySpinner,
+} from '../render/overlay.js';
 import { searchUniversal } from './engine.js';
 
 export async function universalSearch(raw) {
@@ -12,6 +16,7 @@ export async function universalSearch(raw) {
     hideUniOverlay();
     return;
   }
+  showUniOverlaySpinner();
   const data = await searchUniversal(q, query);
   renderCombined(q, data);
 }
