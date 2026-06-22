@@ -184,18 +184,27 @@ export async function searchUniversal(text, query) {
     const bByName = await query(
       `SELECT ${BOARD_COLUMNS} ` +
         'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
-        // ORDER BY rank uses FTS5's built-in BM25 so name matches
-        // float to the top. With ORDER BY b.name we'd just take
-        // alphabetically-first 20 hits, dropping highly-relevant
-        // boards like "Seeed Tiny BLE" out of a Tiny BLE search.
+        // ORDER BY bm25(...) with per-column weights so name matches
+        // dominate and the keyword-soup column contributes only as a
+        // tie-breaker. Without bm25 weighting we'd just take an
+        // alphabetical slice that drops highly-relevant boards like
+        // "Seeed Tiny BLE" out of a Tiny BLE search.
+        //
+        // Weights match the boards_fts column declaration order
+        // (board_id, name, vendor, mcu, architecture, sublayer,
+        //  frameworks, connectivity, aliases, keywords). Chosen via
+        // tools/bm25_weight_sweep.py: name=2.0 captures most of the
+        // achievable lift (+1.5pp top-1 over baseline); keywords=0.2
+        // dampens the long keyword-soup column so a 1-token name
+        // match outranks a 5-token keyword match.
         //
         // HISTORICAL: BM25 ordering had been used here previously,
-        // then degraded to ORDER BY name (allegedly for perf — the
-        // hit was livable). Restoring it because the perf cost is
-        // dwarfed by the search-quality recovery; see
+        // then degraded to ORDER BY name (allegedly for perf). See
         // tests/test_board_name_combos.py for the regression that
         // exposed the degradation.
-        'WHERE boards_fts MATCH ? ORDER BY rank LIMIT 20',
+        'WHERE boards_fts MATCH ? ' +
+        'ORDER BY bm25(boards_fts, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2) ' +
+        'LIMIT 20',
       [fts],
     );
     for (const r of bByName) {
@@ -308,10 +317,13 @@ export async function searchBoard(text, query) {
   const rows = await query(
     `SELECT ${BOARD_COLUMNS} ` +
       'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
-      // ORDER BY rank — see HISTORICAL note in searchUniversal above.
-      // BM25 keeps name-matched boards at the top instead of taking
-      // an alphabetical slice that drops the relevant hits.
-      'WHERE boards_fts MATCH ? ORDER BY rank LIMIT 20',
+      // Per-column BM25 weights — see the tuning note in
+      // searchUniversal above for the rationale on name=2.0 /
+      // keywords=0.2. Same shape on both queries so single-token
+      // board-mode searches rank consistently with the universal mode.
+      'WHERE boards_fts MATCH ? ' +
+      'ORDER BY bm25(boards_fts, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2) ' +
+      'LIMIT 20',
     [fts]);
   const nameLc = q.toLowerCase();
   const boards = rows.map((row) => ({
