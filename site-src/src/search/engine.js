@@ -19,6 +19,52 @@ import { cleanHex, asVid4, asVidPid8 } from '../util/hex.js';
 import { ftsQuery } from '../util/fts.js';
 import { scoreName, scoreTokenCoverage, bumpOrPush } from '../util/score.js';
 
+// Client-side LRU memoization of search results, keyed by mode +
+// trimmed-lowercased query text. Lives in the JS heap; persists across
+// queries within a single page session; resets on reload. Capacity is
+// chosen so repeated typing/back-tracking ("ardu" → "arduino" → "ardui"
+// → ...) all stay cached, but the worst-case memory remains bounded.
+//
+// Why a Map: JS Maps preserve insertion order, so popping from the
+// front (oldest) and re-inserting on touch (most recent) gives O(1)
+// LRU semantics with no library.
+//
+// What we cache: the SHAPED RESULT ({vendors, products, boards}) — i.e.
+// the post-fanout, post-sort output that the UI hands to renderCombined
+// (or the test CLI prints as JSON). Caching skips every SQL roundtrip
+// for repeated queries, including the vendor-prefix fast path.
+const SEARCH_CACHE_MAX = 64;
+const _searchCache = new Map();
+
+function _cacheKey(mode, text) {
+  const norm = (text || '').trim().toLowerCase();
+  if (!norm) return null;
+  return mode + '|' + norm;
+}
+
+function _cacheGet(mode, text) {
+  const key = _cacheKey(mode, text);
+  if (key == null || !_searchCache.has(key)) return undefined;
+  // LRU touch: re-insert moves the entry to the end of the iteration
+  // order so it survives the next eviction sweep.
+  const v = _searchCache.get(key);
+  _searchCache.delete(key);
+  _searchCache.set(key, v);
+  return v;
+}
+
+function _cachePut(mode, text, value) {
+  const key = _cacheKey(mode, text);
+  if (key == null) return;
+  if (_searchCache.has(key)) _searchCache.delete(key);
+  _searchCache.set(key, value);
+  while (_searchCache.size > SEARCH_CACHE_MAX) {
+    // Map.keys() iterates in insertion order — first key is oldest.
+    const oldest = _searchCache.keys().next().value;
+    _searchCache.delete(oldest);
+  }
+}
+
 const vidKey   = (r) => r.vid;
 const prodKey  = (r) => `${r.vid}${r.pid}|${r.product}`;
 const boardKey = (r) => r.rowid;
@@ -113,6 +159,8 @@ async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why) {
 export async function searchUniversal(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
+  const cached = _cacheGet('universal', q);
+  if (cached !== undefined) return cached;
 
   const hex = cleanHex(q);
   const nameLc = q.toLowerCase();
@@ -275,13 +323,17 @@ export async function searchUniversal(text, query) {
     a.row.product.localeCompare(b.row.product));
   boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
 
-  return { vendors, products, boards };
+  const result = { vendors, products, boards };
+  _cachePut('universal', q, result);
+  return result;
 }
 
 /** Vendors-only mode. */
 export async function searchVendor(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
+  const cached = _cacheGet('vendor', q);
+  if (cached !== undefined) return cached;
   const nameLc = q.toLowerCase();
   const hex = cleanHex(q);
   const vidExact = asVid4(q);
@@ -311,13 +363,17 @@ export async function searchVendor(text, query) {
       bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
   }
   vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
-  return { vendors, products: [], boards: [] };
+  const result = { vendors, products: [], boards: [] };
+  _cachePut('vendor', q, result);
+  return result;
 }
 
 /** Products-only mode. */
 export async function searchProduct(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
+  const cached = _cacheGet('product', q);
+  if (cached !== undefined) return cached;
   const nameLc = q.toLowerCase();
   const hex = cleanHex(q);
   const vidPidExact = asVidPid8(q);
@@ -352,13 +408,17 @@ export async function searchProduct(text, query) {
     b.score - a.score ||
     (b.row.is_primary || 0) - (a.row.is_primary || 0) ||
     a.row.product.localeCompare(b.row.product));
-  return { vendors: [], products, boards: [] };
+  const result = { vendors: [], products, boards: [] };
+  _cachePut('product', q, result);
+  return result;
 }
 
 /** Boards-only mode. */
 export async function searchBoard(text, query) {
   const q = (text || '').trim();
   if (!q || q.length < 2) return { vendors: [], products: [], boards: [] };
+  const cached = _cacheGet('board', q);
+  if (cached !== undefined) return cached;
   const fts = ftsQuery(q);
   if (!fts) return { vendors: [], products: [], boards: [] };
 
@@ -372,5 +432,7 @@ export async function searchBoard(text, query) {
     why: 'name',
   }));
   boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
-  return { vendors: [], products: [], boards };
+  const result = { vendors: [], products: [], boards };
+  _cachePut('board', q, result);
+  return result;
 }
