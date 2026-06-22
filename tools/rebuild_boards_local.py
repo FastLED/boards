@@ -65,7 +65,12 @@ def _boards_schema() -> str:
     src = (REPO / "builders" / "build_sqlite.py").read_text(encoding="utf-8")
     start = src.index("CREATE TABLE boards (")
     end = src.index("-- Many-to-many junction")
-    return src[start:end]
+    boards_schema = src[start:end]
+    # Also need vendor_prefix_results (the precomputed fast-path table).
+    pre_start = src.index("CREATE TABLE vendor_prefix_results (")
+    pre_end = src.index('"""', pre_start)
+    prefix_schema = src[pre_start:pre_end]
+    return boards_schema + "\n" + prefix_schema
 
 
 def rebuild(out_path: pathlib.Path) -> None:
@@ -89,6 +94,7 @@ def rebuild(out_path: pathlib.Path) -> None:
         try:
             conn.execute("DROP TABLE IF EXISTS boards_fts")
             conn.execute("DROP TABLE IF EXISTS boards")
+            conn.execute("DROP TABLE IF EXISTS vendor_prefix_results")
             conn.executescript(_boards_schema())
 
             rows = []
@@ -128,6 +134,12 @@ def rebuild(out_path: pathlib.Path) -> None:
                 "       COALESCE(aliases,''), COALESCE(keywords,'') "
                 "FROM boards"
             )
+            # Mirror the prefix-cache build so local tests see the same
+            # fast-path table the live DB carries. Import lazily to dodge
+            # circular-import issues with the parent build_sqlite module.
+            sys.path.insert(0, str(REPO))
+            from builders.build_sqlite import _build_vendor_prefix_results
+            _build_vendor_prefix_results(conn)
             conn.commit()
             conn.execute("VACUUM")
         finally:

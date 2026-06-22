@@ -49,11 +49,32 @@ function scopeToIdentity(ftsExpr) {
 
 const BM25_WEIGHTS = '1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2';
 
-async function fts5BoardSearch(query, fts) {
-  // Two-phase: identity-only first (fast over HTTP), broad fallback
-  // only if identity returned nothing. The identity scope keeps the
-  // exact same BM25 weighting, so ranking quality stays consistent
-  // between the two phases.
+async function fts5BoardSearch(query, fts, rawText) {
+  // Phase 0 (fast path): single alphabetic token → check the
+  // precomputed vendor_prefix_results table. For broad-vendor queries
+  // like `arduino` this turns >1 second of HTTP-paged FTS5 work into a
+  // single PK lookup that returns a pre-rendered JSON blob. Triggered
+  // ONLY for single alphabetic tokens (whitespace trimmed and
+  // lowercased) — multi-token queries and queries with digits /
+  // punctuation continue through the regular FTS5 path.
+  const word = (rawText || '').trim().toLowerCase();
+  if (/^[a-z]+$/.test(word)) {
+    try {
+      const cached = await query(
+        'SELECT results_json FROM vendor_prefix_results WHERE prefix = ?',
+        [word],
+      );
+      if (cached.length > 0 && cached[0].results_json) {
+        return JSON.parse(cached[0].results_json);
+      }
+    } catch (e) {
+      // Table may not exist on older DBs — silently fall through.
+    }
+  }
+
+  // Two-phase FTS5: identity-only first (fast over HTTP), broad fallback
+  // only if identity returned nothing. The identity scope keeps the same
+  // BM25 weighting, so ranking quality stays consistent across phases.
   const SQL = `SELECT ${BOARD_COLUMNS} `
             + 'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid '
             + 'WHERE boards_fts MATCH ? '
@@ -233,7 +254,7 @@ export async function searchUniversal(text, query) {
     // degraded to ORDER BY name (allegedly for perf). See
     // tests/test_board_name_combos.py for the regression that exposed
     // that degradation.
-    const bByName = await fts5BoardSearch(query, fts);
+    const bByName = await fts5BoardSearch(query, fts, q);
     for (const r of bByName) {
       const haystack = [r.name, r.board_id, r.mcu, r.architecture,
                         r.frameworks, r.connectivity, r.vendor, r.sublayer]
@@ -343,7 +364,7 @@ export async function searchBoard(text, query) {
 
   // Two-phase FTS5 search (see fts5BoardSearch). Identity columns
   // first for speed; broad MATCH fallback only if needed.
-  const rows = await fts5BoardSearch(query, fts);
+  const rows = await fts5BoardSearch(query, fts, q);
   const nameLc = q.toLowerCase();
   const boards = rows.map((row) => ({
     row,

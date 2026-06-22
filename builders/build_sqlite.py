@@ -181,7 +181,118 @@ CREATE TABLE board_vidpids (
   PRIMARY KEY (board_rowid, vid, pid)
 );
 CREATE INDEX idx_board_vidpids_vidpid ON board_vidpids (vid, pid);
+
+-- Precomputed result cache for single-token vendor-prefix queries.
+-- Lets the JS engine answer broad searches like `arduino` (which
+-- against the full FTS5 index would have to score ~1,600 matching
+-- rows over HTTP page-fetched SQLite — measured at >1s) with a
+-- single PK lookup that returns the entire result as a JSON blob.
+--
+-- One row per prefix. results_json is a JSON-encoded array of board
+-- objects shaped exactly like the FTS5-backed result rows
+-- (BOARD_COLUMNS in engine.js), so the fast-path output is drop-in
+-- compatible. The PRIMARY KEY (prefix) means the lookup is a single
+-- B-tree hit; the JSON blob comes back in one page read.
+CREATE TABLE vendor_prefix_results (
+  prefix          TEXT PRIMARY KEY,
+  results_json    TEXT NOT NULL
+);
 """
+
+
+# Minimum board count for a vendor to qualify for the prefix-cache
+# fast path. Anything below this is rare enough that the full FTS5
+# query path is fine.
+_PREFIX_CACHE_MIN_BOARDS = 8
+# Cap the prefix length so we don't generate dozens of redundant
+# entries for long vendor names. 12 chars covers `microduino`,
+# `microchip`, `espressif`, `waveshare`, `raspberry` (the longest
+# major vendors in the corpus); past that point the user has either
+# typed something that won't be in the cache anyway or moved on to
+# a multi-token query.
+_PREFIX_CACHE_MAX_LEN = 12
+
+
+def _build_vendor_prefix_results(conn) -> None:
+    """Populate vendor_prefix_results with top-20 hits for every prefix
+    of every major vendor's first word. Mirrors the FTS5 query shape the
+    JS engine uses (identity-scope MATCH + bm25 weighted ORDER) so the
+    cache result is drop-in compatible.
+
+    Why this exists:
+      A user typing `arduino` (or `a`, `ar`, …) over HTTP-paged SQLite
+      hits >1,600 candidate rows in FTS5, each needing per-doc length
+      stats for BM25. That's seconds of HTTP round trips on cold cache.
+      Precomputing the answer at build time turns this into a single
+      contiguous-page read.
+    """
+    # First-word counts across explicit `.vendor` and derived `.vendor`
+    # (the derivation already ran during extract_boards.py — see
+    # _apply_vendor_derivation). Use first token only so prefix
+    # enumeration is bounded.
+    cur = conn.execute(
+        "SELECT LOWER(SUBSTR(vendor, 1, "
+        "  COALESCE(NULLIF(INSTR(vendor, ' ') - 1, -1), LENGTH(vendor)))) AS w, "
+        "COUNT(*) AS n "
+        "FROM boards WHERE vendor IS NOT NULL AND vendor <> '' "
+        "GROUP BY w HAVING n >= ? "
+        "ORDER BY n DESC", (_PREFIX_CACHE_MIN_BOARDS,))
+    major_vendors = [w for w, _n in cur.fetchall() if w and w.isalpha()]
+
+    # Enumerate unique prefixes across all major vendors.
+    prefixes: set[str] = set()
+    for v in major_vendors:
+        for i in range(1, min(len(v), _PREFIX_CACHE_MAX_LEN) + 1):
+            prefixes.add(v[:i])
+
+    # For each prefix, run the same SQL the engine.js fast path uses.
+    # The MATCH expression scopes to identity columns so we don't pull
+    # the noisy keywords column into the candidate set.
+    BOARD_COLS = (
+        "b.rowid, b.board_id, b.layer, b.sublayer, b.name, "
+        "b.vendor, b.mcu, b.architecture, b.bit_width, "
+        "b.frequency_mhz, b.flash_kb, b.ram_kb, "
+        "b.upload_speed, b.core, b.variant, b.homepage, "
+        "b.frameworks, b.connectivity, b.vidpids, b.upstream_blob"
+    )
+    # Match the JS-side BOARD_COLUMNS key order so when the engine
+    # reads results_json and pushes objects into the boards array,
+    # the shape is identical to the FTS5-backed path's output.
+    KEYS = [
+        "rowid", "board_id", "layer", "sublayer", "name",
+        "vendor", "mcu", "architecture", "bit_width",
+        "frequency_mhz", "flash_kb", "ram_kb",
+        "upload_speed", "core", "variant", "homepage",
+        "frameworks", "connectivity", "vidpids", "upstream_blob",
+    ]
+    n_inserted = 0
+    for prefix in sorted(prefixes):
+        fts_expr = (
+            "{name aliases board_id vendor}:" + prefix + "*"
+        )
+        rows = conn.execute(
+            "SELECT " + BOARD_COLS + " FROM boards b "
+            "JOIN boards_fts f ON f.rowid = b.rowid "
+            "WHERE boards_fts MATCH ? "
+            "ORDER BY bm25(boards_fts, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2) "
+            "LIMIT 20",
+            (fts_expr,),
+        ).fetchall()
+        if not rows:
+            continue
+        as_objects = [dict(zip(KEYS, row)) for row in rows]
+        conn.execute(
+            "INSERT INTO vendor_prefix_results (prefix, results_json) "
+            "VALUES (?, ?)",
+            (prefix, json.dumps(as_objects, ensure_ascii=False, separators=(",", ":"))),
+        )
+        n_inserted += 1
+    print(
+        f"build_sqlite: vendor_prefix_results: {len(major_vendors)} vendors "
+        f"→ {n_inserted} prefixes cached as JSON blobs "
+        f"(min_boards={_PREFIX_CACHE_MIN_BOARDS}, max_prefix_len={_PREFIX_CACHE_MAX_LEN})",
+        file=sys.stderr,
+    )
 
 
 def _board_rows(boards: list[dict]) -> list[tuple]:
@@ -411,6 +522,9 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
             "       COALESCE(aliases,''), COALESCE(keywords,'') "
             "FROM boards"
         )
+        # Precompute the vendor-prefix fast-path table now that boards_fts
+        # is populated. See _build_vendor_prefix_results() docstring.
+        _build_vendor_prefix_results(conn)
         conn.commit()
         conn.execute("VACUUM")
     finally:

@@ -26,7 +26,12 @@ import urllib.request
 
 
 SITE_DB_URL = "https://fastled.github.io/boards/boards.db"
-SIZE_BUDGET_BYTES = 5 * 1024 * 1024  # 5 MB hard ceiling
+SIZE_BUDGET_BYTES = 8 * 1024 * 1024  # 8 MB hard ceiling
+# Bumped from 5 MB → 8 MB when the vendor_prefix_results JSON-blob
+# cache landed (PR #20). The cache adds ~1.5 MB of denormalized
+# top-20 results for ~220 vendor prefixes so single-word vendor
+# searches like `arduino` collapse from >1s of HTTP-paged FTS5 work
+# to a single PK lookup. Speed is the explicit trade for size.
 
 # The headline polyfill case: PJRC reuses 16c0:0483 across every Teensy
 # variant (Arduino-IDE selects the active mode-PID at compile time, not
@@ -74,7 +79,7 @@ class LiveDbTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.db_path = _download_db()
 
-    def test_db_size_under_5mb(self) -> None:
+    def test_db_size_under_budget(self) -> None:
         size = os.path.getsize(self.db_path)
         self.assertGreater(size, 100_000, "boards.db is suspiciously small")
         self.assertLess(
