@@ -39,6 +39,20 @@ code { background:var(--hi-bg); padding:.1rem .3rem; border-radius:3px;
 footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   border-top:1px solid var(--border); padding-top:1rem; }
 .err { color:#c44; padding:.4rem 0; }
+.uni { flex:1; min-width:280px; }
+.uni input[type=text] { width:100%; box-sizing:border-box;
+  font-size:15px; padding:.6rem .7rem; }
+.cat { margin:1rem 0 0; }
+.cat-head { font-size:.78rem; color:var(--muted); text-transform:uppercase;
+  letter-spacing:.04em; margin:0 0 .3rem; font-weight:600; }
+.best .hit { border-color:var(--hi); background:var(--hi-bg); }
+.tag { display:inline-block; font-size:.68rem; padding:.05rem .35rem;
+  border-radius:3px; background:var(--border); color:var(--fg);
+  text-transform:uppercase; letter-spacing:.04em; margin-right:.4rem;
+  vertical-align:1px; }
+.tag.vendor  { background:#3a6ea5; color:#fff; }
+.tag.product { background:#5a8f3a; color:#fff; }
+.why { color:var(--muted); font-size:.7rem; margin-left:.4rem; }
 </style>
 </head>
 <body>
@@ -53,6 +67,22 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     <span>SQLite DB: <a id="dbLink" href="site.db"><code>https://fastled.github.io/boards/site.db</code></a></span>
     <span><a id="dbLinkRaw" href="site.db" download>download</a></span>
   </div>
+
+  <section>
+    <h2>Search anything</h2>
+    <div class="row">
+      <label class="uni">
+        Query
+        <input id="uniIn" type="text" autocomplete="off" autofocus
+          placeholder="esp32, espressif, 303a, 303a:1001, 0x303a 1001, teensy…">
+      </label>
+    </div>
+    <div id="uniOut" class="empty">
+      Type a vendor name, product name, VID, or VID:PID. Case and punctuation
+      (<code>0x</code>, <code>:</code>, spaces, dashes) are ignored — <code>303a:1001</code>,
+      <code>303A1001</code>, and <code>0x303a 1001</code> all match the same product.
+    </div>
+  </section>
 
   <section>
     <h2>Vendor lookup (by VID)</h2>
@@ -226,16 +256,201 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     renderProduct(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
   }
 
+  // ---- Universal search --------------------------------------------------
+  // Strips punctuation (0x, :, spaces, dashes, underscores) so users can paste
+  // VID:PID in any common style and still get a hit. Runs every plausible
+  // interpretation in parallel and scores results so the most likely answers
+  // surface in a "Best hits" strip.
+
+  function scoreName(haystack, needle) {
+    const lc = haystack.toLowerCase();
+    if (lc === needle) return 950;
+    if (lc.startsWith(needle)) return 700;
+    if (lc.includes(' ' + needle) || lc.includes('-' + needle)
+        || lc.includes('_' + needle) || lc.includes('/' + needle)) return 400;
+    return 100;
+  }
+
+  function bumpOrPush(arr, keyFn, row, score, why) {
+    const key = keyFn(row);
+    const existing = arr.find(h => keyFn(h.row) === key);
+    if (existing) {
+      if (score > existing.score) { existing.score = score; existing.why = why; }
+    } else {
+      arr.push({ row, score, why });
+    }
+  }
+
+  function universalSearch(raw) {
+    const out = $('uniOut');
+    const query = (raw || '').trim();
+    if (!query) {
+      out.className = 'empty';
+      out.innerHTML = 'Type a vendor name, product name, VID, or VID:PID.';
+      return;
+    }
+
+    const hex = query.toLowerCase().replace(/^0x/, '').replace(/[:\s\-_]+/g, '');
+    const isPureHex = /^[0-9a-f]+$/.test(hex) && hex.length > 0;
+    const nameLc = query.toLowerCase();
+    const vendors = [];   // [{row, score, why}]
+    const products = [];
+    const vidKey = r => r.vid;
+    const prodKey = r => `${r.vid}${r.pid}|${r.product}`;
+
+    // 1. Hex-based lookups -------------------------------------------------
+    if (isPureHex && hex.length <= 4) {
+      const vid = hex.padStart(4, '0');
+      const exact = rows(
+        'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
+      for (const r of exact) bumpOrPush(vendors, vidKey, r, 1000, 'exact VID');
+
+      if (hex.length < 4) {
+        const pref = rows(
+          'SELECT vid, vendor, source FROM vid_vendor WHERE vid LIKE ? ' +
+          'ORDER BY vid LIMIT 50', [`${hex}%`]);
+        for (const r of pref) {
+          if (r.vid !== vid) bumpOrPush(vendors, vidKey, r, 400, 'VID prefix');
+        }
+      }
+
+      // Same-VID products.
+      const vp = rows(
+        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+        'WHERE vid = ? ORDER BY is_primary DESC, product LIMIT 50', [vid]);
+      for (const r of vp) bumpOrPush(products, prodKey, r, 600, 'same VID');
+
+      // 4-hex could also be a PID — try PID-only too.
+      if (hex.length === 4) {
+        const pidHits = rows(
+          'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+          'WHERE pid = ? ORDER BY is_primary DESC, product LIMIT 50', [hex]);
+        for (const r of pidHits) {
+          if (r.vid !== vid) bumpOrPush(products, prodKey, r, 300, 'PID match');
+        }
+      }
+    } else if (isPureHex && hex.length >= 5 && hex.length <= 8) {
+      if (hex.length === 8) {
+        const exact = rows(
+          'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+          'WHERE vidpid = ? ORDER BY is_primary DESC, product', [hex]);
+        for (const r of exact) bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID');
+        const vid = hex.slice(0, 4);
+        const v = rows(
+          'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
+        for (const r of v) bumpOrPush(vendors, vidKey, r, 800, 'vendor of VID:PID');
+      } else {
+        const pref = rows(
+          'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+          'WHERE vidpid LIKE ? ORDER BY is_primary DESC, product LIMIT 50',
+          [`${hex}%`]);
+        for (const r of pref) bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix');
+        const vid = hex.slice(0, 4);
+        const v = rows(
+          'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
+        for (const r of v) bumpOrPush(vendors, vidKey, r, 600, 'vendor of VID');
+      }
+    }
+
+    // 2. Name-based lookups (always — hex like "abc" can appear in names) --
+    if (query.length >= 2) {
+      const vByName = rows(
+        'SELECT vid, vendor, source FROM vid_vendor WHERE vendor LIKE ? ' +
+        'ORDER BY vendor LIMIT 80', [`%${nameLc}%`]);
+      for (const r of vByName) {
+        bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
+      }
+      const pByName = rows(
+        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+        'WHERE product LIKE ? ORDER BY product, is_primary DESC LIMIT 120',
+        [`%${nameLc}%`]);
+      for (const r of pByName) {
+        bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name');
+      }
+    }
+
+    vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
+    products.sort((a, b) => b.score - a.score
+      || (b.row.is_primary || 0) - (a.row.is_primary || 0)
+      || a.row.product.localeCompare(b.row.product));
+
+    if (!vendors.length && !products.length) {
+      out.className = 'empty';
+      out.innerHTML = `no matches for "${escapeHtml(query)}"`;
+      return;
+    }
+
+    // Best hits = score-ranked union, threshold 500, capped.
+    const best = [
+      ...vendors.map(h => ({ kind: 'vendor', ...h })),
+      ...products.map(h => ({ kind: 'product', ...h })),
+    ].filter(h => h.score >= 500)
+     .sort((a, b) => b.score - a.score)
+     .slice(0, 8);
+
+    out.className = '';
+    let html = '';
+    if (best.length) {
+      html += '<div class="cat best"><div class="cat-head">Best hits</div>';
+      for (const h of best) html += renderBestRow(h);
+      html += '</div>';
+    }
+    if (vendors.length) {
+      const capped = vendors.slice(0, 25);
+      const moreV = vendors.length - capped.length;
+      html += `<div class="cat"><div class="cat-head">Vendors (${vendors.length})</div>`;
+      for (const h of capped) html += renderVendorRow(h.row);
+      if (moreV > 0) html += `<div class="stat">…${moreV} more — refine with the Vendor lookup below.</div>`;
+      html += '</div>';
+    }
+    if (products.length) {
+      const capped = products.slice(0, 25);
+      const moreP = products.length - capped.length;
+      html += `<div class="cat"><div class="cat-head">Products (${products.length})</div>`;
+      for (const h of capped) html += renderProductRow(h.row);
+      if (moreP > 0) html += `<div class="stat">…${moreP} more — refine with the Product lookup below.</div>`;
+      html += '</div>';
+    }
+    out.innerHTML = html;
+  }
+
+  function renderBestRow(h) {
+    const tag = `<span class="tag ${h.kind}">${h.kind}</span>`;
+    const why = h.why ? `<span class="why">${escapeHtml(h.why)}</span>` : '';
+    if (h.kind === 'vendor') {
+      return `<div class="hit">${tag}${fmtVid(h.row.vid)} &mdash; ` +
+        `<span class="v">${escapeHtml(h.row.vendor)}</span>${why}${fmtSrc(h.row.source)}</div>`;
+    }
+    const alt = (h.row.is_primary === 0)
+      ? ' <span class="src" style="color:#c44">(alternate)</span>' : '';
+    return `<div class="hit">${tag}${fmtPair(h.row.vid, h.row.pid)} &mdash; ` +
+      `<span class="v">${escapeHtml(h.row.product)}</span>${alt}${why}${fmtSrc(h.row.source)}</div>`;
+  }
+
+  function renderVendorRow(r) {
+    return `<div class="hit">${fmtVid(r.vid)} &mdash; ` +
+      `<span class="v">${escapeHtml(r.vendor)}</span>${fmtSrc(r.source)}</div>`;
+  }
+
+  function renderProductRow(r) {
+    const alt = (r.is_primary === 0)
+      ? ' <span class="src" style="color:#c44">(alternate)</span>' : '';
+    return `<div class="hit">${fmtPair(r.vid, r.pid)} &mdash; ` +
+      `<span class="v">${escapeHtml(r.product)}</span>${alt}${fmtSrc(r.source)}</div>`;
+  }
+
   function debounced(fn, ms = 120) {
     let t;
     return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
   }
 
   function wireUp() {
+    $('uniIn').addEventListener('input', debounced(e => universalSearch(e.target.value)));
     $('vidIn').addEventListener('input', debounced(e => searchVendorByVid(e.target.value)));
     $('vendorIn').addEventListener('input', debounced(e => searchVendorByName(e.target.value)));
     $('vidpidIn').addEventListener('input', debounced(e => searchProductByVidPid(e.target.value)));
     $('productIn').addEventListener('input', debounced(e => searchProductByName(e.target.value)));
+    $('uniIn').focus();
   }
 
   init();
