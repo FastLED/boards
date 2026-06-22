@@ -54,6 +54,11 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
 .uni { flex:1; min-width:280px; }
 .uni input[type=text] { width:100%; box-sizing:border-box;
   font-size:15px; padding:.6rem .7rem; }
+.search-row { align-items:flex-end; }
+.mode { min-width:11ch; }
+.mode select { font-size:14px; padding:.55rem .65rem;
+  border:1px solid var(--border); border-radius:6px;
+  background:var(--bg); color:var(--fg); cursor:pointer; }
 .uni-anchor { position:relative; }
 .uni-hint { font-size:.78rem; color:var(--muted); margin:.6rem 0 0;
   font-style:italic; line-height:1.5; }
@@ -133,62 +138,34 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   </div>
 
   <section>
-    <h2>Search anything</h2>
+    <h2>Search</h2>
     <div class="uni-anchor">
-      <div class="row">
+      <div class="row search-row">
         <label class="uni">
           Query
           <input id="uniIn" type="text" autocomplete="off" autofocus
-            placeholder="esp32, espressif, 303a, 303a:1001, 0x303a 1001, teensy…">
+            placeholder="esp32dev, espressif, 303a, 303a:1001, teensy, wifi, arduino…">
+        </label>
+        <label class="mode">
+          Looking for
+          <select id="modeIn" autocomplete="off">
+            <option value="anything" selected>Anything</option>
+            <option value="board">Boards</option>
+            <option value="vendor">Vendors</option>
+            <option value="product">Products</option>
+          </select>
         </label>
       </div>
       <div id="uniOut" class="uni-overlay" hidden></div>
     </div>
     <p class="uni-hint">
-      Type a vendor name, product name, VID, or VID:PID. Case and punctuation
-      (<code>0x</code>, <code>:</code>, spaces, dashes) are ignored — <code>303a:1001</code>,
-      <code>303A1001</code>, and <code>0x303a 1001</code> all match the same product.
-      Press <kbd>Esc</kbd> to dismiss the results.
+      Type anything — a vendor name, product name, board name or id, MCU,
+      framework, connectivity feature, VID, or VID:PID. Case and punctuation
+      (<code>0x</code>, <code>:</code>, spaces, dashes) are ignored, so
+      <code>303a:1001</code>, <code>303A1001</code>, and
+      <code>0x303a 1001</code> all hit the same product. Press <kbd>Esc</kbd>
+      to dismiss the results.
     </p>
-  </section>
-
-  <section>
-    <h2>Vendor lookup (by VID)</h2>
-    <div class="row">
-      <label>VID (hex) <input id="vidIn" type="text" placeholder="303a" maxlength="6" autocomplete="off"></label>
-      <label>or vendor name fragment <input id="vendorIn" type="text" placeholder="espressif" autocomplete="off"></label>
-    </div>
-    <div id="vendorOut" class="empty">Enter a 4-hex VID (e.g. <code>303a</code>) or a name fragment (e.g. <code>arduino</code>).</div>
-  </section>
-
-  <section>
-    <h2>Product lookup (by VID:PID or name)</h2>
-    <div class="row">
-      <label>VID:PID (hex) <input id="vidpidIn" type="text" placeholder="303a:1001" maxlength="9" autocomplete="off"></label>
-      <label>or product name fragment <input id="productIn" type="text" placeholder="teensy" autocomplete="off"></label>
-    </div>
-    <div id="productOut" class="empty">Enter a VID:PID like <code>16c0:0483</code> or a name fragment like <code>esp32</code>.</div>
-  </section>
-
-  <section>
-    <h2>Board definitions</h2>
-    <div class="row">
-      <label class="uni">
-        Board name
-        <input id="boardIn" type="text" autocomplete="off"
-          placeholder="esp32dev, uno, teensy41, pico, feather…">
-      </label>
-    </div>
-    <div id="boardOut" class="empty">
-      Type a board name (or board id, mcu, vendor, framework, or
-      connectivity feature like <code>wifi</code> or <code>can</code>).
-      Each result shows the board's structured data inline; click
-      <span class="btn" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">View JSON</span>
-      to inspect the raw upstream JSON (fetched from the bundle on demand),
-      or
-      <span class="btn secondary" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">↗ source</span>
-      to view the original on GitHub.
-    </div>
   </section>
 
   <div id="boardJsonModal" role="dialog" aria-modal="true" aria-labelledby="boardJsonTitle">
@@ -283,17 +260,14 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
   }
 
   let dbReady = false;
-  // Latest-typed value per input — replayed once the DB comes online.
-  const _pendingByInput = new Map();
+  // Last query typed before init finished — replayed via replayPending().
+  let _pendingQuery = null;
   function replayPending() {
-    for (const [inputId, value] of _pendingByInput) {
-      const handler = _replayMap[inputId];
-      if (handler && value) handler(value).catch(err => console.error(err));
+    if (_pendingQuery && _pendingQuery.q) {
+      modeFn(_pendingQuery.mode)(_pendingQuery.q).catch(err => console.error(err));
     }
-    _pendingByInput.clear();
+    _pendingQuery = null;
   }
-  // Filled in wireUp() — maps input id → async fn that runs the search.
-  const _replayMap = {};
 
   // memex's query returns {columns: string[], rows: any[][]} — convert
   // each row to {col: value} so the rest of the code keeps using o.field.
@@ -313,118 +287,118 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
   function fmtPair(v,p) { return `<span class="k">0x${escapeHtml(v)}:0x${escapeHtml(p)}</span>`; }
   function fmtSrc(s)    { return s ? `<span class="src">${escapeHtml(s)}</span>` : ''; }
 
-  function renderVendor(out, results, headerHtml) {
-    if (!results.length) {
-      out.className = 'empty';
-      out.innerHTML = 'no matches';
-      return;
-    }
-    out.className = '';
-    let html = headerHtml || '';
-    for (const r of results) {
-      html += `<div class="hit">${fmtVid(r.vid)} &mdash; <span class="v">${escapeHtml(r.vendor)}</span>${fmtSrc(r.source)}</div>`;
-    }
-    out.innerHTML = html;
-  }
 
-  function renderProduct(out, results, headerHtml) {
-    if (!results.length) {
-      out.className = 'empty';
-      out.innerHTML = 'no matches';
-      return;
-    }
-    out.className = '';
-    let html = headerHtml || '';
-    for (const r of results) {
-      // is_primary: 1 → main entry; 0 → alternate (multi-row vidpid case).
-      const altTag = (r.is_primary === 0)
-        ? ' <span class="src" style="color:#c44">(alternate)</span>'
-        : '';
-      html += `<div class="hit">${fmtPair(r.vid, r.pid)} &mdash; <span class="v">${escapeHtml(r.product)}</span>${altTag}${fmtSrc(r.source)}</div>`;
-    }
-    out.innerHTML = html;
-  }
+  // Mode-specific searches all render into the same overlay (#uniOut)
+  // via renderCombined(), so the user sees a consistent layout regardless
+  // of which mode is active.
 
-  async function searchVendorByVid(input) {
-    const out = $('vendorOut');
-    if (!input) { out.className='empty'; out.innerHTML='Enter a 4-hex VID or a name fragment.'; return; }
-    if (!isHex(input, 4)) { out.className='err'; out.innerHTML='VID must be 1-4 hex digits.'; return; }
-    const vid = norm4(input);
-    const exact = await rows('SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
-    if (exact.length) return renderVendor(out, exact, `<div class="stat">exact match for VID 0x${vid}:</div>`);
-    // Prefix lookup via FTS5 (vid column is tokenized so 'abc*' matches 'abc?').
-    const cleaned = input.toLowerCase().replace(/^0x/, '');
-    const pref = await rows(
-      'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv '
-      + 'JOIN vid_vendor_fts f ON f.rowid = vv.rowid '
-      + 'WHERE vid_vendor_fts MATCH ? ORDER BY vv.vid LIMIT 50',
-      [`vid:${cleaned}*`]
-    );
-    renderVendor(out, pref, `<div class="stat">no exact match; ${pref.length} prefix match(es):</div>`);
-  }
+  async function vendorOnly(query) {
+    const q = (query || '').trim();
+    if (!q) { hideUniOverlay(); return; }
+    const nameLc = q.toLowerCase();
+    const hex = nameLc.replace(/^0x/, '').replace(/[:\s\-_]+/g, '');
+    const isHex4 = /^[0-9a-f]{1,4}$/.test(hex);
+    const vendors = [];
+    const vidKey = r => r.vid;
 
-  async function searchVendorByName(name) {
-    const out = $('vendorOut');
-    if (!name || name.length < 2) {
-      out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
-    }
-    const fts = ftsQuery(name);
-    if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
-    const r = await rows(
-      'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv '
-      + 'JOIN vid_vendor_fts f ON f.rowid = vv.rowid '
-      + 'WHERE vid_vendor_fts MATCH ? ORDER BY vv.vendor LIMIT 50',
-      [`vendor:${fts}`]
-    );
-    renderVendor(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
-  }
-
-  async function searchProductByVidPid(input) {
-    const out = $('productOut');
-    if (!input) { out.className='empty'; out.innerHTML='Enter a VID:PID or a name fragment.'; return; }
-    const cleaned = input.toLowerCase().replace(/^0x/, '').replace(/[:\s]/g, '');
-    if (!/^[0-9a-f]{1,8}$/.test(cleaned)) {
-      out.className='err'; out.innerHTML='VID:PID must be hex digits (e.g. <code>303a:1001</code>).'; return;
-    }
-    if (cleaned.length === 8) {
+    if (isHex4) {
+      const vid = hex.padStart(4, '0');
       const exact = await rows(
-        'SELECT vid, pid, product, source, is_primary FROM vidpid WHERE vidpid = ? '
-        + 'ORDER BY is_primary DESC, product',
-        [cleaned]
-      );
-      if (exact.length) {
-        const v = await rows('SELECT vendor FROM vid_vendor WHERE vid = ?', [exact[0].vid]);
-        const altNote = exact.length > 1
-          ? ` &mdash; <span class="src">${exact.length - 1} alternate(s)</span>` : '';
-        const hdr = v.length
-          ? `<div class="stat">vendor: <span class="v">${escapeHtml(v[0].vendor)}</span> (0x${escapeHtml(exact[0].vid)})${altNote}</div>`
-          : `<div class="stat">vendor unknown for 0x${escapeHtml(exact[0].vid)}${altNote}</div>`;
-        return renderProduct(out, exact, hdr);
+        'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vid]);
+      for (const r of exact) bumpOrPush(vendors, vidKey, r, 1000, 'exact VID');
+      if (hex.length < 4) {
+        const pref = await rows(
+          'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
+          'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
+          'WHERE vid_vendor_fts MATCH ? LIMIT 50',
+          [`vid:${hex}*`]);
+        for (const r of pref) {
+          if (r.vid !== vid) bumpOrPush(vendors, vidKey, r, 400, 'VID prefix');
+        }
       }
     }
-    const r = await rows(
-      'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp '
-      + 'JOIN vidpid_fts f ON f.rowid = vp.rowid '
-      + 'WHERE vidpid_fts MATCH ? ORDER BY vp.vidpid, vp.is_primary DESC LIMIT 50',
-      [`vidpid:${cleaned}*`]
-    );
-    renderProduct(out, r, `<div class="stat">${r.length} match(es) for prefix <code>${escapeHtml(cleaned)}</code>:</div>`);
+    const fts = ftsQuery(q);
+    if (fts && q.length >= 2) {
+      const byName = await rows(
+        'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
+        'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
+        'WHERE vid_vendor_fts MATCH ? LIMIT 60',
+        [`vendor:${fts}`]);
+      for (const r of byName) {
+        bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
+      }
+    }
+    vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
+    renderCombined(q, { vendors });
   }
 
-  async function searchProductByName(name) {
-    const out = $('productOut');
-    if (!name || name.length < 2) {
-      out.className='empty'; out.innerHTML='Enter at least 2 characters.'; return;
+  async function productOnly(query) {
+    const q = (query || '').trim();
+    if (!q) { hideUniOverlay(); return; }
+    const nameLc = q.toLowerCase();
+    const hex = nameLc.replace(/^0x/, '').replace(/[:\s\-_]+/g, '');
+    const isHex = /^[0-9a-f]+$/.test(hex);
+    const products = [];
+    const prodKey = r => `${r.vid}${r.pid}|${r.product}`;
+
+    if (isHex && hex.length === 8) {
+      const exact = await rows(
+        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+        'WHERE vidpid = ? ORDER BY is_primary DESC, product', [hex]);
+      for (const r of exact) bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID');
+    } else if (isHex && hex.length >= 1 && hex.length <= 7) {
+      const pref = await rows(
+        'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
+        'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
+        'WHERE vidpid_fts MATCH ? ORDER BY vp.is_primary DESC, vp.product LIMIT 50',
+        [`vidpid:${hex}*`]);
+      for (const r of pref) bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix');
     }
-    const fts = ftsQuery(name);
-    if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
+    const fts = ftsQuery(q);
+    if (fts && q.length >= 2) {
+      const byName = await rows(
+        'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
+        'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
+        'WHERE vidpid_fts MATCH ? LIMIT 80',
+        [`product:${fts}`]);
+      for (const r of byName) {
+        bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name');
+      }
+    }
+    products.sort((a, b) => b.score - a.score
+      || (b.row.is_primary || 0) - (a.row.is_primary || 0)
+      || a.row.product.localeCompare(b.row.product));
+    renderCombined(q, { products });
+  }
+
+  async function boardOnly(query) {
+    const q = (query || '').trim();
+    if (!q) { hideUniOverlay(); return; }
+    if (q.length < 2) {
+      showUniOverlay('Enter at least 2 characters.', 'empty');
+      return;
+    }
+    const fts = ftsQuery(q);
+    if (!fts) {
+      showUniOverlay('nothing to search.', 'empty');
+      return;
+    }
     const r = await rows(
-      'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp '
-      + 'JOIN vidpid_fts f ON f.rowid = vp.rowid '
-      + 'WHERE vidpid_fts MATCH ? ORDER BY vp.product, vp.is_primary DESC LIMIT 80',
-      [`product:${fts}`]
-    );
-    renderProduct(out, r, `<div class="stat">${r.length} match(es) for "${escapeHtml(name)}":</div>`);
+      'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
+      '       b.vendor, b.mcu, b.frequency_mhz, b.flash_kb, b.ram_kb, ' +
+      '       b.upload_speed, b.core, b.variant, b.homepage, ' +
+      '       b.frameworks, b.connectivity, b.vidpids, b.upstream_blob ' +
+      'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
+      'WHERE boards_fts MATCH ? ORDER BY b.name COLLATE NOCASE LIMIT 20',
+      [fts]);
+    const nameLc = q.toLowerCase();
+    const boards = r.map(row => ({
+      row,
+      score: Math.max(scoreName(row.name, nameLc), scoreName(row.board_id, nameLc)),
+      why:   'name',
+    }));
+    boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
+    renderCombined(q, { boards });
   }
 
   // ---- Universal search --------------------------------------------------
@@ -535,11 +509,13 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     }
 
     // 2. Name-based lookups via FTS5 ---------------------------------------
+    const boards = [];
+    const boardKey = r => r.rowid;
     if (fts && query.length >= 2) {
       const vByName = await rows(
         'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
         'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
-        'WHERE vid_vendor_fts MATCH ? LIMIT 80',
+        'WHERE vid_vendor_fts MATCH ? LIMIT 60',
         [`vendor:${fts}`]);
       for (const r of vByName) {
         bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
@@ -547,10 +523,23 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       const pByName = await rows(
         'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
         'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
-        'WHERE vidpid_fts MATCH ? LIMIT 120',
+        'WHERE vidpid_fts MATCH ? LIMIT 80',
         [`product:${fts}`]);
       for (const r of pByName) {
         bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name');
+      }
+      const bByName = await rows(
+        'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
+        '       b.vendor, b.mcu, b.frequency_mhz, b.flash_kb, b.ram_kb, ' +
+        '       b.upload_speed, b.core, b.variant, b.homepage, ' +
+        '       b.frameworks, b.connectivity, b.vidpids, b.upstream_blob ' +
+        'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
+        'WHERE boards_fts MATCH ? ORDER BY b.name COLLATE NOCASE LIMIT 20',
+        [fts]);
+      for (const r of bByName) {
+        const score = Math.max(scoreName(r.name, nameLc),
+                                scoreName(r.board_id, nameLc));
+        bumpOrPush(boards, boardKey, r, score, 'name');
       }
     }
 
@@ -558,19 +547,26 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     products.sort((a, b) => b.score - a.score
       || (b.row.is_primary || 0) - (a.row.is_primary || 0)
       || a.row.product.localeCompare(b.row.product));
+    boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
 
-    if (!vendors.length && !products.length) {
+    renderCombined(query, { vendors, products, boards });
+  }
+
+  // Render any combination of categories into the overlay. Used by
+  // universalSearch AND the single-mode searches (which just leave the
+  // other arrays empty).
+  function renderCombined(query, { vendors = [], products = [], boards = [] }) {
+    if (!vendors.length && !products.length && !boards.length) {
       showUniOverlay(`no matches for "${escapeHtml(query)}"`, 'empty');
       return;
     }
-
-    // Best hits = score-ranked union, threshold 500, capped.
     const best = [
+      ...boards.map(h => ({ kind: 'board', ...h })),
       ...vendors.map(h => ({ kind: 'vendor', ...h })),
       ...products.map(h => ({ kind: 'product', ...h })),
-    ].filter(h => h.score >= 500)
+    ].filter(h => h.score >= 600)
      .sort((a, b) => b.score - a.score)
-     .slice(0, 8);
+     .slice(0, 6);
 
     let html = '';
     if (best.length) {
@@ -578,23 +574,37 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       for (const h of best) html += renderBestRow(h);
       html += '</div>';
     }
+    if (boards.length) {
+      const capped = boards.slice(0, 15);
+      const more = boards.length - capped.length;
+      html += `<div class="cat"><div class="cat-head">Boards (${boards.length})</div>`;
+      for (const h of capped) html += renderBoardRow(h.row);
+      if (more > 0) html += `<div class="stat">…${more} more — refine the query for narrower results.</div>`;
+      html += '</div>';
+    }
     if (vendors.length) {
-      const capped = vendors.slice(0, 25);
-      const moreV = vendors.length - capped.length;
+      const capped = vendors.slice(0, 15);
+      const more = vendors.length - capped.length;
       html += `<div class="cat"><div class="cat-head">Vendors (${vendors.length})</div>`;
       for (const h of capped) html += renderVendorRow(h.row);
-      if (moreV > 0) html += `<div class="stat">…${moreV} more — refine with the Vendor lookup below.</div>`;
+      if (more > 0) html += `<div class="stat">…${more} more — refine the query.</div>`;
       html += '</div>';
     }
     if (products.length) {
       const capped = products.slice(0, 25);
-      const moreP = products.length - capped.length;
+      const more = products.length - capped.length;
       html += `<div class="cat"><div class="cat-head">Products (${products.length})</div>`;
       for (const h of capped) html += renderProductRow(h.row);
-      if (moreP > 0) html += `<div class="stat">…${moreP} more — refine with the Product lookup below.</div>`;
+      if (more > 0) html += `<div class="stat">…${more} more — refine the query.</div>`;
       html += '</div>';
     }
     showUniOverlay(html);
+    // Wire up any View JSON buttons that landed in the overlay.
+    $('uniOut').querySelectorAll('button[data-json-url]').forEach(btn => {
+      btn.addEventListener('click', () => openBoardJson(
+        btn.getAttribute('data-json-url'),
+        btn.getAttribute('data-title')));
+    });
   }
 
   function renderBestRow(h) {
@@ -603,6 +613,17 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     if (h.kind === 'vendor') {
       return `<div class="hit">${tag}${fmtVid(h.row.vid)} &mdash; ` +
         `<span class="v">${escapeHtml(h.row.vendor)}</span>${why}${fmtSrc(h.row.source)}</div>`;
+    }
+    if (h.kind === 'board') {
+      // Best-hit row for boards is a one-line summary; the full row with
+      // chips + buttons appears in the dedicated Boards section below.
+      const meta = h.row.mcu
+        ? ` <span class="board-meta">${escapeHtml(h.row.mcu)}` +
+          (h.row.frequency_mhz ? ` · ${h.row.frequency_mhz} MHz` : '') + `</span>`
+        : '';
+      return `<div class="hit">${tag}<span class="k">${escapeHtml(h.row.layer)}/${escapeHtml(h.row.sublayer)}</span> &mdash; ` +
+        `<span class="v">${escapeHtml(h.row.name)}</span>` +
+        ` <span class="board-meta">(${escapeHtml(h.row.board_id)})</span>${meta}${why}</div>`;
     }
     const alt = (h.row.is_primary === 0)
       ? ' <span class="src" style="color:#c44">(alternate)</span>' : '';
@@ -635,65 +656,6 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     } catch { return false; }
   }
 
-  async function searchBoards(raw) {
-    const out = $('boardOut');
-    const q = (raw || '').trim();
-    if (!q) {
-      out.className = 'empty';
-      out.innerHTML = 'Type a board name (or board id, mcu, or vendor).';
-      return;
-    }
-    if (q.length < 2) {
-      out.className = 'empty';
-      out.innerHTML = 'Enter at least 2 characters.';
-      return;
-    }
-    if (!(await hasBoardsTable())) {
-      out.className = 'err';
-      out.innerHTML = 'this database was built before board definitions were tracked — wait for the next site rebuild.';
-      return;
-    }
-    const fts = ftsQuery(q);
-    if (!fts) { out.className='empty'; out.innerHTML='nothing to search.'; return; }
-    const r = await rows(
-      'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
-      '       b.vendor, b.mcu, b.frequency_mhz, b.flash_kb, b.ram_kb, ' +
-      '       b.upload_speed, b.core, b.variant, b.homepage, ' +
-      '       b.frameworks, b.connectivity, b.vidpids, b.upstream_blob ' +
-      'FROM boards b ' +
-      'JOIN boards_fts f ON f.rowid = b.rowid ' +
-      'WHERE boards_fts MATCH ? ' +
-      // Order by name only — bm25() requires reading the term-frequency
-      // postings list for every match before sorting, which on broad
-      // queries like "wifi" / "arduino" (hundreds of matches) adds
-      // hundreds of ms on a range-fetched DB. Pure name order is cheap
-      // because idx_boards_name covers it, and for the user-facing case
-      // (typing 'esp32dev' returns esp32dev variants) the relevance
-      // ordering doesn't help — exact matches sort adjacent anyway.
-      'ORDER BY b.name COLLATE NOCASE ' +
-      // LIMIT 20: autocomplete cap. Specific searches (e.g.
-      // "esp32dev") return ~400-700 ms; broad concept searches
-      // ("wifi" / "can" / "arduino" match hundreds of boards each)
-      // settle around 1.0-1.7 s depending on CDN cache state.
-      'LIMIT 20',
-      [fts]
-    );
-    if (!r.length) {
-      out.className = 'empty';
-      out.innerHTML = `no boards match "${escapeHtml(q)}"`;
-      return;
-    }
-    out.className = '';
-    let html = `<div class="stat">${r.length} board(s) match "${escapeHtml(q)}":</div>`;
-    for (const b of r) html += renderBoardRow(b);
-    out.innerHTML = html;
-    // Wire up the View JSON buttons.
-    out.querySelectorAll('button[data-json-url]').forEach(btn => {
-      btn.addEventListener('click', () => openBoardJson(
-        btn.getAttribute('data-json-url'),
-        btn.getAttribute('data-title')));
-    });
-  }
 
   function _kb(v) {
     if (!v) return null;
@@ -788,26 +750,29 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     return (e) => { fn(e).catch(err => console.error(err)); };
   }
 
-  // Wrap a search function so that:
-  // - Before the DB is ready, the latest typed value is remembered and
-  //   replayed once init finishes.
-  // - After the DB is ready, the search runs immediately on each input.
-  function gated(inputId, fn) {
-    _replayMap[inputId] = fn;   // for replay after init
-    return (e) => {
-      const v = e.target.value;
-      if (!dbReady) { _pendingByInput.set(inputId, v); return; }
-      fn(v).catch(err => console.error(err));
-    };
+  // Mode dispatch: pick the right search based on the dropdown.
+  function modeFn(mode) {
+    switch (mode) {
+      case 'board':    return boardOnly;
+      case 'vendor':   return vendorOnly;
+      case 'product':  return productOnly;
+      case 'anything':
+      default:         return universalSearch;
+    }
+  }
+  function runCurrentSearch() {
+    const q = $('uniIn').value;
+    const mode = $('modeIn').value;
+    if (!dbReady) { _pendingQuery = { q, mode }; return; }
+    modeFn(mode)(q).catch(err => console.error(err));
   }
 
   function wireUp() {
-    $('uniIn').addEventListener('input', debounced(gated('uniIn', universalSearch)));
-    $('vidIn').addEventListener('input', debounced(gated('vidIn', searchVendorByVid)));
-    $('vendorIn').addEventListener('input', debounced(gated('vendorIn', searchVendorByName)));
-    $('vidpidIn').addEventListener('input', debounced(gated('vidpidIn', searchProductByVidPid)));
-    $('productIn').addEventListener('input', debounced(gated('productIn', searchProductByName)));
-    $('boardIn').addEventListener('input', debounced(gated('boardIn', searchBoards)));
+    const debouncedRun = debounced(runCurrentSearch);
+    $('uniIn').addEventListener('input', debouncedRun);
+    // Mode changes re-run the search immediately (no debounce — user
+    // explicitly clicked a different mode).
+    $('modeIn').addEventListener('change', runCurrentSearch);
     // View JSON modal wiring
     $('boardJsonClose').addEventListener('click', closeBoardJson);
     $('boardJsonModal').addEventListener('click', e => {
