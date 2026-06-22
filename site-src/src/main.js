@@ -9,6 +9,7 @@ import './style/base.css';
 import './style/search.css';
 import './style/board-row.css';
 import './style/modal.css';
+import './style/help.css';
 
 import { openDb, query } from './db.js';
 import { escapeHtml } from './util/escape.js';
@@ -95,8 +96,8 @@ async function init() {
 
     $('dbStatus').textContent = 'database loaded (HTTP range-fetched)';
     $('dbCounts').textContent =
-      `${cv.toLocaleString()} vendors / ` +
-      `${cp.toLocaleString()} products / ` +
+      `${cv.toLocaleString()} USB vendors / ` +
+      `${cp.toLocaleString()} USB products / ` +
       `${bc.toLocaleString()} boards`;
 
     replayPending();

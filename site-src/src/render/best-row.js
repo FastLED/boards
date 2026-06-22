@@ -5,8 +5,18 @@ import { fmtVid, fmtPair, fmtSrc } from './fmt.js';
  * Render a single Best-Hits row. Hits can be vendors, products, or boards;
  * each gets a coloured kind-tag.
  */
+// Human label for each kind — matches the section headers so the
+// Best Hits strip reads as the same vocabulary as the categorized
+// sections below it.
+const KIND_LABEL = {
+  vendor: 'USB VID',
+  product: 'USB VID:PID',
+  board: 'board',
+};
+
 export function renderBestRow(h) {
-  const tag = `<span class="tag ${h.kind}">${h.kind}</span>`;
+  const label = KIND_LABEL[h.kind] || h.kind;
+  const tag = `<span class="tag ${h.kind}">${label}</span>`;
   const why = h.why ? `<span class="why">${escapeHtml(h.why)}</span>` : '';
 
   if (h.kind === 'vendor') {

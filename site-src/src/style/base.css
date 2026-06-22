@@ -145,6 +145,31 @@ code {
   border-radius: 3px;
   font-family: ui-monospace, monospace;
   font-size: 0.85em;
+  /* In light mode `<code>` has a faint blue tint; if a link wraps it
+     and the visited browser-default purple shows through, contrast
+     against the blue tint drops below WCAG AA. Force the inner code
+     to inherit the link's explicit color (which we set below). */
+  color: inherit;
+}
+
+/* Links — explicit colours for both themes plus an always-on
+   underline so they read as interactive on the off-blue `<code>`
+   tints in the header and help cards. Default browser blue + visited
+   purple were both failing contrast against --hi-bg in light mode
+   and looking washed-out in dark mode. */
+a {
+  color: var(--hi);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--hi) 55%, transparent);
+}
+a:visited { color: var(--hi); }
+a:hover { text-decoration-color: var(--hi); }
+a:focus-visible {
+  outline: 2px solid var(--hi);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 footer {

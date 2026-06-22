@@ -63,7 +63,7 @@ export function renderCombined(query, { vendors = [], products = [], boards = []
   if (vendors.length) {
     const capped = vendors.slice(0, 15);
     const more = vendors.length - capped.length;
-    html += `<div class="cat"><div class="cat-head">Vendors (${vendors.length})</div>`;
+    html += `<div class="cat"><div class="cat-head">USB Vendors / VID (${vendors.length})</div>`;
     for (const h of capped) html += renderVendorRow(h.row);
     if (more > 0)
       html += `<div class="stat">…${more} more — refine the query.</div>`;
@@ -72,7 +72,7 @@ export function renderCombined(query, { vendors = [], products = [], boards = []
   if (products.length) {
     const capped = products.slice(0, 25);
     const more = products.length - capped.length;
-    html += `<div class="cat"><div class="cat-head">Products (${products.length})</div>`;
+    html += `<div class="cat"><div class="cat-head">USB Products / VID:PID (${products.length})</div>`;
     for (const h of capped) html += renderProductRow(h.row);
     if (more > 0)
       html += `<div class="stat">…${more} more — refine the query.</div>`;

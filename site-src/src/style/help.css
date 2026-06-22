@@ -1,0 +1,57 @@
+/* Help / explainer cards. Lives below the search section so the page's
+   tall empty space carries something useful to a first-time visitor. */
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.help-card {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.help-card h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.help-card p {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--fg);
+  line-height: 1.55;
+}
+
+.help-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.83rem;
+  line-height: 1.7;
+  color: var(--fg);
+}
+
+.help-card li {
+  margin: 0;
+}
+
+.help-card li code {
+  /* Slightly tighter padding inside list items to keep the rhythm. */
+  padding: 0.05rem 0.3rem;
+}
+
+.help-card .label {
+  display: inline-block;
+  color: var(--muted);
+  margin-left: 0.35rem;
+  font-size: 0.78rem;
+}

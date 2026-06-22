@@ -57,8 +57,8 @@
               <select id="modeIn" autocomplete="off">
                 <option value="anything" selected>Anything</option>
                 <option value="board">Boards</option>
-                <option value="vendor">Vendors</option>
-                <option value="product">Products</option>
+                <option value="vendor">USB Vendors (VID)</option>
+                <option value="product">USB Products (VID:PID)</option>
               </select>
             </label>
           </div>
@@ -72,6 +72,98 @@
           <code>0x303a 1001</code> all hit the same product. Press
           <kbd>Esc</kbd> to dismiss the results.
         </p>
+      </section>
+
+      <section aria-label="Help">
+        <h2>What am I looking at?</h2>
+        <div class="help-grid">
+          <article class="help-card">
+            <h3>What is a USB VID:PID?</h3>
+            <p>
+              Every USB device exposes two 16-bit hex identifiers — a
+              <strong>Vendor ID</strong> (VID) assigned by the
+              <a href="https://www.usb.org/" target="_blank" rel="noopener"
+                >USB-IF</a
+              >
+              to the company that made the chip, and a <strong>Product ID</strong>
+              (PID) the vendor assigns to that specific product. Together
+              they look like
+              <code>0x303a:0x1001</code>
+              and uniquely identify a USB peripheral on the bus.
+            </p>
+          </article>
+
+          <article class="help-card">
+            <h3>Three things you can look up</h3>
+            <ul>
+              <li>
+                <strong>USB Vendors</strong> <span class="label">VID → company</span>
+                — type <code>303a</code> or <code>espressif</code>.
+              </li>
+              <li>
+                <strong>USB Products</strong>
+                <span class="label">VID:PID → device</span> — type
+                <code>303a:1001</code> or <code>teensy</code>; primary +
+                all alternates are returned.
+              </li>
+              <li>
+                <strong>Boards</strong> <span class="label">structured metadata</span>
+                — type <code>esp32dev</code>, <code>cortex-m7</code>,
+                <code>wifi</code>, or <code>arduino</code>.
+              </li>
+            </ul>
+          </article>
+
+          <article class="help-card">
+            <h3>Tips</h3>
+            <ul>
+              <li>
+                Punctuation and case are ignored —
+                <code>0x303A:1001</code>, <code>303a1001</code>, and
+                <code>303a 1001</code> all hit the same product.
+              </li>
+              <li>
+                Architecture searches work too —
+                <code>cortex</code>, <code>m7</code>, <code>xtensa</code>,
+                <code>riscv</code>, <code>avr</code> all find matching
+                boards.
+              </li>
+              <li>
+                On any board row, <strong>View JSON</strong> opens the raw
+                upstream definition; <strong>↗ source</strong> jumps to
+                its GitHub home.
+              </li>
+            </ul>
+          </article>
+
+          <article class="help-card">
+            <h3>Where the data comes from</h3>
+            <p>
+              Vendor IDs come from public USB-IF allocation registries plus
+              the
+              <a
+                href="https://github.com/espressif/usb-pids"
+                target="_blank"
+                rel="noopener"
+                >Espressif</a
+              >
+              and
+              <a
+                href="https://github.com/raspberrypi/usb-pid"
+                target="_blank"
+                rel="noopener"
+                >Raspberry Pi</a
+              >
+              registries. Boards come from PlatformIO's
+              <code>platform-*</code> repos and Arduino core
+              <code>boards.txt</code> files. Curated overrides
+              (Teensy attribution, etc.) live on this repo's
+              <code>other</code> branch. The combined database is rebuilt
+              and republished by the
+              <code>Build site</code> workflow.
+            </p>
+          </article>
+        </div>
       </section>
 
       <div
