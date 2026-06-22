@@ -12,7 +12,7 @@ Runs (in order):
   4. extract_other.py      on  <data-root>/other/      -> normalized/other.json
   5. merge.py              -> merged.json + warnings/{vendor,product}-conflicts.log
   6. extract_boards.py     on  <data-root>            -> normalized/boards.json
-  7. build_sqlite.py       -> <site-src>/public/site.db
+  7. build_sqlite.py       -> <site-src>/public/boards.db
   8. stages per-board JSONs at <site-src>/public/boards/<layer>/…
   9. writes <site-src>/public/_meta.json + warnings/ + errors/
  10. `npm ci && npm run build` inside site-src/  →  site-src/dist/
@@ -126,7 +126,7 @@ def _clean_public(public_dir: pathlib.Path) -> None:
     """Wipe the generated subset of site-src/public/ — keep checked-in
     files (none currently) intact. We're explicit about what we touch
     so a stale board file from a previous run can't sneak through."""
-    for name in ("site.db", "_meta.json"):
+    for name in ("boards.db", "site.db", "_meta.json"):
         f = public_dir / name
         if f.exists():
             f.unlink()
@@ -190,12 +190,12 @@ def orchestrate(
     boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
                                        data_root, public_dir)
 
-    # 7: sqlite → public/site.db
+    # 7: sqlite → public/boards.db
     _run_script(
         HERE / "build_sqlite.py",
         "--merged", str(merged_path),
         "--boards", str(boards_path),
-        "--out",    str(public_dir / "site.db"),
+        "--out",    str(public_dir / "boards.db"),
     )
 
     # 8: _meta.json (also written into public/ for Vite to serve)
@@ -218,7 +218,7 @@ def orchestrate(
         "per_layer_counts": stats.get("per_layer", {}),
         "errors_folder":    "errors/",
         "warnings_folder":  "warnings/",
-        "database":         "site.db",
+        "database":         "boards.db",
         "loader":           "vite",
         "boards_root":      "boards/",
     }

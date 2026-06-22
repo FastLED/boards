@@ -33,7 +33,7 @@ online-data SQLite + zackees memex sqlite-over-HTTP patterns):
     boards_fts: FTS5(board_id, name, vendor, mcu, sublayer,
                      frameworks, connectivity)
 
-Output is `<out>/site.db` — the browser uses sql.js-httpvfs to read it via
+Output is `<out>/boards.db` — the browser uses sql.js-httpvfs to read it via
 HTTP Range requests, so only the pages a query actually touches travel
 the wire. The DB can grow to many MB without affecting page-load latency.
 """
@@ -392,7 +392,7 @@ def main() -> int:
     p.add_argument("--boards", type=pathlib.Path, default=None,
                    help="boards.json produced by extract_boards.py (optional)")
     p.add_argument("--out",    required=True, type=pathlib.Path,
-                   help="output SQLite path (e.g. site/site.db)")
+                   help="output SQLite path (e.g. site/boards.db)")
     args = p.parse_args()
     build(args.merged, args.out, args.boards)
     return 0

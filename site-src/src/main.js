@@ -73,7 +73,7 @@ async function init() {
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null);
 
-    const url = new URL('site.db', location.href).href;
+    const url = new URL('boards.db', location.href).href;
     const dbPromise = openDb(url, { maxPageSize: 1024, cacheSize: 8192 });
 
     // Wire UI before the DB resolves so typing-while-loading is replayed.

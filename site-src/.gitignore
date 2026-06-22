@@ -1,6 +1,6 @@
 node_modules/
 dist/
-public/site.db
+public/boards.db
 public/_meta.json
 public/boards/
 public/warnings/

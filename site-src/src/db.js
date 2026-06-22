@@ -1,4 +1,4 @@
-// SQLite-over-HTTP wrapper. Opens the published `site.db` via
+// SQLite-over-HTTP wrapper. Opens the published `boards.db` via
 // sqlite-wasm-http with Accept-Encoding: identity — see
 // .extern-repos/memex/IMPLEMENT.md for why that header is the load-bearing
 // piece of the whole pipeline.
@@ -12,7 +12,7 @@ let _close = null;
 /**
  * Open the published SQLite database.
  *
- * @param {string} url        absolute or relative URL of site.db
+ * @param {string} url        absolute or relative URL of boards.db
  * @param {object} [options]
  * @param {number} [options.maxPageSize=1024]   must match the DB's PRAGMA page_size
  * @param {number} [options.cacheSize=8192]     KB of LRU page cache in the worker

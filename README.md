@@ -13,12 +13,12 @@ portal are stable.
 Public query UI (works even though this repo is private — the `site`
 branch is published via GitHub Pages from a Team-plan account). Searchable
 by VID, VID:PID, vendor-name fragment, or product-name fragment. Backed
-by `site.db` (SQLite over HTTP, served alongside `index.html`).
+by `boards.db` (SQLite over HTTP, served alongside `index.html`).
 
 | Endpoint | URL |
 |---|---|
 | Demo query UI                       | <https://fastled.github.io/boards/> |
-| Raw SQLite database                 | <https://fastled.github.io/boards/site.db> |
+| Raw SQLite database                 | <https://fastled.github.io/boards/boards.db> |
 | Build provenance + counts (`_meta`) | <https://fastled.github.io/boards/_meta.json> |
 | Severity-bucketed warnings folder   | <https://fastled.github.io/boards/warnings/> |
 
@@ -110,7 +110,7 @@ exposes:
 - Vendor-name fragment → matching VIDs (fuzzy)
 - Product-name fragment → matching VID:PIDs (fuzzy)
 
-The portal loads `site.db` once via `fetch()`, then runs every query
+The portal loads `boards.db` once via `fetch()`, then runs every query
 client-side in sql.js (WASM). Zero server, fully cacheable.
 
 ### From curl / scripts
