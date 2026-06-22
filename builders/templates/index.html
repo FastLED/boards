@@ -172,8 +172,9 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
   </div>
 </div>
 
-<script src="sql-httpvfs.js"></script>
-<script>
+<script type="module">
+import { openMemexDb, query as _memexQuery } from './memex.js';
+
 (() => {
   const $ = (id) => document.getElementById(id);
   const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => (
@@ -193,24 +194,19 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     return tokens.map(t => `${t}*`).join(' ');
   }
 
-  let dbWorker = null;
-  let db = null;   // worker.db proxy — methods return Promises
+  let db = null;     // memex SQLite promiser
+  let _close = null; // memex backend close fn
 
   async function init() {
     try {
-      if (typeof createDbWorker !== 'function') {
-        throw new Error('sql.js-httpvfs not loaded (createDbWorker missing)');
-      }
-      dbWorker = await createDbWorker(
-        [{ from: 'inline', config: {
-            serverMode: 'full',
-            url: 'site.db',
-            requestChunkSize: 4096,
-        }}],
-        'sqlite.worker.js',
-        'sql-wasm.wasm'
-      );
-      db = dbWorker.db;
+      // memex's openMemexDb threads `Accept-Encoding: identity` into every
+      // ranged fetch, which is required for GH Pages to honor Range
+      // (without it, Fastly returns the gzipped full file with HTTP 200).
+      // See https://github.com/zackees/memex/blob/main/IMPLEMENT.md
+      const url = new URL('site.db', location.href).href;
+      const handle = await openMemexDb(url, { maxPageSize: 4096, cacheSize: 4096 });
+      db = handle.db;
+      _close = handle.close;
       const cv = await rows('SELECT COUNT(*) AS n FROM vid_vendor');
       const cp = await rows('SELECT COUNT(*) AS n FROM vidpid');
       let bc = 0;
@@ -226,9 +222,18 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     }
   }
 
-  // sql.js-httpvfs's worker.db.query returns Array<Object> — already shaped.
+  // memex's query returns {columns: string[], rows: any[][]} — convert
+  // each row to {col: value} so the rest of the code keeps using o.field.
+  // sqlite3 exec accepts an array as the `bind` for positional ? params.
   async function rows(sql, params) {
-    return await db.query(sql, params || []);
+    const res = await _memexQuery(db, sql, (params && params.length) ? params : undefined);
+    const out = [];
+    for (const row of res.rows) {
+      const o = {};
+      for (let i = 0; i < res.columns.length; i++) o[res.columns[i]] = row[i];
+      out.push(o);
+    }
+    return out;
   }
 
   function fmtVid(v)    { return `<span class="k">0x${escapeHtml(v)}</span>`; }

@@ -38,9 +38,21 @@ import sys
 import urllib.request
 
 
-SQLJS_HTTPVFS_VERSION = "0.8.12"
-SQLJS_HTTPVFS_BASE = ("https://cdn.jsdelivr.net/npm/"
-                      f"sql.js-httpvfs@{SQLJS_HTTPVFS_VERSION}/dist")
+# Vendor memex's pre-built dist/wasm/ artifacts. memex wraps
+# sqlite-wasm-http with the Accept-Encoding: identity header config that
+# GH Pages requires to honor HTTP Range requests — see memex/IMPLEMENT.md
+# for the full failure analysis. Pin to a specific commit SHA so the
+# webpack chunk IDs (memex-141.js, memex-901.js, etc.) stay stable.
+MEMEX_SHA = "03fe8dfd2257d682a192794b12049f46686e8e78"
+MEMEX_BASE = f"https://raw.githubusercontent.com/zackees/memex/{MEMEX_SHA}/dist/wasm"
+MEMEX_ASSETS = (
+    "memex.js",
+    "memex-141.js",
+    "memex-272.js",
+    "memex-676.js",
+    "memex-901.js",
+    "sqlite3.wasm",
+)
 HERE = pathlib.Path(__file__).resolve().parent
 
 
@@ -61,62 +73,27 @@ def _ssl_ctx() -> ssl.SSLContext:
     return c
 
 
-_HTTPVFS_ASSETS = ("index.js", "sqlite.worker.js", "sql-wasm.wasm")
+def _download_memex_wasm(out_dir: pathlib.Path) -> None:
+    """Vendor memex's pre-built sqlite-wasm-http bundle into the site.
 
-# Prepended to sqlite.worker.js. GH Pages' Fastly layer gzips
-# application/octet-stream responses when the client advertises gzip — but
-# returns the WHOLE gzipped file with HTTP 200 even when Range was asked
-# for, defeating byte-range loading entirely (sql.js-httpvfs then fails
-# with "database disk image is malformed"). Setting Accept-Encoding:
-# identity opts out of compression so Range works (returns 206 Partial
-# Content with the true uncompressed byte slice). Same workaround memex
-# uses; observed on the wire from Chrome despite Accept-Encoding being a
-# spec-forbidden header (Chrome allows it in worker contexts).
-_HTTPVFS_WORKER_SHIM = (
-    b"// patched by builders/site.py: opt out of GH Pages gzip so HTTP\n"
-    b"// Range requests are honored. Without this, every range fetch\n"
-    b"// returns the full gzipped file and sql.js-httpvfs misreads pages.\n"
-    b"(function(){\n"
-    b"  var _fetch=self.fetch;\n"
-    b"  if(_fetch){self.fetch=function(input,init){\n"
-    b"    init=init||{}; var h=new Headers(init.headers||{});\n"
-    b"    h.set('Accept-Encoding','identity');\n"
-    b"    var copy={}; for(var k in init){copy[k]=init[k];} copy.headers=h;\n"
-    b"    return _fetch(input,copy);\n"
-    b"  };}\n"
-    b"  var _open=XMLHttpRequest.prototype.open;\n"
-    b"  XMLHttpRequest.prototype.open=function(){\n"
-    b"    var r=_open.apply(this,arguments);\n"
-    b"    try{this.setRequestHeader('Accept-Encoding','identity');}catch(e){}\n"
-    b"    return r;\n"
-    b"  };\n"
-    b"})();\n"
-)
-
-
-def _download_sqljs_httpvfs(out_dir: pathlib.Path) -> None:
-    """Fetch sql.js-httpvfs (index.js + sqlite.worker.js + sql-wasm.wasm)
-    from jsdelivr. Staged as <out>/sql-httpvfs.js + <out>/sqlite.worker.js
-    + <out>/sql-wasm.wasm so the portal serves them same-origin.
-
-    sqlite.worker.js is prepended with a small Accept-Encoding: identity
-    shim — see _HTTPVFS_WORKER_SHIM for the why."""
-    for asset in _HTTPVFS_ASSETS:
-        url = f"{SQLJS_HTTPVFS_BASE}/{asset}"
+    memex.js's `openMemexDb(url)` opens a SQLite DB via HTTP Range
+    requests with `Accept-Encoding: identity` already wired in — that
+    header is required for GH Pages to honor Range (without it, Fastly
+    returns the gzipped full file with HTTP 200 even when Range was
+    asked for). The companion files (memex-NNN.js chunks +
+    sqlite3.wasm) are loaded dynamically by memex.js and must sit
+    alongside it.
+    """
+    for asset in MEMEX_ASSETS:
+        url = f"{MEMEX_BASE}/{asset}"
         req = urllib.request.Request(url, headers={
             "User-Agent": "fbuild-bot/1.0 (+https://github.com/FastLED/boards)"
         })
         print(f"site: downloading {url}", file=sys.stderr)
         with urllib.request.urlopen(req, timeout=60, context=_ssl_ctx()) as r:
             blob = r.read()
-        # Rename index.js -> sql-httpvfs.js so its purpose is obvious in the
-        # bundle; the other two keep their package names because the worker
-        # internally references sql-wasm.wasm by that path.
-        out_name = "sql-httpvfs.js" if asset == "index.js" else asset
-        if asset == "sqlite.worker.js":
-            blob = _HTTPVFS_WORKER_SHIM + blob
-        (out_dir / out_name).write_bytes(blob)
-        print(f"site: staged {out_name} ({len(blob):,} B)", file=sys.stderr)
+        (out_dir / asset).write_bytes(blob)
+        print(f"site: staged {asset} ({len(blob):,} B)", file=sys.stderr)
 
 
 def orchestrate(
@@ -173,9 +150,9 @@ def orchestrate(
     # 8: copy demo HTML
     shutil.copyfile(HERE / "templates" / "index.html", out_dir / "index.html")
 
-    # 9: sql.js-httpvfs
+    # 9: vendor memex's sqlite-wasm-http bundle
     if not skip_sqljs:
-        _download_sqljs_httpvfs(out_dir)
+        _download_memex_wasm(out_dir)
 
     # 10: _meta.json
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
@@ -198,8 +175,8 @@ def orchestrate(
         "warnings_folder":  "warnings/",
         "database":         "site.db",
         "demo":             "index.html",
-        "loader":           "sql-httpvfs.js",
-        "sqljs_httpvfs_version": SQLJS_HTTPVFS_VERSION,
+        "loader":     "memex.js",
+        "memex_sha":  MEMEX_SHA,
     }
     (out_dir / "_meta.json").write_text(
         json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"
