@@ -20,8 +20,24 @@ encodes that decision once.
 Input shape: `<root>/overrides.json` carrying:
     {
       "vid_overrides": {"16c0": "PJRC (Teensy)", ...},
-      "vidpid_overrides": {"16c0:0483": "Teensy LC", ...}   (optional)
+      "vidpid_overrides": {"16c0:0483": "Teensy LC", ...},   (optional)
+      "vidpid_board_links": [                                  (optional)
+        {
+          "id": "teensy-usb-modes",
+          "vidpids": ["16c0:0483", "16c0:0482", ...],
+          "match_boards": { "board_id_glob": "teensy*" },
+          "note": "PJRC USB-mode PIDs apply to every Teensy variant."
+        },
+        ...
+      ]
     }
+
+The `vidpid_board_links` rules are polyfill-only. `build_sqlite.py`
+expands them at build time into `board_vidpids(board_rowid, vid, pid)`
+junction rows, and applies INSERT OR IGNORE so any board that already
+has the upstream hwid wins. This lets curators fill in linkage for
+boards whose upstream JSONs don't carry hwids (Teensy is the
+canonical case) without overriding correct upstream data.
 
 Plus any additional `<root>/*.json` files in the same flat-record shape
 extract_vendors accepts (forwards them so curators can add ad-hoc
@@ -54,17 +70,65 @@ def _norm_hex(s: str | int, width: int) -> str | None:
     return s.zfill(width)
 
 
+def _normalize_link_rule(rec: dict, fallback_id: int) -> dict | None:
+    """Validate + normalize one vidpid_board_links rule.
+
+    Returns None when the rule is malformed (so the build keeps going
+    instead of aborting on a typo in curated data). Normalizes vidpid
+    strings to lowercase 8-hex keys and `match_boards` to a stable
+    sub-dict shape.
+    """
+    if not isinstance(rec, dict):
+        return None
+    vidpids_raw = rec.get("vidpids") or []
+    if not isinstance(vidpids_raw, list):
+        return None
+    vidpids: list[str] = []
+    for s in vidpids_raw:
+        if not isinstance(s, str):
+            continue
+        cleaned = s.lower().replace(":", "").replace(" ", "")
+        if len(cleaned) != 8:
+            continue
+        vid = _norm_hex(cleaned[:4], 4)
+        pid = _norm_hex(cleaned[4:], 4)
+        if vid and pid:
+            vidpids.append(f"{vid}{pid}")
+    if not vidpids:
+        return None
+    match = rec.get("match_boards") or {}
+    if not isinstance(match, dict):
+        return None
+    keep: dict[str, str] = {}
+    for k, v in match.items():
+        if isinstance(v, str) and v.strip():
+            keep[k] = v.strip()
+    if not keep:
+        return None
+    rule_id = rec.get("id")
+    if not isinstance(rule_id, str) or not rule_id.strip():
+        rule_id = f"rule-{fallback_id}"
+    return {
+        "id":            rule_id.strip(),
+        "vidpids":       vidpids,
+        "match_boards":  keep,
+        "note":          (rec.get("note") or "").strip() or None,
+    }
+
+
 def extract(root: pathlib.Path) -> dict[str, Any]:
     vendors: list[dict] = []
     products: list[dict] = []
     vid_overrides: dict[str, str] = {}
     vidpid_overrides: dict[str, str] = {}
+    vidpid_board_links: list[dict] = []
 
     if not root.is_dir():
         print(f"other: input dir {root} missing; emitting empty record set",
               file=sys.stderr)
         return {"layer": "other", "vendors": vendors, "products": products,
-                "vid_overrides": vid_overrides, "vidpid_overrides": vidpid_overrides}
+                "vid_overrides": vid_overrides, "vidpid_overrides": vidpid_overrides,
+                "vidpid_board_links": vidpid_board_links}
 
     ovr_path = root / "overrides.json"
     if ovr_path.is_file():
@@ -86,8 +150,16 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
                         pid = _norm_hex(cleaned[4:], 4)
                         if vid and pid:
                             vidpid_overrides[f"{vid}{pid}"] = product.strip()
+            for i, rec in enumerate(ovr.get("vidpid_board_links") or []):
+                rule = _normalize_link_rule(rec, i)
+                if rule:
+                    vidpid_board_links.append(rule)
+                else:
+                    print(f"other[skip vidpid_board_link rule #{i}]: malformed",
+                          file=sys.stderr)
             print(f"other: {len(vid_overrides)} vid overrides, "
-                  f"{len(vidpid_overrides)} vidpid overrides",
+                  f"{len(vidpid_overrides)} vidpid overrides, "
+                  f"{len(vidpid_board_links)} board-link rules",
                   file=sys.stderr)
 
     # Any additional flat-record JSON files in this branch are forwarded as
@@ -122,7 +194,8 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
     print(f"other: {len(vendors)} flat-record vendors, {len(products)} flat-record products",
           file=sys.stderr)
     return {"layer": "other", "vendors": vendors, "products": products,
-            "vid_overrides": vid_overrides, "vidpid_overrides": vidpid_overrides}
+            "vid_overrides": vid_overrides, "vidpid_overrides": vidpid_overrides,
+            "vidpid_board_links": vidpid_board_links}
 
 
 def main() -> int:

@@ -131,6 +131,27 @@ CREATE VIRTUAL TABLE boards_fts USING fts5(
   frameworks, connectivity,
   content='boards', content_rowid='rowid'
 );
+
+-- Many-to-many junction between boards and VID:PIDs. Each row maps one
+-- board to one VID:PID it can present on the bus. `origin` records
+-- whether the link came from the board's upstream JSON ('upstream') or
+-- was filled in by a curated rule in other/overrides.json
+-- ('curated:<rule-id>'). The PRIMARY KEY makes upstream-wins polyfill
+-- behaviour automatic — Path 1 inserts upstream rows first, Path 2
+-- does INSERT OR IGNORE so curated rules can't overwrite them.
+--
+-- The `vidpid` table stays independent: it carries every known VID:PID
+-- name (including USB devices unrelated to embedded boards). Queries
+-- that just identify a USB device hit `vidpid` alone; queries that ask
+-- "which board uses this VID:PID" LEFT JOIN through this junction.
+CREATE TABLE board_vidpids (
+  board_rowid INTEGER NOT NULL,
+  vid         TEXT    NOT NULL,
+  pid         TEXT    NOT NULL,
+  origin      TEXT    NOT NULL,
+  PRIMARY KEY (board_rowid, vid, pid)
+);
+CREATE INDEX idx_board_vidpids_vidpid ON board_vidpids (vid, pid);
 """
 
 
@@ -154,6 +175,98 @@ def _board_rows(boards: list[dict]) -> list[tuple]:
     return rows
 
 
+def _board_matches_rule(board: dict, match: dict[str, str]) -> bool:
+    """Decide whether a board satisfies a single curated rule's
+    `match_boards` predicate. Supported keys (mix-and-match):
+
+      board_id_glob: "teensy*"   — fnmatch against board_id (case-insensitive)
+      mcu_glob:      "imxrt*"    — fnmatch against mcu (case-insensitive)
+      vendor:        "PJRC"      — exact vendor (case-insensitive)
+      vendor_glob:   "PJRC*"     — fnmatch against vendor (case-insensitive)
+      sublayer:      "teensy"    — exact sublayer (case-insensitive)
+      sublayer_glob: "teensy*"   — fnmatch against sublayer
+      layer:         "platformio"|"arduino"
+
+    Multiple keys are ANDed. A board with a missing field (e.g. no MCU
+    set) never satisfies a glob predicate on that field.
+    """
+    import fnmatch
+    for key, pattern in match.items():
+        if not isinstance(pattern, str):
+            return False
+        pat_lc = pattern.lower()
+        if key == "board_id_glob":
+            v = (board.get("board_id") or "").lower()
+            if not fnmatch.fnmatchcase(v, pat_lc):
+                return False
+        elif key == "mcu_glob":
+            v = (board.get("mcu") or "").lower()
+            if not v or not fnmatch.fnmatchcase(v, pat_lc):
+                return False
+        elif key == "vendor":
+            v = (board.get("vendor") or "").lower()
+            if v != pat_lc:
+                return False
+        elif key == "vendor_glob":
+            v = (board.get("vendor") or "").lower()
+            if not v or not fnmatch.fnmatchcase(v, pat_lc):
+                return False
+        elif key == "sublayer":
+            if (board.get("sublayer") or "").lower() != pat_lc:
+                return False
+        elif key == "sublayer_glob":
+            v = (board.get("sublayer") or "").lower()
+            if not fnmatch.fnmatchcase(v, pat_lc):
+                return False
+        elif key == "layer":
+            if (board.get("layer") or "") != pattern:
+                return False
+        else:
+            # Unknown predicate keys make the rule a no-op for safety.
+            return False
+    return True
+
+
+def _upstream_junction_rows(boards: list[dict]) -> list[tuple[int, str, str, str]]:
+    """Path 1: yield (board_rowid, vid, pid, 'upstream') for each
+    board's own upstream vidpids array. board_rowid matches the insert
+    order of the boards table (1..N)."""
+    rows: list[tuple[int, str, str, str]] = []
+    for i, b in enumerate(boards, start=1):
+        for vp in (b.get("vidpids") or []):
+            if isinstance(vp, (list, tuple)) and len(vp) >= 2:
+                vid, pid = vp[0], vp[1]
+                if isinstance(vid, str) and isinstance(pid, str):
+                    rows.append((i, vid, pid, "upstream"))
+    return rows
+
+
+def _curated_junction_rows(boards: list[dict],
+                            rules: list[dict]
+                            ) -> list[tuple[int, str, str, str]]:
+    """Path 2: expand each curated rule into (board_rowid, vid, pid,
+    'curated:<rule-id>') candidates. Order doesn't matter; the
+    INSERT OR IGNORE in build() makes upstream rows win on conflict."""
+    rows: list[tuple[int, str, str, str]] = []
+    for rule in rules:
+        match = rule.get("match_boards") or {}
+        rule_id = rule.get("id") or "unknown"
+        origin = f"curated:{rule_id}"
+        matched_rowids = [
+            i for i, b in enumerate(boards, start=1)
+            if _board_matches_rule(b, match)
+        ]
+        if not matched_rowids:
+            print(f"build_sqlite: rule {rule_id!r} matched 0 boards",
+                  file=sys.stderr)
+            continue
+        for vidpid_key in rule.get("vidpids") or []:
+            vid, pid = vidpid_key[:4], vidpid_key[4:]
+            for rowid in matched_rowids:
+                rows.append((rowid, vid, pid, origin))
+    return rows
+
+
 def build(merged_path: pathlib.Path, out_path: pathlib.Path,
           boards_path: pathlib.Path | None = None) -> dict[str, int]:
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
@@ -171,6 +284,11 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
     if boards_path and boards_path.is_file():
         boards = (json.loads(boards_path.read_text(encoding="utf-8"))
                   .get("boards") or [])
+
+    # Curated polyfill rules: links between (vid, pid) and one or more
+    # boards for boards whose upstream JSON doesn't carry hwids. Already
+    # validated by extract_other.py.
+    link_rules = merged.get("vidpid_board_links") or []
 
     if out_path.exists():
         out_path.unlink()
@@ -201,6 +319,41 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 _board_rows(boards),
             )
+
+            # board_vidpids junction. Path 1 (upstream) runs first so its
+            # rows always exist before Path 2 attempts to fill polyfill
+            # entries; the PRIMARY KEY + OR IGNORE makes upstream win on
+            # conflict so curated rules can never silently overwrite real
+            # upstream data.
+            upstream_rows = _upstream_junction_rows(boards)
+            if upstream_rows:
+                conn.executemany(
+                    "INSERT OR IGNORE INTO board_vidpids "
+                    "(board_rowid, vid, pid, origin) VALUES (?, ?, ?, ?)",
+                    upstream_rows,
+                )
+            curated_candidates = _curated_junction_rows(boards, link_rules)
+            curated_inserted_pre = conn.execute(
+                "SELECT COUNT(*) FROM board_vidpids WHERE origin <> 'upstream'"
+            ).fetchone()[0]
+            if curated_candidates:
+                conn.executemany(
+                    "INSERT OR IGNORE INTO board_vidpids "
+                    "(board_rowid, vid, pid, origin) VALUES (?, ?, ?, ?)",
+                    curated_candidates,
+                )
+            curated_inserted_post = conn.execute(
+                "SELECT COUNT(*) FROM board_vidpids WHERE origin <> 'upstream'"
+            ).fetchone()[0]
+            print(
+                f"build_sqlite: board_vidpids: "
+                f"{len(upstream_rows)} upstream + "
+                f"{curated_inserted_post - curated_inserted_pre} curated "
+                f"({len(curated_candidates) - (curated_inserted_post - curated_inserted_pre)} "
+                f"polyfill-skipped because upstream already supplied them)",
+                file=sys.stderr,
+            )
+
         # Populate the FTS mirrors.
         conn.execute(
             "INSERT INTO vid_vendor_fts (rowid, vid, vendor) "

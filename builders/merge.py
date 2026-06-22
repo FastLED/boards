@@ -302,18 +302,25 @@ def merge(layer_files: list[pathlib.Path], warnings_dir: pathlib.Path,
           f"distinct={log_counts['distinct.log']} "
           f"vendor={log_counts['vendor.log']}", file=sys.stderr)
 
+    vidpid_board_links = (other_data or {}).get("vidpid_board_links") or []
+
     return {
-        "generated_at": _now_iso(),
-        "vid_vendor":   vid_vendor,
-        "vidpid":       flat_vidpid,
+        "generated_at":       _now_iso(),
+        "vid_vendor":         vid_vendor,
+        "vidpid":             flat_vidpid,
+        # Polyfill linkage rules forwarded verbatim from the `other` layer
+        # so build_sqlite.py can expand them into the `board_vidpids`
+        # junction. Validated upstream in extract_other.py.
+        "vidpid_board_links": vidpid_board_links,
         "stats": {
-            "total_vids":          len(vid_vendor),
-            "total_vidpid_keys":   len(vidpid_rows),
-            "total_vidpid_rows":   len(flat_vidpid),
-            "vidpid_alternates":   alt_count,
-            "warnings":            log_counts,
-            "severity_counts":     severity_counts,
-            "per_layer":           layer_counts,
+            "total_vids":              len(vid_vendor),
+            "total_vidpid_keys":       len(vidpid_rows),
+            "total_vidpid_rows":       len(flat_vidpid),
+            "vidpid_alternates":       alt_count,
+            "vidpid_board_link_rules": len(vidpid_board_links),
+            "warnings":                log_counts,
+            "severity_counts":         severity_counts,
+            "per_layer":               layer_counts,
         },
     }
 
