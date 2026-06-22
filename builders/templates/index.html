@@ -663,11 +663,14 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       'FROM boards b ' +
       'JOIN boards_fts f ON f.rowid = b.rowid ' +
       'WHERE boards_fts MATCH ? ' +
-      'ORDER BY bm25(boards_fts), b.name ' +
-      // Cap aggressively: broad searches like "wifi" or "arduino" match
-      // hundreds of boards but the user is almost always looking at the
-      // top dozen. Rendering 60 chip-laden rows costs ~1 second on the
-      // live CDN; 30 is plenty.
+      // Order by name only — bm25() requires reading the term-frequency
+      // postings list for every match before sorting, which on broad
+      // queries like "wifi" / "arduino" (hundreds of matches) adds
+      // hundreds of ms on a range-fetched DB. Pure name order is cheap
+      // because idx_boards_name covers it, and for the user-facing case
+      // (typing 'esp32dev' returns esp32dev variants) the relevance
+      // ordering doesn't help — exact matches sort adjacent anyway.
+      'ORDER BY b.name COLLATE NOCASE ' +
       'LIMIT 30',
       [fts]
     );
