@@ -63,11 +63,44 @@ def _ssl_ctx() -> ssl.SSLContext:
 
 _HTTPVFS_ASSETS = ("index.js", "sqlite.worker.js", "sql-wasm.wasm")
 
+# Prepended to sqlite.worker.js. GH Pages' Fastly layer gzips
+# application/octet-stream responses when the client advertises gzip — but
+# returns the WHOLE gzipped file with HTTP 200 even when Range was asked
+# for, defeating byte-range loading entirely (sql.js-httpvfs then fails
+# with "database disk image is malformed"). Setting Accept-Encoding:
+# identity opts out of compression so Range works (returns 206 Partial
+# Content with the true uncompressed byte slice). Same workaround memex
+# uses; observed on the wire from Chrome despite Accept-Encoding being a
+# spec-forbidden header (Chrome allows it in worker contexts).
+_HTTPVFS_WORKER_SHIM = (
+    b"// patched by builders/site.py: opt out of GH Pages gzip so HTTP\n"
+    b"// Range requests are honored. Without this, every range fetch\n"
+    b"// returns the full gzipped file and sql.js-httpvfs misreads pages.\n"
+    b"(function(){\n"
+    b"  var _fetch=self.fetch;\n"
+    b"  if(_fetch){self.fetch=function(input,init){\n"
+    b"    init=init||{}; var h=new Headers(init.headers||{});\n"
+    b"    h.set('Accept-Encoding','identity');\n"
+    b"    var copy={}; for(var k in init){copy[k]=init[k];} copy.headers=h;\n"
+    b"    return _fetch(input,copy);\n"
+    b"  };}\n"
+    b"  var _open=XMLHttpRequest.prototype.open;\n"
+    b"  XMLHttpRequest.prototype.open=function(){\n"
+    b"    var r=_open.apply(this,arguments);\n"
+    b"    try{this.setRequestHeader('Accept-Encoding','identity');}catch(e){}\n"
+    b"    return r;\n"
+    b"  };\n"
+    b"})();\n"
+)
+
 
 def _download_sqljs_httpvfs(out_dir: pathlib.Path) -> None:
     """Fetch sql.js-httpvfs (index.js + sqlite.worker.js + sql-wasm.wasm)
     from jsdelivr. Staged as <out>/sql-httpvfs.js + <out>/sqlite.worker.js
-    + <out>/sql-wasm.wasm so the portal serves them same-origin."""
+    + <out>/sql-wasm.wasm so the portal serves them same-origin.
+
+    sqlite.worker.js is prepended with a small Accept-Encoding: identity
+    shim — see _HTTPVFS_WORKER_SHIM for the why."""
     for asset in _HTTPVFS_ASSETS:
         url = f"{SQLJS_HTTPVFS_BASE}/{asset}"
         req = urllib.request.Request(url, headers={
@@ -80,6 +113,8 @@ def _download_sqljs_httpvfs(out_dir: pathlib.Path) -> None:
         # bundle; the other two keep their package names because the worker
         # internally references sql-wasm.wasm by that path.
         out_name = "sql-httpvfs.js" if asset == "index.js" else asset
+        if asset == "sqlite.worker.js":
+            blob = _HTTPVFS_WORKER_SHIM + blob
         (out_dir / out_name).write_bytes(blob)
         print(f"site: staged {out_name} ({len(blob):,} B)", file=sys.stderr)
 
