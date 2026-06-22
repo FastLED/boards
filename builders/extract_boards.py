@@ -239,6 +239,37 @@ def _derive_arch_bits(mcu: str | None) -> tuple[str | None, int | None]:
     return None, None
 
 
+# Whole-string stop words for the keyword soup. Match is case-insensitive
+# against the FULL string value — so the standalone menu sub-label
+# "Disabled" gets filtered out, but a rich descriptive string like
+# "Disable interrupts" or "Default with spiffs" stays in the index
+# because it doesn't match any entry verbatim.
+#
+# Curated from the dict-key recon (tools/gen_search_keys_corpus.py):
+# 24 keys appeared as standalone string values across hundreds of
+# boards' menu structures with no realistic search intent — log levels
+# (info/warn/error), generic UI states (default/none/disabled/enable),
+# size labels (small/fast/minimal/custom), and schema-shaped
+# abbreviations (boot/mode/port/os/sdk/ld/fp).
+#
+# NOT included — these hit broadly too but are real search terms users
+# would type, and they're already covered by structured columns
+# (architecture / connectivity / frameworks):
+#   arduino, mbed, freertos, zephyr, riscv, arm, xtensa,
+#   wifi, bluetooth, serial, wire, psram, zigbee, cdc, dfu, flash
+_STOP_WORDS: frozenset[str] = frozenset({
+    # Log levels
+    "info", "warn", "error", "verbose",
+    # Generic UI states
+    "default", "disable", "disabled", "enable", "enabled",
+    "none", "on", "off", "all", "custom",
+    # Size / speed labels
+    "minimal", "small", "fast",
+    # Pure schema labels that bled in as menu values
+    "boot", "mode", "port", "os", "sdk", "ld", "fp",
+})
+
+
 def _is_numeric(s: str) -> bool:
     s = s.strip()
     if not s:
@@ -284,6 +315,8 @@ def _collect_keywords(obj: Any, sink: set[str], max_len: int = 200) -> None:
         if "{" in s or "}" in s:
             return
         if _is_numeric(s):
+            return
+        if sl in _STOP_WORDS:
             return
         sink.add(s)
     elif isinstance(obj, dict):
