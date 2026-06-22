@@ -29,7 +29,14 @@ const STOP_WORDS = new Set([
  * @returns {string|null}
  */
 export function ftsQuery(s) {
+  // Strip GCC -D define prefix BEFORE lowercasing so the uppercase
+  // lookahead works. Mirrors builders/extract_boards.py:_GCC_DEFINE_RE
+  // — the index side strips the same way, so symmetry holds. Catches
+  // user-pasted compile-error fragments like
+  // `error: 'ARDUINO_NANO33BLE' not declared` → strips -D wherever
+  // present and lets the macro name match the indexed alias.
   const tokens = (s || '')
+    .replace(/-D(?=[A-Z_])/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9_\s]/g, ' ')
     .split(/\s+/)

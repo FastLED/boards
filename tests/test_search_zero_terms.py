@@ -146,10 +146,21 @@ def _resolve_db_path() -> str:
     return CACHE_PATH
 
 
+_STOP_WORDS = frozenset({
+    "info", "warn", "error", "verbose",
+    "default", "disable", "disabled", "enable", "enabled",
+    "none", "on", "off", "all", "custom",
+    "minimal", "small", "fast",
+    "boot", "mode", "port", "os", "sdk", "ld", "fp",
+})
+
+
 def _fts_query(s: str) -> str | None:
-    """Mirror the live portal's ftsQuery() from site-src/src/util/fts.js."""
-    tokens = re.sub(r"[^a-z0-9_\s]", " ", (s or "").lower()).split()
-    tokens = [t for t in tokens if t]
+    """Mirror the live portal's ftsQuery() from site-src/src/util/fts.js
+    — same -D strip, same stop-word filter, same prefix-AND output."""
+    s = re.sub(r"-D(?=[A-Z_])", "", s or "")
+    tokens = re.sub(r"[^a-z0-9_\s]", " ", s.lower()).split()
+    tokens = [t for t in tokens if t and t not in _STOP_WORDS]
     if not tokens:
         return None
     return " ".join(t + "*" for t in tokens)
