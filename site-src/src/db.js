@@ -55,20 +55,28 @@ export async function query(sql, bind) {
   if (!_db) throw new Error('db: openDb() not called yet');
   const columns = [];
   const rows = [];
-  await _db('exec', {
-    sql,
-    bind: bind && (Array.isArray(bind) ? bind.length : Object.keys(bind).length)
-      ? bind
-      : undefined,
-    callback: (msg) => {
-      if (msg.row) {
-        rows.push(msg.row);
-        if (!columns.length && msg.columnNames) columns.push(...msg.columnNames);
-      } else if (msg.columnNames && !columns.length) {
-        columns.push(...msg.columnNames);
-      }
-    },
-  });
+  const hasBind =
+    bind && (Array.isArray(bind) ? bind.length : Object.keys(bind).length);
+  try {
+    await _db('exec', {
+      sql,
+      bind: hasBind ? bind : undefined,
+      callback: (msg) => {
+        if (msg.row) {
+          rows.push(msg.row);
+          if (!columns.length && msg.columnNames) columns.push(...msg.columnNames);
+        } else if (msg.columnNames && !columns.length) {
+          columns.push(...msg.columnNames);
+        }
+      },
+    });
+  } catch (err) {
+    // The promiser rejects with a {type:'error', result:{}} response
+    // object that doesn't expose the underlying SQL error message. Log
+    // the SQL + bind so the failing query is visible in the page console.
+    console.error('db.query failed', { sql, bind, err });
+    throw err;
+  }
   return rows.map((r) => {
     const o = {};
     for (let i = 0; i < columns.length; i++) o[columns[i]] = r[i];
