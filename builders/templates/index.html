@@ -664,7 +664,11 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       'JOIN boards_fts f ON f.rowid = b.rowid ' +
       'WHERE boards_fts MATCH ? ' +
       'ORDER BY bm25(boards_fts), b.name ' +
-      'LIMIT 60',
+      // Cap aggressively: broad searches like "wifi" or "arduino" match
+      // hundreds of boards but the user is almost always looking at the
+      // top dozen. Rendering 60 chip-laden rows costs ~1 second on the
+      // live CDN; 30 is plenty.
+      'LIMIT 30',
       [fts]
     );
     if (!r.length) {
@@ -766,8 +770,9 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
   function closeBoardJson() { $('boardJsonModal').classList.remove('open'); }
 
   // Each search issues several FTS5 lookups that round-trip through HTTP
-  // range requests; debounce a bit longer than for the old in-memory DB.
-  function debounced(fn, ms = 220) {
+  // range requests. 120ms is fast enough to feel snappy and slow enough
+  // that fast typing doesn't fire several queries per word.
+  function debounced(fn, ms = 120) {
     let t;
     return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
   }
