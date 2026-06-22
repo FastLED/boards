@@ -239,6 +239,105 @@ def _derive_arch_bits(mcu: str | None) -> tuple[str | None, int | None]:
     return None, None
 
 
+def _is_numeric(s: str) -> bool:
+    s = s.strip()
+    if not s:
+        return False
+    try:
+        int(s); return True
+    except ValueError:
+        pass
+    try:
+        int(s, 0); return True
+    except (ValueError, TypeError):
+        pass
+    try:
+        float(s); return True
+    except ValueError:
+        pass
+    return False
+
+
+def _collect_keywords(obj: Any, sink: set[str], max_len: int = 200) -> None:
+    """Recursively walk the per-board JSON and gather every string value
+    that looks like it could be a search term users would type. Used to
+    populate the boards.keywords column (and via that, boards_fts) so
+    free-text search hits the long tail — STM32duino menu.pnum.* part
+    numbers, ESP8266 build.board macros, Zephyr variant aliases, etc.
+
+    Skipped, in order:
+      - empty / whitespace
+      - longer than max_len chars (giant license blobs etc.)
+      - URLs (http:// or https://)
+      - template placeholders (contain `{` or `}`)
+      - purely numeric literals (parseable as int / 0x-int / float)
+    Dict KEYS are intentionally NOT collected — they're schema labels
+    (menu, build, hwids, …) and would only add noise.
+    """
+    if isinstance(obj, str):
+        s = obj.strip()
+        if not s or len(s) > max_len:
+            return
+        sl = s.lower()
+        if sl.startswith(("http://", "https://")):
+            return
+        if "{" in s or "}" in s:
+            return
+        if _is_numeric(s):
+            return
+        sink.add(s)
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            _collect_keywords(v, sink, max_len)
+    elif isinstance(obj, list):
+        for v in obj:
+            _collect_keywords(v, sink, max_len)
+
+
+def _extract_aliases(b: dict) -> list[str]:
+    """Structured aliases — alternate identifiers a user might type that
+    point back to this board. Distinct from `keywords` in that these
+    are pulled from known schema locations rather than free-walking, and
+    can be surfaced in the UI as "this board also goes by:".
+
+    Sources covered (no-op when the field is absent):
+      - Arduino board.txt `menu.pnum.<KEY>` substructure (STM32duino's
+        variant part-numbers): collect the KEY itself, the empty-key
+        label inside it, and any `build.board` macro it defines.
+      - PlatformIO `build.zephyr.variant` (Zephyr board alias).
+      - PlatformIO `debug.openocd_board` (OpenOCD target name).
+      - `build.board` macro at the top level (ESP8266 boards encode the
+        Arduino build define here, e.g. `ESP8266_WEMOS_D1MINI`).
+    """
+    aliases: set[str] = set()
+    menu = b.get("menu") if isinstance(b.get("menu"), dict) else {}
+    pnum = menu.get("pnum") if isinstance(menu.get("pnum"), dict) else {}
+    for key, val in pnum.items():
+        if isinstance(key, str) and key.strip():
+            aliases.add(key.strip())
+        if isinstance(val, dict):
+            label = val.get("")
+            if isinstance(label, str) and label.strip():
+                aliases.add(label.strip())
+            sub_build = val.get("build") if isinstance(val.get("build"), dict) else {}
+            sub_board = sub_build.get("board")
+            if isinstance(sub_board, str) and sub_board.strip():
+                aliases.add(sub_board.strip())
+    build = b.get("build") if isinstance(b.get("build"), dict) else {}
+    zephyr = build.get("zephyr") if isinstance(build.get("zephyr"), dict) else {}
+    zv = zephyr.get("variant") if isinstance(zephyr, dict) else None
+    if isinstance(zv, str) and zv.strip():
+        aliases.add(zv.strip())
+    debug = b.get("debug") if isinstance(b.get("debug"), dict) else {}
+    ob = debug.get("openocd_board") if isinstance(debug, dict) else None
+    if isinstance(ob, str) and ob.strip():
+        aliases.add(ob.strip())
+    top_build_board = build.get("board")
+    if isinstance(top_build_board, str) and top_build_board.strip():
+        aliases.add(top_build_board.strip())
+    return sorted(aliases)
+
+
 def _unquote(s: Any) -> str | None:
     if not isinstance(s, str):
         return None
@@ -305,6 +404,9 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
         mcu_str = _str_or_none(build.get("mcu"))
         arch, bits = _derive_arch_bits(mcu_str)
         repo, blob = _platformio_upstream(root / plat, board_id)
+        kw_sink: set[str] = set()
+        _collect_keywords(b, kw_sink)
+        aliases = _extract_aliases(b)
         out.append({
             "layer":            "platformio",
             "sublayer":         plat,
@@ -326,6 +428,8 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             "connectivity":     _csv_or_none(b.get("connectivity")),
             "debug_tool":       _str_or_none(debug.get("openocd_board")
                                               or debug.get("default_tool")),
+            "aliases":          ",".join(aliases) if aliases else None,
+            "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          vidpids,
             "upstream_repo":    repo,
             "upstream_blob":    blob,
@@ -380,6 +484,9 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
         frameworks_csv = "arduino"
         mcu_str = _str_or_none(build.get("mcu"))
         arch, bits = _derive_arch_bits(mcu_str)
+        kw_sink: set[str] = set()
+        _collect_keywords(b, kw_sink)
+        aliases = _extract_aliases(b)
         out.append({
             "layer":            "arduino",
             "sublayer":         core,
@@ -401,6 +508,8 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
             "frameworks":       frameworks_csv,
             "connectivity":     None,
             "debug_tool":       None,
+            "aliases":          ",".join(aliases) if aliases else None,
+            "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          _arduino_vidpids(b),
             "upstream_repo":    upstream,
             "upstream_blob":    upstream,

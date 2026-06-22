@@ -115,6 +115,17 @@ CREATE TABLE boards (
   frameworks      TEXT,        -- CSV: "arduino,espidf"
   connectivity    TEXT,        -- CSV: "bluetooth,can,ethernet,wifi"
   debug_tool      TEXT,
+  aliases         TEXT,        -- CSV of alternate IDs the board responds to:
+                               -- STM32duino menu.pnum part numbers, Zephyr
+                               -- variants, OpenOCD board names, ESP8266
+                               -- build.board macros. Surfaces in search so
+                               -- typing `GENERIC_F412ZEJX`, `stm32l476g_disco`,
+                               -- or `ESP8266_WEMOS_D1MINI` finds the right board.
+  keywords        TEXT,        -- space-joined soup of every search-shaped
+                               -- string value found in the per-board JSON
+                               -- (filtered: no URLs, templates, or pure
+                               -- numbers). Catches the long tail of
+                               -- compile-flag fragments etc.
   vidpids         TEXT,
   upstream_blob   TEXT
 );
@@ -125,10 +136,12 @@ CREATE INDEX idx_boards_layer    ON boards (layer, sublayer);
 -- frameworks searches stay cheap under byte-range loading (LIKE '%foo%'
 -- would scan every page). Architecture is stored with `-` separators
 -- ("cortex-m7") so the default unicode61 tokenizer splits it into
--- ["cortex", "m7"], letting users search either token.
+-- ["cortex", "m7"], letting users search either token. `aliases` and
+-- `keywords` widen reach so STM32duino pnum variants, Zephyr aliases,
+-- ESP8266 build macros, compile-flag fragments, and the like land hits.
 CREATE VIRTUAL TABLE boards_fts USING fts5(
   board_id, name, vendor, mcu, architecture, sublayer,
-  frameworks, connectivity,
+  frameworks, connectivity, aliases, keywords,
   content='boards', content_rowid='rowid'
 );
 
@@ -170,6 +183,7 @@ def _board_rows(boards: list[dict]) -> list[tuple]:
             b.get("core"), b.get("variant"),
             b.get("homepage"), b.get("frameworks"),
             b.get("connectivity"), b.get("debug_tool"),
+            b.get("aliases"), b.get("keywords"),
             vidpids or None, b.get("upstream_blob"),
         ))
     return rows
@@ -314,9 +328,9 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
                 "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
                 "mcu, architecture, bit_width, frequency_mhz, flash_kb, "
                 "ram_kb, upload_speed, upload_protocol, core, variant, "
-                "homepage, frameworks, connectivity, debug_tool, vidpids, "
-                "upstream_blob) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "homepage, frameworks, connectivity, debug_tool, "
+                "aliases, keywords, vidpids, upstream_blob) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 _board_rows(boards),
             )
 
@@ -366,10 +380,11 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         conn.execute(
             "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, "
             "                        architecture, sublayer, frameworks, "
-            "                        connectivity) "
+            "                        connectivity, aliases, keywords) "
             "SELECT rowid, board_id, name, COALESCE(vendor,''), "
             "       COALESCE(mcu,''), COALESCE(architecture,''), sublayer, "
-            "       COALESCE(frameworks,''), COALESCE(connectivity,'') "
+            "       COALESCE(frameworks,''), COALESCE(connectivity,''), "
+            "       COALESCE(aliases,''), COALESCE(keywords,'') "
             "FROM boards"
         )
         conn.commit()
