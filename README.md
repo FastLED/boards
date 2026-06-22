@@ -19,6 +19,7 @@ by `boards.db` (SQLite over HTTP, served alongside `index.html`).
 |---|---|
 | Demo query UI                       | <https://fastled.github.io/boards/> |
 | Raw SQLite database                 | <https://fastled.github.io/boards/boards.db> |
+| Compact USB VID:PID download JSON   | <https://fastled.github.io/boards/usb-ids.json> |
 | Build provenance + counts (`_meta`) | <https://fastled.github.io/boards/_meta.json> |
 | Severity-bucketed warnings folder   | <https://fastled.github.io/boards/warnings/> |
 
