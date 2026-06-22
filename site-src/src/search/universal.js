@@ -12,6 +12,44 @@ const vidKey = (r) => r.vid;
 const prodKey = (r) => `${r.vid}${r.pid}|${r.product}`;
 const boardKey = (r) => r.rowid;
 
+// Columns selected for every board fetch — kept as one constant so the
+// junction lookup and the FTS5 lookup return identically-shaped rows.
+const BOARD_COLUMNS =
+  'b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
+  'b.vendor, b.mcu, b.architecture, b.bit_width, ' +
+  'b.frequency_mhz, b.flash_kb, b.ram_kb, ' +
+  'b.upload_speed, b.core, b.variant, b.homepage, ' +
+  'b.frameworks, b.connectivity, b.vidpids, b.upstream_blob';
+
+/**
+ * Given a list of `[vid, pid]` pairs, fetch every board that the
+ * `board_vidpids` junction links them to. One round-trip via the
+ * `idx_board_vidpids_vidpid` index — no full scans.
+ *
+ * Push the results into the `boards` array at the given score so they
+ * surface in Best Hits next to the vidpid rows they identify.
+ */
+async function enrichWithLinkedBoards(boards, vidpidPairs, score, why) {
+  if (!vidpidPairs.length) return;
+  // SQLite supports row-value IN syntax: `WHERE (vid, pid) IN ((?,?),(?,?),...)`.
+  // Cap the in-list to keep the planner happy and to bound the work the
+  // junction does on broad VID-only queries.
+  const capped = vidpidPairs.slice(0, 40);
+  const placeholders = capped.map(() => '(?,?)').join(',');
+  const args = capped.flat();
+  const rows = await query(
+    `SELECT DISTINCT ${BOARD_COLUMNS} ` +
+      'FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      `WHERE (bv.vid, bv.pid) IN (${placeholders}) ` +
+      'LIMIT 30',
+    args,
+  );
+  for (const r of rows) {
+    bumpOrPush(boards, boardKey, r, score, why);
+  }
+}
+
 export async function universalSearch(raw) {
   const q = (raw || '').trim();
   if (!q) {
@@ -43,6 +81,18 @@ export async function universalSearch(raw) {
         [vidPidExact.slice(0, 4)],
       );
       for (const r of v) bumpOrPush(vendors, vidKey, r, 800, 'vendor of VID:PID');
+
+      // Master-record lookup: which boards does this VID:PID actually
+      // identify? With the board_vidpids junction in place, a query like
+      // "16c0:0483" jumps straight from "Teensy (Serial mode)" to the 10
+      // Teensy boards via a single indexed JOIN, and they surface in
+      // Best Hits with a View JSON button each.
+      await enrichWithLinkedBoards(
+        boards,
+        [[vidPidExact.slice(0, 4), vidPidExact.slice(4)]],
+        800,
+        'linked to VID:PID',
+      );
     } else if (vidExact) {
       const rows = await query(
         'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
@@ -56,6 +106,26 @@ export async function universalSearch(raw) {
         [vidExact],
       );
       for (const r of vp) bumpOrPush(products, prodKey, r, 600, 'same VID');
+
+      // Boards linked to ANY VID:PID with this VID. Important because
+      // boards_fts doesn't index the vidpids column — searching by VID
+      // would otherwise miss the boards. We feed the (vid, pid) pairs
+      // we just pulled from the vidpid table into the junction lookup.
+      const seen = new Set();
+      const pairsForJunction = [];
+      for (const r of vp) {
+        const k = r.vid + r.pid;
+        if (!seen.has(k)) {
+          seen.add(k);
+          pairsForJunction.push([r.vid, r.pid]);
+        }
+      }
+      await enrichWithLinkedBoards(
+        boards,
+        pairsForJunction,
+        700,
+        'linked via VID',
+      );
 
       // 4-hex could also be a PID — try a PID-only lookup.
       const pidHits = await query(
@@ -92,6 +162,24 @@ export async function universalSearch(raw) {
           [hex.slice(0, 4)],
         );
         for (const r of v) bumpOrPush(vendors, vidKey, r, 600, 'vendor of VID');
+
+        // Junction enrichment for prefix VID:PID — gathers any boards
+        // linked to one of the prefix-matched VID:PIDs.
+        const seen = new Set();
+        const pairsForJunction = [];
+        for (const r of pref) {
+          const k = r.vid + r.pid;
+          if (!seen.has(k)) {
+            seen.add(k);
+            pairsForJunction.push([r.vid, r.pid]);
+          }
+        }
+        await enrichWithLinkedBoards(
+          boards,
+          pairsForJunction,
+          650,
+          'linked via VID:PID prefix',
+        );
       }
     }
   }
@@ -125,6 +213,32 @@ export async function universalSearch(raw) {
       );
       bumpOrPush(products, prodKey, r, sc, 'name');
     }
+
+    // For each VID:PID that came back from the product name search, see
+    // whether the junction links it to one or more boards. This is the
+    // "esp returns vid/pid fragments" → "esp returns master records with
+    // View JSON" upgrade: when the user types `esp`, the product hit
+    // `Espressif ESP-WROVER-KIT (0403:6010)` now drags the matching
+    // board(s) along too. Capped to the top-scoring 20 product rows so a
+    // broad name search doesn't fan out beyond what the user can read.
+    const topProducts = [...products]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+    const seenPairs = new Set();
+    const pairsForJunction = [];
+    for (const p of topProducts) {
+      const k = p.row.vid + p.row.pid;
+      if (!seenPairs.has(k)) {
+        seenPairs.add(k);
+        pairsForJunction.push([p.row.vid, p.row.pid]);
+      }
+    }
+    await enrichWithLinkedBoards(
+      boards,
+      pairsForJunction,
+      630,
+      'linked via product name',
+    );
 
     const bByName = await query(
       'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
