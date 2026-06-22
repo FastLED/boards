@@ -65,15 +65,19 @@ def make_order_clause(weights: list[float]) -> str:
 CONFIGS: list[tuple[str, list[float]]] = [
     # name              board_id name vendor mcu arch sub frameworks conn aliases keywords
     ("baseline_default",  [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+    # Isolate the name boost: 1×, 1.5×, 2×, 3×, 5×, 10×
+    ("name_1.5x",         [ 1.0, 1.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+    ("name_2x",           [ 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+    ("name_3x",           [ 1.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
     ("name_5x",           [ 1.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
     ("name_10x",          [ 1.0,10.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
-    ("name+id_5x",        [ 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
-    ("keywords_quiet",    [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.1]),
+    # Pair the same name-boost levels with the keyword-quiet trick
+    ("name_2x_kw_quiet",  [ 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2]),
+    ("name_3x_kw_quiet",  [ 1.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2]),
+    ("name_5x_kw_quiet",  [ 1.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2]),
+    # Original winners for reference
     ("aliases+name_kw_q", [ 1.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 3.0, 0.2]),
-    ("strict_name_only",  [ 0.1,10.0, 0.1, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 0.1]),
     ("identity_heavy",    [10.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 0.5]),
-    ("balanced_moderate", [ 1.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 0.5]),
-    ("vendor+name",       [ 1.0, 5.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 0.2]),
 ]
 
 
