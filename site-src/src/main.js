@@ -79,17 +79,6 @@ async function init() {
     wireUp();
 
     const [meta] = await Promise.all([metaPromise, dbPromise]);
-
-    // Smoke check — verifies the worker can actually run SQL before we
-    // unhide the UI. Without this, the user types into a "ready" input
-    // and only THEN sees the silent worker error.
-    try {
-      const r = await query('SELECT 1 AS n');
-      console.log('db smoke check:', r);
-    } catch (e) {
-      console.error('db smoke check failed', e);
-    }
-
     dbReady = true;
 
     const t = (meta && meta.totals) || {};

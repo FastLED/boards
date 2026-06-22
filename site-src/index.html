@@ -3,8 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <title>FastLED/boards — USB VID:PID Lookup</title>
+    <!--
+      No preload for site.db! A `<link rel="preload" href="site.db">`
+      fetches with the browser's default Accept-Encoding (which
+      includes gzip), so the CDN serves the gzipped full file and
+      caches it. When the worker later requests with Accept-Encoding:
+      identity, the browser hands it the cached gzipped copy, the
+      probe records 268740 bytes (the gzipped size) as the DB size,
+      and every subsequent FTS5 read silently returns garbage.
+      Always let the worker do the first fetch.
+    -->
     <link rel="preload" href="_meta.json" as="fetch" />
-    <link rel="preload" href="site.db" as="fetch" />
   </head>
   <body>
     <div class="wrap">
