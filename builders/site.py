@@ -10,10 +10,12 @@ Runs (in order):
   3. extract_platformio.py on  <data-root>/platformio/ -> normalized/platformio.json
   4. extract_other.py      on  <data-root>/other/      -> normalized/other.json
   5. merge.py              -> merged.json + errors/{vendor,product}-conflicts.log
-  6. build_sqlite.py       -> <out>/site.db
-  7. copies templates/index.html      -> <out>/index.html
-  8. downloads pinned sql-wasm.js/.wasm assets from the GitHub release
-  9. writes <out>/_meta.json + <out>/errors/  (the errors folder ships with
+  6. extract_boards.py     on  <data-root>            -> normalized/boards.json
+  7. copies each platformio/arduino board JSON into <out>/boards/<layer>/<...>.json
+  8. build_sqlite.py       -> <out>/site.db (includes the `boards` table)
+  9. copies templates/index.html      -> <out>/index.html
+ 10. downloads pinned sql-wasm.js/.wasm assets from the GitHub release
+ 11. writes <out>/_meta.json + <out>/errors/  (the errors folder ships with
      the site so humans can inspect what was logged)
 
 Each extractor / merger / builder is also runnable standalone — this script
@@ -55,6 +57,34 @@ def _ssl_ctx() -> ssl.SSLContext:
     c.check_hostname = False
     c.verify_mode = ssl.CERT_NONE
     return c
+
+
+def _copy_board_jsons(boards: list[dict], data_root: pathlib.Path,
+                       out_dir: pathlib.Path) -> int:
+    """Stage each upstream board JSON into <out>/boards/<layer>/<src_relpath>.
+
+    The data branches put their per-board JSONs at either
+    `<branch-root>/data/<sublayer>/boards/<id>.json` or directly at
+    `<branch-root>/<sublayer>/boards/<id>.json` (depending on the sync).
+    Tolerate both."""
+    copied = 0
+    missing = 0
+    for b in boards:
+        layer = b["layer"]
+        relpath = b["src_relpath"]
+        src_data = data_root / layer / "data" / relpath
+        src_flat = data_root / layer / relpath
+        src = src_data if src_data.is_file() else (src_flat if src_flat.is_file() else None)
+        if src is None:
+            missing += 1
+            continue
+        dst = out_dir / "boards" / layer / relpath
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dst)
+        copied += 1
+    print(f"site: staged {copied} board JSONs into {out_dir/'boards'} "
+          f"({missing} missing)", file=sys.stderr)
+    return copied
 
 
 def _download_sqljs(out_dir: pathlib.Path) -> None:
@@ -118,25 +148,40 @@ def orchestrate(
         "--errors-dir",     str(errors_dir),
     )
 
-    # 6: sqlite
+    # 6: per-board metadata extraction
+    boards_path = normalized / "boards.json"
+    _run_script(
+        HERE / "extract_boards.py",
+        "--in",  str(data_root),
+        "--out", str(boards_path),
+    )
+
+    # 7: copy each board JSON into the published bundle so the portal's
+    # "View JSON" button is a static fetch.
+    boards_data = json.loads(boards_path.read_text(encoding="utf-8"))
+    boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
+                                       data_root, out_dir)
+
+    # 8: sqlite (now includes the `boards` table)
     _run_script(
         HERE / "build_sqlite.py",
         "--merged", str(merged_path),
+        "--boards", str(boards_path),
         "--out",    str(out_dir / "site.db"),
     )
 
-    # 7: copy demo HTML
+    # 9: copy demo HTML
     shutil.copyfile(HERE / "templates" / "index.html", out_dir / "index.html")
 
-    # 8: sql.js
+    # 10: sql.js
     if not skip_sqljs:
         _download_sqljs(out_dir)
 
-    # 9: _meta.json
+    # 11: _meta.json
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
     stats = merged.get("stats", {})
     meta = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at":   _now_iso(),
         "trigger":        os.environ.get("GITHUB_EVENT_NAME", "manual"),
         "totals": {
@@ -144,6 +189,8 @@ def orchestrate(
             "vidpid_keys":           stats.get("total_vidpid_keys", 0),
             "vidpid_rows":           stats.get("total_vidpid_rows", 0),
             "vidpid_alternates":     stats.get("vidpid_alternates", 0),
+            "boards":                len(boards_data.get("boards") or []),
+            "board_jsons_copied":    boards_copied,
         },
         "warnings":         stats.get("warnings", {}),
         "severity_counts":  stats.get("severity_counts", {}),
@@ -152,6 +199,7 @@ def orchestrate(
         "warnings_folder":  "warnings/",
         "database":         "site.db",
         "demo":             "index.html",
+        "boards_root":      "boards/",
     }
     (out_dir / "_meta.json").write_text(
         json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"

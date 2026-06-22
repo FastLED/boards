@@ -23,9 +23,21 @@ online-data SQLite + zackees memex sqlite-over-HTTP patterns):
     vid_vendor_fts: FTS5(vid, vendor)        -- indexes BOTH key & vendor
     vidpid_fts:     FTS5(vidpid, vid, pid, product)
 
+    boards:
+      board_id     TEXT          -- e.g. "esp32dev"
+      layer        TEXT          -- "platformio" | "arduino"
+      sublayer     TEXT          -- platform name or core slug
+      name         TEXT          -- "Espressif ESP32 Dev Module"
+      vendor       TEXT          -- nullable
+      mcu          TEXT          -- nullable
+      frequency_mhz INTEGER      -- nullable
+      vidpids      TEXT          -- "303a:0002, 1234:5678" pretty CSV
+      json_url     TEXT          -- relative URL into the site bundle
+      upstream_blob TEXT         -- upstream link (may be repo-root for arduino)
+
 Output is `<out>/site.db` (read by sql.js in the browser via HTTP range
 requests; the file is intentionally small enough to download in full —
-~200KB at the time of writing).
+~200KB at the time of writing, ~600KB-1MB once `boards` is populated).
 """
 
 from __future__ import annotations
@@ -74,10 +86,44 @@ CREATE VIRTUAL TABLE vid_vendor_fts
 
 CREATE VIRTUAL TABLE vidpid_fts
   USING fts5(vidpid, vid, pid, product, content='vidpid', content_rowid='rowid');
+
+-- Per-board metadata: one row per upstream board JSON. Each row carries a
+-- relative json_url that points at the copy site.py stages into the
+-- published bundle (e.g. "boards/platformio/espressif32/boards/esp32dev.json"),
+-- so the portal "View JSON" button is just a static fetch.
+CREATE TABLE boards (
+  board_id      TEXT NOT NULL,
+  layer         TEXT NOT NULL,
+  sublayer      TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  vendor        TEXT,
+  mcu           TEXT,
+  frequency_mhz INTEGER,
+  vidpids       TEXT,
+  json_url      TEXT NOT NULL,
+  upstream_blob TEXT
+);
+CREATE INDEX idx_boards_name     ON boards (name COLLATE NOCASE);
+CREATE INDEX idx_boards_board_id ON boards (board_id COLLATE NOCASE);
+CREATE INDEX idx_boards_layer    ON boards (layer, sublayer);
 """
 
 
-def build(merged_path: pathlib.Path, out_path: pathlib.Path) -> dict[str, int]:
+def _board_rows(boards: list[dict]) -> list[tuple]:
+    rows = []
+    for b in boards:
+        vidpids = ", ".join(f"{v}:{p}" for v, p in (b.get("vidpids") or []))
+        json_url = f"boards/{b['layer']}/{b['src_relpath']}"
+        rows.append((
+            b["board_id"], b["layer"], b["sublayer"], b["name"],
+            b.get("vendor"), b.get("mcu"), b.get("frequency_mhz"),
+            vidpids or None, json_url, b.get("upstream_blob"),
+        ))
+    return rows
+
+
+def build(merged_path: pathlib.Path, out_path: pathlib.Path,
+          boards_path: pathlib.Path | None = None) -> dict[str, int]:
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
     vid_vendor = merged.get("vid_vendor") or {}
     # vidpid is now a LIST of row dicts (v2 schema). Tolerate the old v1
@@ -88,6 +134,11 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path) -> dict[str, int]:
         vidpid = [{**rec, "is_primary": True} for rec in vidpid_raw.values()]
     else:
         vidpid = vidpid_raw
+
+    boards: list[dict] = []
+    if boards_path and boards_path.is_file():
+        boards = (json.loads(boards_path.read_text(encoding="utf-8"))
+                  .get("boards") or [])
 
     if out_path.exists():
         out_path.unlink()
@@ -108,6 +159,13 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path) -> dict[str, int]:
               rec.get("source", ""), 1 if rec.get("is_primary") else 0)
              for rec in vidpid],
         )
+        if boards:
+            conn.executemany(
+                "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
+                "mcu, frequency_mhz, vidpids, json_url, upstream_blob) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                _board_rows(boards),
+            )
         # Populate the FTS mirrors.
         conn.execute(
             "INSERT INTO vid_vendor_fts (rowid, vid, vendor) "
@@ -124,19 +182,22 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path) -> dict[str, int]:
 
     size = out_path.stat().st_size
     print(f"build_sqlite: wrote {out_path} ({size:,} bytes, "
-          f"{len(vid_vendor)} vendors, {len(vidpid)} products)",
+          f"{len(vid_vendor)} vendors, {len(vidpid)} products, {len(boards)} boards)",
           file=sys.stderr)
-    return {"vendors": len(vid_vendor), "products": len(vidpid), "bytes": size}
+    return {"vendors": len(vid_vendor), "products": len(vidpid),
+            "boards": len(boards), "bytes": size}
 
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--merged", required=True, type=pathlib.Path,
                    help="merged.json produced by merge.py")
+    p.add_argument("--boards", type=pathlib.Path, default=None,
+                   help="boards.json produced by extract_boards.py (optional)")
     p.add_argument("--out",    required=True, type=pathlib.Path,
                    help="output SQLite path (e.g. site/site.db)")
     args = p.parse_args()
-    build(args.merged, args.out)
+    build(args.merged, args.out, args.boards)
     return 0
 
 

@@ -53,6 +53,39 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
 .tag.vendor  { background:#3a6ea5; color:#fff; }
 .tag.product { background:#5a8f3a; color:#fff; }
 .why { color:var(--muted); font-size:.7rem; margin-left:.4rem; }
+.board-row { display:flex; align-items:center; gap:.5rem;
+  padding:.45rem .55rem; margin:.25rem 0; border:1px solid var(--border);
+  border-radius:5px; flex-wrap:wrap; }
+.board-row:hover { background:var(--hi-bg); }
+.board-name { font-weight:600; }
+.board-meta { color:var(--muted); font-size:.78rem; }
+.board-chip { display:inline-block; font-size:.7rem; padding:.05rem .4rem;
+  border-radius:10px; background:var(--border); color:var(--fg);
+  margin-right:.3rem; font-family:ui-monospace, monospace; }
+.board-spacer { flex:1; min-width:.5rem; }
+.btn { font:inherit; font-size:.78rem; font-weight:600; padding:.32rem .7rem;
+  border-radius:5px; border:1px solid var(--hi); background:var(--hi);
+  color:#fff; text-decoration:none; cursor:pointer; display:inline-block;
+  white-space:nowrap; transition:filter .12s; }
+.btn:hover { filter:brightness(1.1); }
+.btn.secondary { background:transparent; color:var(--hi); }
+.btn.secondary:hover { background:var(--hi-bg); }
+.btn + .btn { margin-left:.35rem; }
+#boardJsonModal { position:fixed; inset:0; background:rgba(0,0,0,.55);
+  display:none; align-items:center; justify-content:center; z-index:100; padding:1rem; }
+#boardJsonModal.open { display:flex; }
+#boardJsonModal .modal-body { background:var(--bg); color:var(--fg);
+  border-radius:8px; max-width:880px; width:100%; max-height:85vh;
+  display:flex; flex-direction:column; border:1px solid var(--border); }
+#boardJsonModal header { display:flex; align-items:center; gap:.6rem;
+  padding:.7rem 1rem; border-bottom:1px solid var(--border); }
+#boardJsonModal header .title { font-weight:600; font-size:.95rem; flex:1;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#boardJsonModal pre { margin:0; padding:1rem; overflow:auto; flex:1;
+  font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background:var(--bg); color:var(--fg); white-space:pre; }
+#boardJsonModal .close { background:transparent; border:none; color:var(--fg);
+  font-size:1.4rem; line-height:1; cursor:pointer; padding:0 .3rem; }
 </style>
 </head>
 <body>
@@ -102,12 +135,41 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     <div id="productOut" class="empty">Enter a VID:PID like <code>16c0:0483</code> or a name fragment like <code>esp32</code>.</div>
   </section>
 
+  <section>
+    <h2>Board definitions</h2>
+    <div class="row">
+      <label class="uni">
+        Board name
+        <input id="boardIn" type="text" autocomplete="off"
+          placeholder="esp32dev, uno, teensy41, pico, feather…">
+      </label>
+    </div>
+    <div id="boardOut" class="empty">
+      Type a board name (or board id, mcu, or vendor). Click
+      <span class="btn" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">View JSON</span>
+      on any result to inspect the full board definition; the
+      <span class="btn secondary" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">↗ source</span>
+      link goes to the upstream repo.
+    </div>
+  </section>
+
   <footer>
     Source data merged from PlatformIO + Arduino cores + vendor allocation registries.
     Curated overrides (Teensy, etc.) applied via the <code>other</code> branch.
     Repo: <a href="https://github.com/FastLED/boards">FastLED/boards</a>.
     Database is rebuilt and republished by the <code>Build site</code> workflow on every data-branch refresh.
   </footer>
+</div>
+
+<div id="boardJsonModal" role="dialog" aria-modal="true" aria-labelledby="boardJsonTitle">
+  <div class="modal-body">
+    <header>
+      <span class="title" id="boardJsonTitle"></span>
+      <a id="boardJsonRaw" class="btn secondary" target="_blank" rel="noopener">↗ raw</a>
+      <button class="close" id="boardJsonClose" aria-label="close">&times;</button>
+    </header>
+    <pre id="boardJsonBody">loading…</pre>
+  </div>
 </div>
 
 <script src="sql-wasm.js"></script>
@@ -439,6 +501,113 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       `<span class="v">${escapeHtml(r.product)}</span>${alt}${fmtSrc(r.source)}</div>`;
   }
 
+  // ---- Board-definition search ------------------------------------------
+  // The `boards` table (added when extract_boards.py runs) carries one row
+  // per upstream board JSON plus a relative json_url into the published
+  // bundle, so "View JSON" is just a fetch against this same origin.
+
+  function hasBoardsTable() {
+    try {
+      const r = db.exec(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='boards'");
+      return r.length > 0 && r[0].values.length > 0;
+    } catch { return false; }
+  }
+
+  function searchBoards(raw) {
+    const out = $('boardOut');
+    const q = (raw || '').trim();
+    if (!q) {
+      out.className = 'empty';
+      out.innerHTML = 'Type a board name (or board id, mcu, or vendor).';
+      return;
+    }
+    if (q.length < 2) {
+      out.className = 'empty';
+      out.innerHTML = 'Enter at least 2 characters.';
+      return;
+    }
+    if (!hasBoardsTable()) {
+      out.className = 'err';
+      out.innerHTML = 'this database was built before board definitions were tracked — wait for the next site rebuild.';
+      return;
+    }
+    const like = `%${q}%`;
+    const r = rows(
+      'SELECT board_id, layer, sublayer, name, vendor, mcu, frequency_mhz, ' +
+      '       vidpids, json_url, upstream_blob ' +
+      'FROM boards ' +
+      'WHERE name LIKE ? OR board_id LIKE ? OR vendor LIKE ? OR mcu LIKE ? ' +
+      'ORDER BY ' +
+      '  CASE WHEN LOWER(board_id) = LOWER(?) THEN 0 ' +
+      '       WHEN LOWER(name)     = LOWER(?) THEN 1 ' +
+      '       WHEN LOWER(name) LIKE LOWER(?) THEN 2 ELSE 3 END, ' +
+      '  name COLLATE NOCASE ' +
+      'LIMIT 60',
+      [like, like, like, like, q, q, `${q}%`]
+    );
+    if (!r.length) {
+      out.className = 'empty';
+      out.innerHTML = `no boards match "${escapeHtml(q)}"`;
+      return;
+    }
+    out.className = '';
+    let html = `<div class="stat">${r.length} board(s) match "${escapeHtml(q)}":</div>`;
+    for (const b of r) html += renderBoardRow(b);
+    out.innerHTML = html;
+    // Wire up the View buttons.
+    out.querySelectorAll('button[data-json-url]').forEach(btn => {
+      btn.addEventListener('click', () => openBoardJson(
+        btn.getAttribute('data-json-url'),
+        btn.getAttribute('data-title')));
+    });
+  }
+
+  function renderBoardRow(b) {
+    const vendor = b.vendor ? `<span>${escapeHtml(b.vendor)}</span> · ` : '';
+    const meta = [];
+    if (b.mcu)            meta.push(escapeHtml(b.mcu));
+    if (b.frequency_mhz)  meta.push(`${b.frequency_mhz} MHz`);
+    if (b.vidpids)        meta.push(escapeHtml(b.vidpids));
+    const metaStr = meta.length ? `<div class="board-meta">${meta.join(' · ')}</div>` : '';
+    const chip = `<span class="board-chip">${escapeHtml(b.layer)}/${escapeHtml(b.sublayer)}</span>`;
+    const title = `${b.layer}/${b.sublayer}/${b.board_id}.json`;
+    const viewBtn = `<button class="btn" data-json-url="${escapeHtml(b.json_url)}" ` +
+      `data-title="${escapeHtml(title)}">View JSON</button>`;
+    const srcBtn = b.upstream_blob
+      ? `<a class="btn secondary" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
+      : '';
+    return `<div class="board-row">` +
+      `<div>${chip}${vendor}<span class="board-name">${escapeHtml(b.name)}</span> ` +
+      `<span class="board-meta">(${escapeHtml(b.board_id)})</span>${metaStr}</div>` +
+      `<div class="board-spacer"></div>${viewBtn}${srcBtn}</div>`;
+  }
+
+  let lastJsonUrl = null;
+  async function openBoardJson(url, title) {
+    const modal = $('boardJsonModal');
+    $('boardJsonTitle').textContent = title || url;
+    $('boardJsonRaw').href = url;
+    $('boardJsonBody').textContent = 'loading…';
+    modal.classList.add('open');
+    lastJsonUrl = url;
+    try {
+      const resp = await fetch(url, { cache: 'force-cache' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const text = await resp.text();
+      if (lastJsonUrl !== url) return;   // user switched while we were loading
+      try {
+        $('boardJsonBody').textContent = JSON.stringify(JSON.parse(text), null, 2);
+      } catch {
+        $('boardJsonBody').textContent = text;
+      }
+    } catch (e) {
+      $('boardJsonBody').textContent = `failed to load ${url}\n\n${e.message}`;
+    }
+  }
+
+  function closeBoardJson() { $('boardJsonModal').classList.remove('open'); }
+
   function debounced(fn, ms = 120) {
     let t;
     return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
@@ -450,6 +619,14 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
     $('vendorIn').addEventListener('input', debounced(e => searchVendorByName(e.target.value)));
     $('vidpidIn').addEventListener('input', debounced(e => searchProductByVidPid(e.target.value)));
     $('productIn').addEventListener('input', debounced(e => searchProductByName(e.target.value)));
+    $('boardIn').addEventListener('input', debounced(e => searchBoards(e.target.value)));
+    $('boardJsonClose').addEventListener('click', closeBoardJson);
+    $('boardJsonModal').addEventListener('click', e => {
+      if (e.target.id === 'boardJsonModal') closeBoardJson();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && $('boardJsonModal').classList.contains('open')) closeBoardJson();
+    });
     $('uniIn').focus();
   }
 
