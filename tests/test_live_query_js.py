@@ -1,0 +1,178 @@
+"""End-to-end test that drives the actual JS search engine via Bun.
+
+The previous Python tests (test_search_corpus_results.py,
+test_search_zero_terms.py) ported the portal's ftsQuery() + SQL
+queries into Python so we could test against the live boards.db
+without a JS runtime. That works, but the Python implementation can
+drift away from the JS source — silent divergence is exactly the kind
+of bug a test should catch.
+
+This test runs the SAME `site-src/src/search/engine.js` the portal
+uses, against the SAME boards.db, via the `tools/query.mjs` Bun CLI.
+Output is parsed from JSON and asserted. No SQL string lives in
+Python anymore.
+
+Requirements:
+  - `bun` on PATH (https://bun.sh)
+  - BOARDS_DB env var to point at a local DB (recommended for iteration),
+    otherwise the CLI fetches the live published boards.db on each run.
+
+Run:
+    BOARDS_DB=%TEMP%\\fastled-boards-local.db python -m unittest tests.test_live_query_js -v
+or:
+    python -m unittest tests.test_live_query_js -v   # falls back to live URL
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+
+
+REPO = pathlib.Path(__file__).resolve().parents[1]
+BUN = shutil.which("bun")
+QUERY_MJS = REPO / "tools" / "query.mjs"
+LIVE_URL = "https://fastled.github.io/boards/boards.db"
+
+
+def _db_arg() -> str:
+    """Honor BOARDS_DB env override; fall back to the live URL."""
+    override = os.environ.get("BOARDS_DB")
+    if override and os.path.exists(override):
+        return override
+    return LIVE_URL
+
+
+def _run_batch(db: str, items: list[dict], timeout: int = 120) -> list[dict]:
+    """Invoke the Bun CLI in batch mode against `db` with the given
+    items and return the parsed JSON list. Raises CalledProcessError
+    on non-zero exit so test failures surface the CLI stderr."""
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as fh:
+        json.dump(items, fh)
+        batch_path = fh.name
+    try:
+        proc = subprocess.run(
+            [BUN, str(QUERY_MJS), "--db", db, "--batch", batch_path],
+            capture_output=True, text=True, timeout=timeout, check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise AssertionError(
+            f"bun query.mjs exit {e.returncode}\nstderr:\n{e.stderr}\n"
+            f"stdout:\n{e.stdout[:1000]}"
+        ) from e
+    finally:
+        os.unlink(batch_path)
+    return json.loads(proc.stdout)
+
+
+@unittest.skipIf(BUN is None, "bun runtime not installed; skipping JS-engine tests")
+class LiveQueryJsTests(unittest.TestCase):
+    """Run the JS search engine against the live or local boards.db
+    and assert the same headline contracts the Python tests cover.
+    Replaces nothing — runs alongside them as a parity check that the
+    JS engine produces the expected answers."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.db = _db_arg()
+        # Sanity-warm one query so the rest of the test methods don't
+        # all eat the URL download cost on cold cache.
+        _run_batch(cls.db, [{"text": "teensy40", "mode": "board", "limit": 1}])
+
+    def test_teensy40_resolves_via_board_mode(self) -> None:
+        results = _run_batch(self.db, [{"text": "teensy40", "mode": "board"}])
+        self.assertEqual(len(results), 1)
+        r = results[0]
+        self.assertEqual(r["mode"], "board")
+        boards = r["data"]["boards"]
+        self.assertTrue(boards, f"teensy40 should hit at least one board: {r}")
+        top = boards[0]["row"]
+        self.assertEqual(top["board_id"], "teensy40")
+        self.assertIn("teensy", top["name"].lower())
+
+    def test_vidpid_16c0_0483_returns_full_set(self) -> None:
+        """Exact VID:PID query hits all 10 Teensy variants via the
+        board_vidpids junction enrichment in searchUniversal()."""
+        results = _run_batch(self.db, [{"text": "16c0:0483", "mode": "anything"}])
+        r = results[0]
+        self.assertGreaterEqual(
+            len(r["data"]["products"]), 1,
+            f"16c0:0483 should return ≥1 vidpid row: {r['counts']}")
+        self.assertGreaterEqual(
+            len(r["data"]["boards"]), 9,
+            f"16c0:0483 should JOIN to ≥9 Teensy boards via the junction: "
+            f"{r['counts']}")
+        # Every joined board must be a Teensy.
+        non_teensy = [
+            b["row"]["board_id"] for b in r["data"]["boards"]
+            if "teensy" not in b["row"]["name"].lower()
+        ]
+        self.assertFalse(non_teensy,
+                         f"non-Teensy boards in 16c0:0483 result: {non_teensy}")
+
+    def test_alias_fix_terms_resolve_via_engine_js(self) -> None:
+        """The four marquee aliases from the keyword/aliases work
+        (PR #4) must hit boards mode via the real JS engine — proving
+        the fix isn't just visible to Python's port of ftsQuery."""
+        terms = [
+            ("GENERIC_F412ZEJX",     "GenF4"),
+            ("stm32l476g_disco",     "disco_l476vg"),
+            ("ESP8266_WEMOS_D1MINI", "d1_mini"),
+            ("Aurora One",           "GenG0"),
+        ]
+        items = [{"text": t, "mode": "board"} for t, _ in terms]
+        results = _run_batch(self.db, items)
+        self.assertEqual(len(results), len(terms))
+        misses = []
+        for (term, want_id), r in zip(terms, results):
+            boards = r["data"]["boards"]
+            if not boards:
+                misses.append((term, "no rows"))
+                continue
+            ids = [b["row"]["board_id"] for b in boards]
+            if want_id not in ids:
+                misses.append((term, f"want {want_id!r} not in {ids[:5]}"))
+        self.assertFalse(
+            misses,
+            "JS engine missed at least one alias-fixed term:\n"
+            + "\n".join(f"  {t!r}: {why}" for t, why in misses),
+        )
+
+    def test_expected_zero_url_terms_return_empty_via_engine_js(self) -> None:
+        """URLs intentionally skipped by _collect_keywords must return
+        zero boards via the real JS engine too — locks in the contract
+        across runtimes."""
+        urls = [
+            "https://www.stcmicro.com/STC/STC89C52RC.html",
+            "https://github.com/RAKWireless/RAK811",
+            "http://www.atmel.com/devices/ATTINY45.aspx",
+        ]
+        items = [{"text": u, "mode": "board"} for u in urls]
+        results = _run_batch(self.db, items)
+        offenders = []
+        for u, r in zip(urls, results):
+            if r["data"]["boards"]:
+                offenders.append((u, r["data"]["boards"][0]["row"]["board_id"]))
+        self.assertFalse(
+            offenders,
+            f"URLs unexpectedly hit boards via JS engine: {offenders}",
+        )
+
+    def test_cli_reports_a_backend(self) -> None:
+        """Sanity: each result should report which adapter served it
+        (bun:sqlite for local/URL via memory.js, http-range for the
+        browser path — never exercised here)."""
+        results = _run_batch(self.db, [{"text": "esp32dev", "mode": "board"}])
+        self.assertEqual(results[0]["backend"], "bun:sqlite")
+
+
+if __name__ == "__main__":
+    unittest.main()
