@@ -292,6 +292,16 @@ def _is_numeric(s: str) -> bool:
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 
+# Strip the leading `-D` (GCC define prefix) from build-flag strings
+# before tokenization, so `-DARDUINO_NRF52840_FEATHER` becomes
+# `ARDUINO_NRF52840_FEATHER` and tokenizes to ['arduino', 'nrf52840',
+# 'feather'] — matching what a user types from a compile error.
+# Without this strip, the `D` fuses with the macro name and the
+# indexed text contains `darduino` which never matches a user query.
+# The same regex MUST be applied on the query side (fts.js) so the
+# strip stays symmetric.
+_GCC_DEFINE_RE = re.compile(r"-D(?=[A-Z_])")
+
 
 def _filter_stop_tokens(s: str) -> str:
     """Tokenize `s` using the same alphanumeric+underscore rule
@@ -342,6 +352,12 @@ def _collect_keywords(obj: Any, sink: set[str], max_len: int = 200) -> None:
             return
         if sl in _STOP_WORDS:
             return
+        # GCC -D prefix strip (see _GCC_DEFINE_RE comment). Must mirror
+        # the same strip in site-src/src/util/fts.js so a user's typed
+        # query like `ARDUINO_NRF52840_FEATHER` (without the -D)
+        # matches what the extractor produced from `-DARDUINO_NRF52840
+        # _FEATHER` in the upstream build.extra_flags.
+        s = _GCC_DEFINE_RE.sub("", s)
         filtered = _filter_stop_tokens(s)
         if not filtered.strip():
             return
