@@ -594,11 +594,84 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
     return out
 
 
+def _vendor_canonical_by_first_token(boards: list[dict]) -> dict[str, str]:
+    """Build {first_word_lower → canonical vendor name} from every board
+    that has an explicit `.vendor` populated. Prefers the SHORTEST canonical
+    on collision so e.g. "Arduino" wins over "Arduino LLC" — keeps
+    derived vendors clean. Used to derive vendor + name_search on boards
+    whose upstream JSON didn't populate `.vendor` but whose `.name`
+    starts with a recognized vendor.
+    """
+    canon: dict[str, str] = {}
+    for b in boards:
+        v = b.get("vendor")
+        if isinstance(v, str) and v.strip():
+            v_clean = v.strip()
+            parts = v_clean.split()
+            if not parts:
+                continue
+            first = parts[0].lower()
+            if first not in canon or len(v_clean) < len(canon[first]):
+                canon[first] = v_clean
+    return canon
+
+
+def _split_vendor(name: str, vendor_canonical: dict[str, str],
+                  existing_vendor: str | None) -> tuple[str | None, str]:
+    """Return (vendor, name_search) for a board. If the display name
+    starts with a known vendor token, strip that token from name_search.
+    If existing_vendor is present we keep it; otherwise we may derive
+    from the name prefix.
+
+    Examples (with vendor_canonical containing "arduino" → "Arduino"):
+        "Arduino UNO", existing=None    → ("Arduino", "UNO")
+        "Arduino UNO", existing="Arduino LLC" → ("Arduino LLC", "UNO")
+        "UNO",        existing="Arduino" → ("Arduino", "UNO")
+        "Microduino Core+", existing=None → ("Microduino", "Core+")
+                                           IF "microduino" is in canon
+        "M300",       existing="Malyan" → ("Malyan", "M300")  no prefix strip
+        "Generic STM32F0 series", existing=None → (None, "Generic STM32F0 series")
+    """
+    if not isinstance(name, str) or not name.strip():
+        return existing_vendor, name or ""
+    tokens = name.split()
+    if not tokens:
+        return existing_vendor, name
+    first_lc = tokens[0].lower()
+    if first_lc in vendor_canonical:
+        derived = vendor_canonical[first_lc]
+        stripped = " ".join(tokens[1:]).strip()
+        # Refuse to reduce name_search to empty — keep the original
+        # name as a fallback so single-token vendor-only names like
+        # bare "Arduino" don't lose their entire searchable form.
+        name_search = stripped if stripped else name
+        return existing_vendor or derived, name_search
+    return existing_vendor, name
+
+
+def _apply_vendor_derivation(boards: list[dict]) -> None:
+    """Two-pass: collect known vendors, then for every board fill in
+    `vendor` if missing and produce `name_search`. Mutates in place."""
+    vendor_canonical = _vendor_canonical_by_first_token(boards)
+    for b in boards:
+        existing = b.get("vendor")
+        vendor, name_search = _split_vendor(
+            b.get("name", ""), vendor_canonical, existing,
+        )
+        if vendor and not existing:
+            b["vendor"] = vendor
+        b["name_search"] = name_search
+
+
 def extract(data_root: pathlib.Path) -> dict[str, Any]:
     pio = _extract_platformio(data_root / "platformio")
     ard = _extract_arduino(data_root / "arduino")
     boards = pio + ard
-    print(f"boards: platformio={len(pio)} arduino={len(ard)} total={len(boards)}",
+    _apply_vendor_derivation(boards)
+    n_derived = sum(1 for b in boards
+                    if b.get("vendor") and b.get("name") != b.get("name_search"))
+    print(f"boards: platformio={len(pio)} arduino={len(ard)} total={len(boards)} "
+          f"name_search-stripped={n_derived}",
           file=sys.stderr)
     return {"layer": "boards", "boards": boards}
 

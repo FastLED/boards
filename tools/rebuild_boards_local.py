@@ -96,6 +96,7 @@ def rebuild(out_path: pathlib.Path) -> None:
                 vidpids = ", ".join(f"{v}:{p}" for v, p in (b.get("vidpids") or []))
                 rows.append((
                     b["board_id"], b["layer"], b["sublayer"], b["name"],
+                    b.get("name_search") or b["name"],
                     b.get("vendor"), b.get("mcu"),
                     b.get("architecture"), b.get("bit_width"),
                     b.get("frequency_mhz"),
@@ -108,19 +109,20 @@ def rebuild(out_path: pathlib.Path) -> None:
                     vidpids or None, b.get("upstream_blob"),
                 ))
             conn.executemany(
-                "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
-                "mcu, architecture, bit_width, frequency_mhz, flash_kb, "
+                "INSERT INTO boards (board_id, layer, sublayer, name, name_search, "
+                "vendor, mcu, architecture, bit_width, frequency_mhz, flash_kb, "
                 "ram_kb, upload_speed, upload_protocol, core, variant, "
                 "homepage, frameworks, connectivity, debug_tool, "
                 "aliases, keywords, vidpids, upstream_blob) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 rows,
             )
             conn.execute(
                 "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, "
                 "                        architecture, sublayer, frameworks, "
                 "                        connectivity, aliases, keywords) "
-                "SELECT rowid, board_id, name, COALESCE(vendor,''), "
+                "SELECT rowid, board_id, COALESCE(name_search, name), "
+                "       COALESCE(vendor,''), "
                 "       COALESCE(mcu,''), COALESCE(architecture,''), sublayer, "
                 "       COALESCE(frameworks,''), COALESCE(connectivity,''), "
                 "       COALESCE(aliases,''), COALESCE(keywords,'') "
