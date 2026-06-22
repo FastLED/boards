@@ -5,7 +5,7 @@
 import { query } from '../db.js';
 import { cleanHex, asVid4, asVidPid8 } from '../util/hex.js';
 import { ftsQuery } from '../util/fts.js';
-import { scoreName, bumpOrPush } from '../util/score.js';
+import { scoreName, scoreTokenCoverage, bumpOrPush } from '../util/score.js';
 import { hideUniOverlay, renderCombined } from '../render/overlay.js';
 
 const vidKey = (r) => r.vid;
@@ -104,8 +104,13 @@ export async function universalSearch(raw) {
         'WHERE vid_vendor_fts MATCH ? LIMIT 60',
       [`vendor:${fts}`],
     );
-    for (const r of vByName)
-      bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
+    for (const r of vByName) {
+      const sc = Math.max(
+        scoreName(r.vendor, nameLc),
+        scoreTokenCoverage(r.vendor, nameLc),
+      );
+      bumpOrPush(vendors, vidKey, r, sc, 'name');
+    }
 
     const pByName = await query(
       'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
@@ -113,8 +118,13 @@ export async function universalSearch(raw) {
         'WHERE vidpid_fts MATCH ? LIMIT 80',
       [`product:${fts}`],
     );
-    for (const r of pByName)
-      bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name');
+    for (const r of pByName) {
+      const sc = Math.max(
+        scoreName(r.product, nameLc),
+        scoreTokenCoverage(r.product, nameLc),
+      );
+      bumpOrPush(products, prodKey, r, sc, 'name');
+    }
 
     const bByName = await query(
       'SELECT b.rowid AS rowid, b.board_id, b.layer, b.sublayer, b.name, ' +
@@ -126,8 +136,31 @@ export async function universalSearch(raw) {
         'WHERE boards_fts MATCH ? ORDER BY b.name COLLATE NOCASE LIMIT 20',
       [fts],
     );
+    // For multi-token searches a board is "relevant" when all tokens
+    // landed across the board's indexed columns (name, frameworks,
+    // connectivity, architecture, …). scoreTokenCoverage looks across a
+    // synthetic haystack that mirrors what FTS5 actually saw, so a
+    // search like `wifi arduino uno` rates a board whose
+    // name=Arduino UNO WiFi, frameworks=arduino, connectivity=wifi
+    // at 620 — high enough to promote it into the Best Hits strip.
     for (const r of bByName) {
-      const sc = Math.max(scoreName(r.name, nameLc), scoreName(r.board_id, nameLc));
+      const haystack = [
+        r.name,
+        r.board_id,
+        r.mcu,
+        r.architecture,
+        r.frameworks,
+        r.connectivity,
+        r.vendor,
+        r.sublayer,
+      ]
+        .filter(Boolean)
+        .join(' ');
+      const sc = Math.max(
+        scoreName(r.name, nameLc),
+        scoreName(r.board_id, nameLc),
+        scoreTokenCoverage(haystack, nameLc),
+      );
       bumpOrPush(boards, boardKey, r, sc, 'name');
     }
   }

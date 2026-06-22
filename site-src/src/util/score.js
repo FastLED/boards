@@ -22,6 +22,37 @@ export function scoreName(haystack, needle) {
 }
 
 /**
+ * Score multi-token coverage: how many of the needle's whitespace
+ * tokens appear in the haystack (case-insensitive, as substrings).
+ *
+ * Returns 0 when the needle has only one token (use `scoreName`
+ * instead). Otherwise:
+ *   - All tokens present → 620 (above the Best Hits threshold).
+ *   - Most tokens present → proportional (≥ 300 when ≥ 50% covered).
+ *   - Few / none → 0 (caller falls back to `scoreName`).
+ *
+ * The rationale: a row that an FTS5 prefix-AND query already returned
+ * is by definition relevant — every searched token matched some
+ * indexed column. Surface those in Best Hits so the user doesn't have
+ * to scroll past 30 vendors to see them.
+ *
+ * @param {string} haystack
+ * @param {string} needle  pre-lowercased
+ * @returns {number}
+ */
+export function scoreTokenCoverage(haystack, needle) {
+  const tokens = needle.split(/\s+/).filter((t) => t.length);
+  if (tokens.length < 2) return 0;
+  const lc = haystack.toLowerCase();
+  let present = 0;
+  for (const t of tokens) if (lc.includes(t)) present++;
+  if (present === tokens.length) return 620;
+  const ratio = present / tokens.length;
+  if (ratio >= 0.5) return Math.round(300 * ratio);
+  return 0;
+}
+
+/**
  * Push `row` onto `arr` keyed by `keyFn(row)`, bumping the score (and
  * `why` reason) of an existing entry if this score is higher.
  *
