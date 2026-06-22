@@ -73,6 +73,33 @@ def _ssl_ctx() -> ssl.SSLContext:
     return c
 
 
+def _copy_board_jsons(boards: list[dict], data_root: pathlib.Path,
+                       out_dir: pathlib.Path) -> int:
+    """Stage each upstream board JSON into <out>/boards/<layer>/<src_relpath>.
+
+    Tolerates both `<branch-root>/data/<sublayer>/boards/<id>.json` (data
+    branches put files under `data/`) and `<branch-root>/<sublayer>/boards/
+    <id>.json` (older flat layout)."""
+    copied = 0
+    missing = 0
+    for b in boards:
+        layer = b["layer"]
+        relpath = b["src_relpath"]
+        src_data = data_root / layer / "data" / relpath
+        src_flat = data_root / layer / relpath
+        src = src_data if src_data.is_file() else (src_flat if src_flat.is_file() else None)
+        if src is None:
+            missing += 1
+            continue
+        dst = out_dir / "boards" / layer / relpath
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dst)
+        copied += 1
+    print(f"site: staged {copied} board JSONs into {out_dir/'boards'} "
+          f"({missing} missing)", file=sys.stderr)
+    return copied
+
+
 def _download_memex_wasm(out_dir: pathlib.Path) -> None:
     """Vendor memex's pre-built sqlite-wasm-http bundle into the site.
 
@@ -130,7 +157,10 @@ def orchestrate(
         "--errors-dir",     str(errors_dir),
     )
 
-    # 6: per-board metadata extraction (json_text inlined into each record)
+    # 6: per-board metadata extraction (structured fields only — the raw
+    # upstream JSON is no longer inlined into the DB; instead each board
+    # JSON is copied as a static asset to <out>/boards/<layer>/<…>.json so
+    # the portal's "View JSON" button can fetch it on demand.
     boards_path = normalized / "boards.json"
     _run_script(
         HERE / "extract_boards.py",
@@ -139,7 +169,11 @@ def orchestrate(
     )
     boards_data = json.loads(boards_path.read_text(encoding="utf-8"))
 
-    # 7: sqlite (boards + boards_fts + json_blob)
+    # 6b: stage the per-board JSONs in the bundle.
+    boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
+                                       data_root, out_dir)
+
+    # 7: sqlite (boards + boards_fts, structured columns only)
     _run_script(
         HERE / "build_sqlite.py",
         "--merged", str(merged_path),
@@ -167,6 +201,7 @@ def orchestrate(
             "vidpid_rows":           stats.get("total_vidpid_rows", 0),
             "vidpid_alternates":     stats.get("vidpid_alternates", 0),
             "boards":                len(boards_data.get("boards") or []),
+            "board_jsons_copied":    boards_copied,
         },
         "warnings":         stats.get("warnings", {}),
         "severity_counts":  stats.get("severity_counts", {}),
@@ -175,8 +210,9 @@ def orchestrate(
         "warnings_folder":  "warnings/",
         "database":         "site.db",
         "demo":             "index.html",
-        "loader":     "memex.js",
-        "memex_sha":  MEMEX_SHA,
+        "loader":      "memex.js",
+        "memex_sha":   MEMEX_SHA,
+        "boards_root": "boards/",
     }
     (out_dir / "_meta.json").write_text(
         json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8"

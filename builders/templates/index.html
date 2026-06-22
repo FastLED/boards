@@ -101,6 +101,22 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
 .board-chip-row { margin-top:.3rem; display:flex; flex-wrap:wrap; gap:.25rem; }
 .board-chip.board-chip-fw   { background:#5a8f3a; color:#fff; }
 .board-chip.board-chip-conn { background:#3a6ea5; color:#fff; }
+#boardJsonModal { position:fixed; inset:0; background:rgba(0,0,0,.55);
+  display:none; align-items:center; justify-content:center; z-index:100; padding:1rem; }
+#boardJsonModal.open { display:flex; }
+#boardJsonModal .modal-body { background:var(--bg); color:var(--fg);
+  border-radius:8px; max-width:880px; width:100%; max-height:85vh;
+  display:flex; flex-direction:column; border:1px solid var(--border); }
+#boardJsonModal header { display:flex; align-items:center; gap:.6rem;
+  padding:.7rem 1rem; border-bottom:1px solid var(--border); }
+#boardJsonModal header .title { font-weight:600; font-size:.95rem; flex:1;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+#boardJsonModal pre { margin:0; padding:1rem; overflow:auto; flex:1;
+  font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background:var(--bg); color:var(--fg); white-space:pre; }
+#boardJsonModal .close { background:transparent; border:none; color:var(--fg);
+  font-size:1.4rem; line-height:1; cursor:pointer; padding:0 .3rem; }
 </style>
 </head>
 <body>
@@ -167,10 +183,24 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
       Type a board name (or board id, mcu, vendor, framework, or
       connectivity feature like <code>wifi</code> or <code>can</code>).
       Each result shows the board's structured data inline; click
-      <span class="btn" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">↗ source</span>
-      to view the original definition upstream.
+      <span class="btn" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">View JSON</span>
+      to inspect the raw upstream JSON (fetched from the bundle on demand),
+      or
+      <span class="btn secondary" style="cursor:default; padding:.15rem .5rem; font-size:.7rem">↗ source</span>
+      to view the original on GitHub.
     </div>
   </section>
+
+  <div id="boardJsonModal" role="dialog" aria-modal="true" aria-labelledby="boardJsonTitle">
+    <div class="modal-body">
+      <header>
+        <span class="title" id="boardJsonTitle"></span>
+        <button id="boardJsonCopy" class="btn secondary" type="button">⧉ copy</button>
+        <button class="close" id="boardJsonClose" aria-label="close">&times;</button>
+      </header>
+      <pre id="boardJsonBody">loading…</pre>
+    </div>
+  </div>
 
   <footer>
     Source data merged from PlatformIO + Arduino cores + vendor allocation registries.
@@ -646,6 +676,12 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     let html = `<div class="stat">${r.length} board(s) match "${escapeHtml(q)}":</div>`;
     for (const b of r) html += renderBoardRow(b);
     out.innerHTML = html;
+    // Wire up the View JSON buttons.
+    out.querySelectorAll('button[data-json-url]').forEach(btn => {
+      btn.addEventListener('click', () => openBoardJson(
+        btn.getAttribute('data-json-url'),
+        btn.getAttribute('data-title')));
+    });
   }
 
   function _kb(v) {
@@ -673,8 +709,15 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     const chips = _csvChips(b.frameworks, 'fw') + _csvChips(b.connectivity, 'conn');
     const chipsRow = chips ? `<div class="board-chip-row">${chips}</div>` : '';
     const layerChip = `<span class="board-chip">${escapeHtml(b.layer)}/${escapeHtml(b.sublayer)}</span>`;
+    const jsonUrl = `boards/${encodeURIComponent(b.layer)}/`
+      + b.sublayer.split('/').map(encodeURIComponent).join('/')
+      + `/boards/${encodeURIComponent(b.board_id)}.json`;
+    const title = `${b.layer}/${b.sublayer}/boards/${b.board_id}.json`;
+    const viewBtn =
+      `<button class="btn" data-json-url="${escapeHtml(jsonUrl)}" ` +
+      `data-title="${escapeHtml(title)}">View JSON</button>`;
     const srcBtn = b.upstream_blob
-      ? `<a class="btn" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
+      ? `<a class="btn secondary" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
       : '';
     const homepageBtn = b.homepage
       ? `<a class="btn secondary" href="${escapeHtml(b.homepage)}" target="_blank" rel="noopener">↗ homepage</a>`
@@ -684,8 +727,43 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       `<span class="board-name">${escapeHtml(b.name)}</span> ` +
       `<span class="board-meta">(${escapeHtml(b.board_id)})</span>` +
       `${metaStr}${chipsRow}</div>` +
-      `<div class="board-spacer"></div>${homepageBtn}${srcBtn}</div>`;
+      `<div class="board-spacer"></div>${viewBtn}${homepageBtn}${srcBtn}</div>`;
   }
+
+  // ---- View JSON modal ---------------------------------------------------
+  // Fetches the per-board JSON published as a static asset under
+  // boards/<layer>/<sublayer>/boards/<board_id>.json. The JSON is NOT in
+  // the DB — keeping the DB small and dense for searches; clicking
+  // "View JSON" pays for the network fetch only when actually wanted.
+
+  let _lastJsonUrl = null;
+  async function openBoardJson(url, title) {
+    const modal = $('boardJsonModal');
+    $('boardJsonTitle').textContent = title || url;
+    $('boardJsonCopy').style.display = 'none';
+    $('boardJsonBody').textContent = 'loading…';
+    modal.classList.add('open');
+    _lastJsonUrl = url;
+    try {
+      const resp = await fetch(url, { cache: 'force-cache' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+      const text = await resp.text();
+      if (_lastJsonUrl !== url) return;   // user opened a different one
+      let pretty = text;
+      try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+      $('boardJsonBody').textContent = pretty;
+      $('boardJsonCopy').style.display = '';
+      $('boardJsonCopy').onclick = async () => {
+        try { await navigator.clipboard.writeText(pretty);
+              $('boardJsonCopy').textContent = '✓ copied';
+              setTimeout(() => { $('boardJsonCopy').textContent = '⧉ copy'; }, 1500);
+        } catch {}
+      };
+    } catch (e) {
+      $('boardJsonBody').textContent = `failed to load ${url}\n\n${e.message}`;
+    }
+  }
+  function closeBoardJson() { $('boardJsonModal').classList.remove('open'); }
 
   // Each search issues several FTS5 lookups that round-trip through HTTP
   // range requests; debounce a bit longer than for the old in-memory DB.
@@ -718,6 +796,11 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     $('vidpidIn').addEventListener('input', debounced(gated('vidpidIn', searchProductByVidPid)));
     $('productIn').addEventListener('input', debounced(gated('productIn', searchProductByName)));
     $('boardIn').addEventListener('input', debounced(gated('boardIn', searchBoards)));
+    // View JSON modal wiring
+    $('boardJsonClose').addEventListener('click', closeBoardJson);
+    $('boardJsonModal').addEventListener('click', e => {
+      if (e.target.id === 'boardJsonModal') closeBoardJson();
+    });
     // Universal-search overlay: dismiss on Esc / click outside; re-show on
     // focus if there's still text in the input.
     $('uniIn').addEventListener('keydown', e => {
@@ -738,7 +821,9 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       hideUniOverlay();
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && !$('uniOut').hasAttribute('hidden')) hideUniOverlay();
+      if (e.key !== 'Escape') return;
+      if ($('boardJsonModal').classList.contains('open')) { closeBoardJson(); return; }
+      if (!$('uniOut').hasAttribute('hidden')) hideUniOverlay();
     });
     $('uniIn').focus();
   }

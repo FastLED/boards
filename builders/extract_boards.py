@@ -223,6 +223,11 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             "vidpids":          vidpids,
             "upstream_repo":    repo,
             "upstream_blob":    blob,
+            # Source path under the layer's data dir — site.py uses this to
+            # stage a copy of the JSON into the published bundle at
+            # boards/<layer>/<src_relpath>, served as a static asset for the
+            # portal's "View JSON" button.
+            "src_relpath":      f"{plat}/boards/{board_id}.json",
         })
     return out
 
@@ -289,6 +294,7 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
             "vidpids":          _arduino_vidpids(b),
             "upstream_repo":    upstream,
             "upstream_blob":    upstream,
+            "src_relpath":      f"{core}/boards/{board_id}.json",
         })
     return out
 
