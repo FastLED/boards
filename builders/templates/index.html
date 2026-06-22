@@ -42,6 +42,21 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
 .uni { flex:1; min-width:280px; }
 .uni input[type=text] { width:100%; box-sizing:border-box;
   font-size:15px; padding:.6rem .7rem; }
+.uni-anchor { position:relative; }
+.uni-hint { font-size:.78rem; color:var(--muted); margin:.6rem 0 0;
+  font-style:italic; line-height:1.5; }
+.uni-hint kbd { display:inline-block; padding:.05rem .35rem; border-radius:3px;
+  background:var(--border); color:var(--fg); font:.7rem ui-monospace, monospace;
+  border:1px solid var(--muted); }
+.uni-overlay { position:absolute; top:calc(100% + .4rem); left:0; right:0;
+  z-index:50; max-height:min(70vh, 640px); overflow-y:auto;
+  background:var(--bg); color:var(--fg);
+  border:1px solid var(--border); border-radius:8px;
+  box-shadow:0 12px 32px rgba(0,0,0,.35);
+  padding:.85rem 1rem; }
+.uni-overlay[hidden] { display:none; }
+.uni-overlay.empty { font-style:italic; color:var(--muted); }
+.uni-overlay.err { color:#c44; }
 .cat { margin:1rem 0 0; }
 .cat-head { font-size:.78rem; color:var(--muted); text-transform:uppercase;
   letter-spacing:.04em; margin:0 0 .3rem; font-weight:600; }
@@ -103,18 +118,22 @@ footer { color:var(--muted); font-size:.75rem; margin-top:3rem;
 
   <section>
     <h2>Search anything</h2>
-    <div class="row">
-      <label class="uni">
-        Query
-        <input id="uniIn" type="text" autocomplete="off" autofocus
-          placeholder="esp32, espressif, 303a, 303a:1001, 0x303a 1001, teensy…">
-      </label>
+    <div class="uni-anchor">
+      <div class="row">
+        <label class="uni">
+          Query
+          <input id="uniIn" type="text" autocomplete="off" autofocus
+            placeholder="esp32, espressif, 303a, 303a:1001, 0x303a 1001, teensy…">
+        </label>
+      </div>
+      <div id="uniOut" class="uni-overlay" hidden></div>
     </div>
-    <div id="uniOut" class="empty">
+    <p class="uni-hint">
       Type a vendor name, product name, VID, or VID:PID. Case and punctuation
       (<code>0x</code>, <code>:</code>, spaces, dashes) are ignored — <code>303a:1001</code>,
       <code>303A1001</code>, and <code>0x303a 1001</code> all match the same product.
-    </div>
+      Press <kbd>Esc</kbd> to dismiss the results.
+    </p>
   </section>
 
   <section>
@@ -379,14 +398,22 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     }
   }
 
-  async function universalSearch(raw) {
+  function showUniOverlay(html, kind) {
     const out = $('uniOut');
+    out.className = 'uni-overlay' + (kind ? ' ' + kind : '');
+    out.innerHTML = html;
+    out.removeAttribute('hidden');
+  }
+  function hideUniOverlay() {
+    const out = $('uniOut');
+    out.setAttribute('hidden', '');
+    out.innerHTML = '';
+  }
+
+  async function universalSearch(raw) {
     const query = (raw || '').trim();
-    if (!query) {
-      out.className = 'empty';
-      out.innerHTML = 'Type a vendor name, product name, VID, or VID:PID.';
-      return;
-    }
+    if (!query) { hideUniOverlay(); return; }
+    const out = $('uniOut');
 
     const hex = query.toLowerCase().replace(/^0x/, '').replace(/[:\s\-_]+/g, '');
     const isPureHex = /^[0-9a-f]+$/.test(hex) && hex.length > 0;
@@ -479,8 +506,7 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       || a.row.product.localeCompare(b.row.product));
 
     if (!vendors.length && !products.length) {
-      out.className = 'empty';
-      out.innerHTML = `no matches for "${escapeHtml(query)}"`;
+      showUniOverlay(`no matches for "${escapeHtml(query)}"`, 'empty');
       return;
     }
 
@@ -492,7 +518,6 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
      .sort((a, b) => b.score - a.score)
      .slice(0, 8);
 
-    out.className = '';
     let html = '';
     if (best.length) {
       html += '<div class="cat best"><div class="cat-head">Best hits</div>';
@@ -515,7 +540,7 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       if (moreP > 0) html += `<div class="stat">…${moreP} more — refine with the Product lookup below.</div>`;
       html += '</div>';
     }
-    out.innerHTML = html;
+    showUniOverlay(html);
   }
 
   function renderBestRow(h) {
@@ -673,8 +698,29 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
     $('boardJsonModal').addEventListener('click', e => {
       if (e.target.id === 'boardJsonModal') closeBoardJson();
     });
+    // Universal-search overlay: dismiss on Esc / click outside; re-show on
+    // focus if there's still text in the input.
+    $('uniIn').addEventListener('keydown', e => {
+      if (e.key === 'Escape') hideUniOverlay();
+    });
+    const reshowIfTyped = asyncHandler(async () => {
+      const v = $('uniIn').value.trim();
+      if (v && $('uniOut').hasAttribute('hidden')) await universalSearch(v);
+    });
+    // focus catches Tab-into; click catches click-while-already-focused
+    // (after Esc the input keeps focus, so focus alone misses the reopen).
+    $('uniIn').addEventListener('focus', reshowIfTyped);
+    $('uniIn').addEventListener('click', reshowIfTyped);
+    document.addEventListener('click', e => {
+      const out = $('uniOut');
+      if (out.hasAttribute('hidden')) return;
+      if (out.contains(e.target) || $('uniIn').contains(e.target)) return;
+      hideUniOverlay();
+    });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && $('boardJsonModal').classList.contains('open')) closeBoardJson();
+      if (e.key !== 'Escape') return;
+      if ($('boardJsonModal').classList.contains('open')) { closeBoardJson(); return; }
+      if (!$('uniOut').hasAttribute('hidden')) hideUniOverlay();
     });
     $('uniIn').focus();
   }
