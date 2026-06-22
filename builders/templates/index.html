@@ -671,7 +671,11 @@ import { openMemexDb, query as _memexQuery } from './memex.js';
       // (typing 'esp32dev' returns esp32dev variants) the relevance
       // ordering doesn't help — exact matches sort adjacent anyway.
       'ORDER BY b.name COLLATE NOCASE ' +
-      'LIMIT 30',
+      // LIMIT 20: each board row fetched is one page read on the live
+      // CDN (~50 ms RTT); 30 cost ~1.5 s on broad queries, 20 ≤ 1 s.
+      // For an autocomplete-style search this is plenty — the user
+      // refines with a more specific term if 20 isn't enough.
+      'LIMIT 20',
       [fts]
     );
     if (!r.length) {
