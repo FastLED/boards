@@ -13,7 +13,8 @@ Runs (in order):
   5. merge.py              -> merged.json + warnings/{vendor,product}-conflicts.log
   6. extract_boards.py     on  <data-root>            -> normalized/boards.json
   7. build_sqlite.py       -> <site-src>/public/boards.db
-  7b. build_usb_ids.py   -> <site-src>/public/usb-ids.json
+  7b. build_usb_ids.py   -> <site-src>/public/usb-ids.json +
+                             <site-src>/public/usb-vids.proto.zstd
   8. stages per-board JSONs at <site-src>/public/boards/<layer>/…
   9. writes <site-src>/public/_meta.json + warnings/ + errors/
  10. `npm ci && npm run build` inside site-src/  →  site-src/dist/
@@ -127,7 +128,13 @@ def _clean_public(public_dir: pathlib.Path) -> None:
     """Wipe the generated subset of site-src/public/ — keep checked-in
     files (none currently) intact. We're explicit about what we touch
     so a stale board file from a previous run can't sneak through."""
-    for name in ("boards.db", "site.db", "usb-ids.json", "_meta.json"):
+    for name in (
+        "boards.db",
+        "site.db",
+        "usb-ids.json",
+        "usb-vids.proto.zstd",
+        "_meta.json",
+    ):
         f = public_dir / name
         if f.exists():
             f.unlink()
@@ -228,6 +235,7 @@ def orchestrate(
         "warnings_folder":  "warnings/",
         "database":         "boards.db",
         "usb_ids_download": "usb-ids.json",
+        "usb_vids_proto_zstd": "usb-vids.proto.zstd",
         "loader":           "vite",
         "boards_root":      "boards/",
     }
