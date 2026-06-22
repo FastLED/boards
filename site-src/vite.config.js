@@ -1,6 +1,6 @@
 // Vite configuration for the FastLED/boards portal.
 //
-// `public/` holds files the builders/site.py orchestrator stages (site.db,
+// `public/` holds files the builders/site.py orchestrator stages (boards.db,
 // _meta.json, boards/, warnings/, errors/) plus the sqlite-wasm-http
 // worker + WASM that the patch script copies in from node_modules.
 // Vite serves these unchanged at the bundle root.

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>FastLED/boards — USB VID:PID Lookup</title>
     <!--
-      No preload for site.db! A `<link rel="preload" href="site.db">`
+      No preload for boards.db! A `<link rel="preload" href="boards.db">`
       fetches with the browser's default Accept-Encoding (which
       includes gzip), so the CDN serves the gzipped full file and
       caches it. When the worker later requests with Accept-Encoding:
@@ -19,7 +19,7 @@
     <div class="wrap">
       <h1>FastLED/boards &mdash; USB VID:PID Lookup</h1>
       <p class="sub">
-        Live query over the published <code>site.db</code>. Powered by
+        Live query over the published <code>boards.db</code>. Powered by
         <a href="https://github.com/zackees/memex">memex</a>'s
         <code>sqlite-wasm-http</code> client (WASM, runs entirely in your
         browser).
@@ -31,11 +31,11 @@
       <div class="head-info">
         <span>
           SQLite DB:
-          <a id="dbLink" href="site.db">
-            <code>https://fastled.github.io/boards/site.db</code>
+          <a id="dbLink" href="boards.db">
+            <code>https://fastled.github.io/boards/boards.db</code>
           </a>
         </span>
-        <span><a id="dbLinkRaw" href="site.db" download>download</a></span>
+        <span><a id="dbLinkRaw" href="boards.db" download>download</a></span>
       </div>
 
       <section>
