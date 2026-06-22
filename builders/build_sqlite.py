@@ -99,7 +99,23 @@ CREATE TABLE boards (
   board_id        TEXT NOT NULL,
   layer           TEXT NOT NULL,
   sublayer        TEXT NOT NULL,
+  -- `name` is the ORIGINAL display string from upstream JSON. It is
+  -- intentionally NOT indexed in boards_fts (the FTS5 `name` column is
+  -- populated from `name_search` below) — that way a single user
+  -- query like "Arduino UNO" doesn't double-match on `name=Arduino UNO`
+  -- AND `vendor=Arduino`, and the keyword soup doesn't have to
+  -- shoulder vendor-name matching. The UI fetches `boards.name` for
+  -- display, gets the canonical full string, and ranking quality is
+  -- sharper.
   name            TEXT NOT NULL,
+  -- `name_search` is the de-vendored variant of `name`. When the
+  -- display name starts with a known vendor token (e.g. "Arduino UNO"
+  -- → "UNO", "Microduino Core+" → "Core+"), the vendor is stripped
+  -- and the result lands here. Backs the FTS5 `name` column.
+  name_search     TEXT,
+  -- `vendor` is the explicit upstream `.vendor` field when present,
+  -- otherwise derived by matching the first token of `name` against
+  -- the set of known vendors across the corpus.
   vendor          TEXT,
   mcu             TEXT,
   architecture    TEXT,        -- e.g. "cortex-m7", "xtensa", "riscv", "avr"
@@ -175,6 +191,7 @@ def _board_rows(boards: list[dict]) -> list[tuple]:
         vidpids = ", ".join(f"{v}:{p}" for v, p in (b.get("vidpids") or []))
         rows.append((
             b["board_id"], b["layer"], b["sublayer"], b["name"],
+            b.get("name_search") or b["name"],   # NEW: defaults to name
             b.get("vendor"), b.get("mcu"),
             b.get("architecture"), b.get("bit_width"),
             b.get("frequency_mhz"),
@@ -325,12 +342,12 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
         )
         if boards:
             conn.executemany(
-                "INSERT INTO boards (board_id, layer, sublayer, name, vendor, "
-                "mcu, architecture, bit_width, frequency_mhz, flash_kb, "
+                "INSERT INTO boards (board_id, layer, sublayer, name, name_search, "
+                "vendor, mcu, architecture, bit_width, frequency_mhz, flash_kb, "
                 "ram_kb, upload_speed, upload_protocol, core, variant, "
                 "homepage, frameworks, connectivity, debug_tool, "
                 "aliases, keywords, vidpids, upstream_blob) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 _board_rows(boards),
             )
 
@@ -377,11 +394,18 @@ def build(merged_path: pathlib.Path, out_path: pathlib.Path,
             "INSERT INTO vidpid_fts (rowid, vidpid, vid, pid, product) "
             "SELECT rowid, vidpid, vid, pid, product FROM vidpid"
         )
+        # The FTS5 `name` column is bound to boards.name_search, not
+        # boards.name — boards.name is the canonical display string the
+        # UI shows verbatim and is intentionally NOT indexed. The
+        # `COALESCE(name_search, name)` falls back to the original name
+        # for older rows or for boards whose name had no vendor prefix
+        # to strip, so the indexed text is always populated.
         conn.execute(
             "INSERT INTO boards_fts (rowid, board_id, name, vendor, mcu, "
             "                        architecture, sublayer, frameworks, "
             "                        connectivity, aliases, keywords) "
-            "SELECT rowid, board_id, name, COALESCE(vendor,''), "
+            "SELECT rowid, board_id, COALESCE(name_search, name), "
+            "       COALESCE(vendor,''), "
             "       COALESCE(mcu,''), COALESCE(architecture,''), sublayer, "
             "       COALESCE(frameworks,''), COALESCE(connectivity,''), "
             "       COALESCE(aliases,''), COALESCE(keywords,'') "
