@@ -30,6 +30,42 @@ const BOARD_COLUMNS =
   'b.upload_speed, b.core, b.variant, b.homepage, ' +
   'b.frameworks, b.connectivity, b.vidpids, b.upstream_blob';
 
+// Scope every prefix-token in the FTS5 query to the "identity" columns
+// (name, aliases, board_id, vendor). Broad single-token queries like
+// `arduino` match ~1,667 of 2,088 rows when the keyword-soup column
+// participates, which over HTTP page-fetched SQLite means dozens of
+// round trips just to compute BM25 for the candidate set. Restricting
+// to the identity columns drops that to ~134 — but breaks queries that
+// LEGITIMATELY only live in the keywords column (e.g. `India`,
+// `Default with spiffs`, `-DRP2350_PSRAM_CS=35`).
+//
+// Used as the first phase of a two-phase search: try identity-only;
+// if it returns nothing, fall back to the broad MATCH on `fts`.
+function scopeToIdentity(ftsExpr) {
+  const tokens = (ftsExpr || '').split(' ').filter(Boolean);
+  if (!tokens.length) return null;
+  return tokens.map((t) => `{name aliases board_id vendor}:${t}`).join(' ');
+}
+
+const BM25_WEIGHTS = '1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2';
+
+async function fts5BoardSearch(query, fts) {
+  // Two-phase: identity-only first (fast over HTTP), broad fallback
+  // only if identity returned nothing. The identity scope keeps the
+  // exact same BM25 weighting, so ranking quality stays consistent
+  // between the two phases.
+  const SQL = `SELECT ${BOARD_COLUMNS} `
+            + 'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid '
+            + 'WHERE boards_fts MATCH ? '
+            + `ORDER BY bm25(boards_fts, ${BM25_WEIGHTS}) LIMIT 20`;
+  const scoped = scopeToIdentity(fts);
+  if (scoped) {
+    const rows = await query(SQL, [scoped]);
+    if (rows.length > 0) return rows;
+  }
+  return query(SQL, [fts]);
+}
+
 async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why) {
   if (!vidpidPairs.length) return;
   const capped = vidpidPairs.slice(0, 40);
@@ -181,32 +217,23 @@ export async function searchUniversal(text, query) {
     }
     await enrichWithLinkedBoards(query, boards, pairs, 630, 'linked via product name');
 
-    const bByName = await query(
-      `SELECT ${BOARD_COLUMNS} ` +
-        'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
-        // ORDER BY bm25(...) with per-column weights so name matches
-        // dominate and the keyword-soup column contributes only as a
-        // tie-breaker. Without bm25 weighting we'd just take an
-        // alphabetical slice that drops highly-relevant boards like
-        // "Seeed Tiny BLE" out of a Tiny BLE search.
-        //
-        // Weights match the boards_fts column declaration order
-        // (board_id, name, vendor, mcu, architecture, sublayer,
-        //  frameworks, connectivity, aliases, keywords). Chosen via
-        // tools/bm25_weight_sweep.py: name=2.0 captures most of the
-        // achievable lift (+1.5pp top-1 over baseline); keywords=0.2
-        // dampens the long keyword-soup column so a 1-token name
-        // match outranks a 5-token keyword match.
-        //
-        // HISTORICAL: BM25 ordering had been used here previously,
-        // then degraded to ORDER BY name (allegedly for perf). See
-        // tests/test_board_name_combos.py for the regression that
-        // exposed the degradation.
-        'WHERE boards_fts MATCH ? ' +
-        'ORDER BY bm25(boards_fts, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2) ' +
-        'LIMIT 20',
-      [fts],
-    );
+    // Two-phase FTS5 board search (see fts5BoardSearch above). The
+    // first phase scopes the MATCH to identity columns to keep the
+    // candidate set small over HTTP page-fetched SQLite; the second
+    // phase falls back to the broad MATCH for queries that only hit
+    // keyword soup. Same BM25 weights apply to both phases so
+    // ranking stays consistent.
+    //
+    // BM25 weight rationale (also see HISTORICAL note below): name=2.0
+    // captures most of the achievable lift (+1.5pp top-1); keywords=0.2
+    // dampens the long keyword-soup column so a 1-token name match
+    // outranks a 5-token keyword match.
+    //
+    // HISTORICAL: BM25 ordering had been used here previously, then
+    // degraded to ORDER BY name (allegedly for perf). See
+    // tests/test_board_name_combos.py for the regression that exposed
+    // that degradation.
+    const bByName = await fts5BoardSearch(query, fts);
     for (const r of bByName) {
       const haystack = [r.name, r.board_id, r.mcu, r.architecture,
                         r.frameworks, r.connectivity, r.vendor, r.sublayer]
@@ -314,17 +341,9 @@ export async function searchBoard(text, query) {
   const fts = ftsQuery(q);
   if (!fts) return { vendors: [], products: [], boards: [] };
 
-  const rows = await query(
-    `SELECT ${BOARD_COLUMNS} ` +
-      'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
-      // Per-column BM25 weights — see the tuning note in
-      // searchUniversal above for the rationale on name=2.0 /
-      // keywords=0.2. Same shape on both queries so single-token
-      // board-mode searches rank consistently with the universal mode.
-      'WHERE boards_fts MATCH ? ' +
-      'ORDER BY bm25(boards_fts, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2) ' +
-      'LIMIT 20',
-    [fts]);
+  // Two-phase FTS5 search (see fts5BoardSearch). Identity columns
+  // first for speed; broad MATCH fallback only if needed.
+  const rows = await fts5BoardSearch(query, fts);
   const nameLc = q.toLowerCase();
   const boards = rows.map((row) => ({
     row,
