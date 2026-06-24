@@ -30,6 +30,31 @@ Quick examples to try in the portal:
 - VID:PID box: `16c0:0483` → Teensy 4.0
 - Product-name fragment: `teensy` → all Teensy entries
 
+### Run the portal locally
+
+Use the local portal helper instead of `vite dev` when testing the browser
+search UI. The SQLite-over-HTTP path requires byte-range responses for
+`boards.db`, which ordinary Vite serving does not provide.
+
+```powershell
+python tools/serve_portal_local.py
+```
+
+The helper builds the Vite bundle, rebuilds a current local
+`site-src/dist/boards.db`, serves `site-src/dist/` with `Accept-Ranges:
+bytes` plus COOP/COEP headers, and opens the browser. To suppress the
+browser popup:
+
+```powershell
+python tools/serve_portal_local.py --no-open
+```
+
+From `site-src/`, the same helper is available as:
+
+```powershell
+npm run local -- --no-open
+```
+
 ## What's in here
 
 The repo has a strict split: code on `main`, data on orphan branches.
