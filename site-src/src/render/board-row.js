@@ -12,6 +12,23 @@ function csvChips(csv, kind) {
     .join('');
 }
 
+const VENDOR_PREFIX_SEPARATORS = /^[\s:|/._\-\u00b7\u2022\u2013\u2014]+/u;
+
+export function displayBoardName(b) {
+  const name = (b.name || '').trim();
+  const vendor = (b.vendor || '').trim();
+  if (!name || !vendor) return name;
+
+  const candidate = name.slice(0, vendor.length);
+  if (candidate.toLocaleLowerCase() !== vendor.toLocaleLowerCase()) return name;
+
+  const suffix = name.slice(vendor.length);
+  if (!suffix || !VENDOR_PREFIX_SEPARATORS.test(suffix)) return name;
+
+  const stripped = suffix.replace(VENDOR_PREFIX_SEPARATORS, '').trim();
+  return stripped || name;
+}
+
 /**
  * Render one board row with all structured fields inline (chips for
  * frameworks + connectivity; mcu / freq / flash / ram / vidpids; View
@@ -19,6 +36,7 @@ function csvChips(csv, kind) {
  */
 export function renderBoardRow(b) {
   const vendor = b.vendor ? `<span>${escapeHtml(b.vendor)}</span> · ` : '';
+  const name = displayBoardName(b);
 
   const meta = [];
   if (b.mcu) meta.push(escapeHtml(b.mcu));
@@ -57,7 +75,7 @@ export function renderBoardRow(b) {
   return (
     `<div class="board-row">` +
     `<div class="board-main">${layerChip}${vendor}` +
-    `<span class="board-name">${escapeHtml(b.name)}</span> ` +
+    `<span class="board-name">${escapeHtml(name)}</span> ` +
     `<span class="board-meta">(${escapeHtml(b.board_id)})</span>` +
     `${metaStr}${chipsRow}</div>` +
     `<div class="board-spacer"></div>${viewBtn}${homepageBtn}${srcBtn}</div>`
