@@ -8,7 +8,8 @@
     "postinstall": "node scripts/patch-sqlite-wasm-http.mjs",
     "dev": "vite",
     "build": "node scripts/patch-sqlite-wasm-http.mjs && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "local": "python ../tools/serve_portal_local.py"
   },
   "dependencies": {
     "sqlite-wasm-http": "1.2.0"
