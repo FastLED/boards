@@ -4,8 +4,8 @@
 
 import { query } from '../db.js';
 import {
-  hideUniOverlay,
   renderCombined,
+  showSearchIntro,
   showUniOverlaySpinner,
 } from '../render/overlay.js';
 import { searchProduct } from './engine.js';
@@ -13,7 +13,7 @@ import { searchProduct } from './engine.js';
 export async function productOnly(raw) {
   const q = (raw || '').trim();
   if (!q) {
-    hideUniOverlay();
+    showSearchIntro();
     return;
   }
   showUniOverlaySpinner();

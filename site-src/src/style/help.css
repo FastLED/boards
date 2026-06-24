@@ -1,5 +1,4 @@
-/* Help / explainer cards. Lives below the search section so the page's
-   tall empty space carries something useful to a first-time visitor. */
+/* Help / explainer cards rendered dynamically in the search results area. */
 
 .help-grid {
   display: grid;

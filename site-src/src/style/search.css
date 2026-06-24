@@ -1,4 +1,4 @@
-/* The single search row: query input + mode dropdown + result overlay. */
+/* The single search row: query input + mode dropdown + inline results. */
 
 .uni {
   flex: 1;
@@ -10,10 +10,6 @@
   box-sizing: border-box;
   font-size: 15px;
   padding: 0.6rem 0.7rem;
-}
-
-.uni-anchor {
-  position: relative;
 }
 
 .uni-hint {
@@ -34,32 +30,23 @@
   border: 1px solid var(--muted);
 }
 
-.uni-overlay {
-  position: absolute;
-  top: calc(100% + 0.4rem);
-  left: 0;
-  right: 0;
-  z-index: 50;
-  max-height: min(70vh, 640px);
-  overflow-y: auto;
-  background: var(--bg);
+.uni-results {
+  margin-top: 0.95rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid var(--border);
   color: var(--fg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  padding: 0.85rem 1rem;
 }
 
-.uni-overlay[hidden] {
+.uni-results[hidden] {
   display: none;
 }
 
-.uni-overlay.empty {
-  font-style: italic;
-  color: var(--muted);
+.uni-results.empty {
+  color: var(--fg);
+  font-style: normal;
 }
 
-.uni-overlay.err {
+.uni-results.err {
   color: #c44;
 }
 
@@ -69,7 +56,7 @@
    the await. Kept compact so a 5ms cached query flicker is
    visually quiet, while a multi-hundred-ms FTS5 query shows
    real motion. */
-.uni-overlay.loading {
+.uni-results.loading {
   color: var(--muted);
 }
 .spinner-row {
@@ -118,8 +105,37 @@
   cursor: pointer;
 }
 
+.search-intro h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.search-empty h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.search-empty p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.example-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
 .cat {
   margin: 1rem 0 0;
+}
+
+.uni-results > .cat:first-child {
+  margin-top: 0;
 }
 
 .cat-head {

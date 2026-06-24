@@ -4,8 +4,8 @@
 
 import { query } from '../db.js';
 import {
-  hideUniOverlay,
   renderCombined,
+  showSearchIntro,
   showUniOverlaySpinner,
 } from '../render/overlay.js';
 import { searchVendor } from './engine.js';
@@ -13,7 +13,7 @@ import { searchVendor } from './engine.js';
 export async function vendorOnly(raw) {
   const q = (raw || '').trim();
   if (!q) {
-    hideUniOverlay();
+    showSearchIntro();
     return;
   }
   showUniOverlaySpinner();
