@@ -6,6 +6,7 @@ import { renderVendorRow } from './vendor-row.js';
 import { renderProductRow } from './product-row.js';
 import { renderBoardRow } from './board-row.js';
 import { openBoardJson } from '../modal/board-json.js';
+import { wireBoardDefineButtons } from '../modal/board-defines.js';
 
 const $ = (id) => document.getElementById(id);
 const RESULTS_CLASS = 'uni-results';
@@ -126,4 +127,5 @@ export function renderCombined(query, { vendors = [], products = [], boards = []
         openBoardJson(btn.getAttribute('data-json-url'), btn.getAttribute('data-title')),
       );
     });
+  wireBoardDefineButtons($('uniOut'));
 }

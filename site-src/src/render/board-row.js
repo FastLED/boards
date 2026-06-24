@@ -32,7 +32,7 @@ export function displayBoardName(b) {
 /**
  * Render one board row with all structured fields inline (chips for
  * frameworks + connectivity; mcu / freq / flash / ram / vidpids; View
- * JSON + homepage + source buttons).
+ * JSON + defines + homepage + source buttons).
  */
 export function renderBoardRow(b) {
   const vendor = b.vendor ? `<span>${escapeHtml(b.vendor)}</span> · ` : '';
@@ -64,6 +64,9 @@ export function renderBoardRow(b) {
   const viewBtn =
     `<button class="btn" data-json-url="${escapeHtml(jsonUrl)}" ` +
     `data-title="${escapeHtml(title)}">View JSON</button>`;
+  const definesBtn =
+    `<button class="btn secondary" data-defines-url="${escapeHtml(jsonUrl)}" ` +
+    `data-title="${escapeHtml(title)}">View Defines</button>`;
 
   const srcBtn = b.upstream_blob
     ? `<a class="btn secondary" href="${escapeHtml(b.upstream_blob)}" target="_blank" rel="noopener">↗ source</a>`
@@ -78,6 +81,6 @@ export function renderBoardRow(b) {
     `<span class="board-name">${escapeHtml(name)}</span> ` +
     `<span class="board-meta">(${escapeHtml(b.board_id)})</span>` +
     `${metaStr}${chipsRow}</div>` +
-    `<div class="board-spacer"></div>${viewBtn}${homepageBtn}${srcBtn}</div>`
+    `<div class="board-spacer"></div>${viewBtn}${definesBtn}${homepageBtn}${srcBtn}</div>`
   );
 }
