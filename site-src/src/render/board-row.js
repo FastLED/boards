@@ -74,6 +74,7 @@ export function renderBoardRow(b) {
   const homepageBtn = b.homepage
     ? `<a class="btn secondary" href="${escapeHtml(b.homepage)}" target="_blank" rel="noopener">↗ homepage</a>`
     : '';
+  const actions = `<div class="board-actions">${viewBtn}${definesBtn}${homepageBtn}${srcBtn}</div>`;
 
   return (
     `<div class="board-row">` +
@@ -81,6 +82,6 @@ export function renderBoardRow(b) {
     `<span class="board-name">${escapeHtml(name)}</span> ` +
     `<span class="board-meta">(${escapeHtml(b.board_id)})</span>` +
     `${metaStr}${chipsRow}</div>` +
-    `<div class="board-spacer"></div>${viewBtn}${definesBtn}${homepageBtn}${srcBtn}</div>`
+    `${actions}</div>`
   );
 }
