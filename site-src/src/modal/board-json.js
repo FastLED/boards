@@ -5,21 +5,49 @@
 // network fetch only when actually wanted.
 
 const $ = (id) => document.getElementById(id);
+const COPY_JSON_TEXT = 'copy JSON';
+const COPY_URL_TEXT = 'copy URL';
 
 let _lastUrl = null;
 
+export function resolveBoardJsonUrl(url, baseHref = location.href) {
+  return new URL(url, baseHref).href;
+}
+
+async function copyText(value, button, resetText) {
+  try {
+    await navigator.clipboard.writeText(value);
+    button.textContent = 'copied';
+    setTimeout(() => {
+      button.textContent = resetText;
+    }, 1500);
+  } catch {
+    /* clipboard refused — no-op */
+  }
+}
+
 export async function openBoardJson(url, title) {
   const modal = $('boardJsonModal');
-  $('boardJsonTitle').textContent = title || url;
-  $('boardJsonCopy').style.display = 'none';
+  const absoluteUrl = resolveBoardJsonUrl(url);
+  const titleLink = $('boardJsonTitle');
+  const copyJson = $('boardJsonCopy');
+  const copyUrl = $('boardJsonCopyUrl');
+
+  titleLink.textContent = title || url;
+  titleLink.href = absoluteUrl;
+  titleLink.title = absoluteUrl;
+  copyJson.textContent = COPY_JSON_TEXT;
+  copyJson.style.display = 'none';
+  copyUrl.textContent = COPY_URL_TEXT;
+  copyUrl.onclick = () => copyText(absoluteUrl, copyUrl, COPY_URL_TEXT);
   $('boardJsonBody').textContent = 'loading…';
   modal.classList.add('open');
-  _lastUrl = url;
+  _lastUrl = absoluteUrl;
   try {
-    const resp = await fetch(url, { cache: 'force-cache' });
+    const resp = await fetch(absoluteUrl, { cache: 'force-cache' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const text = await resp.text();
-    if (_lastUrl !== url) return; // a newer modal opened while we waited
+    if (_lastUrl !== absoluteUrl) return; // a newer modal opened while we waited
     let pretty = text;
     try {
       pretty = JSON.stringify(JSON.parse(text), null, 2);
@@ -27,20 +55,10 @@ export async function openBoardJson(url, title) {
       /* leave as raw text */
     }
     $('boardJsonBody').textContent = pretty;
-    $('boardJsonCopy').style.display = '';
-    $('boardJsonCopy').onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(pretty);
-        $('boardJsonCopy').textContent = '✓ copied';
-        setTimeout(() => {
-          $('boardJsonCopy').textContent = '⧉ copy';
-        }, 1500);
-      } catch {
-        /* clipboard refused — no-op */
-      }
-    };
+    copyJson.style.display = '';
+    copyJson.onclick = () => copyText(pretty, copyJson, COPY_JSON_TEXT);
   } catch (e) {
-    $('boardJsonBody').textContent = `failed to load ${url}\n\n${e.message}`;
+    $('boardJsonBody').textContent = `failed to load ${absoluteUrl}\n\n${e.message}`;
   }
 }
 

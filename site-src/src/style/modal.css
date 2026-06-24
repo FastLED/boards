@@ -40,10 +40,17 @@
   font-weight: 600;
   font-size: 0.95rem;
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--hi);
+}
+
+#boardJsonModal header .btn,
+#boardJsonModal header .close {
+  flex: 0 0 auto;
 }
 
 #boardJsonModal pre {
