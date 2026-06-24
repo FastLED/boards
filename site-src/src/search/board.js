@@ -4,8 +4,8 @@
 
 import { query } from '../db.js';
 import {
-  hideUniOverlay,
   renderCombined,
+  showSearchIntro,
   showUniOverlay,
   showUniOverlaySpinner,
 } from '../render/overlay.js';
@@ -15,7 +15,7 @@ import { searchBoard } from './engine.js';
 export async function boardOnly(raw) {
   const q = (raw || '').trim();
   if (!q) {
-    hideUniOverlay();
+    showSearchIntro();
     return;
   }
   if (q.length < 2) {

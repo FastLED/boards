@@ -2,7 +2,7 @@
 //   - styles (Vite injects them into the bundle)
 //   - DB init via sqlite-wasm-http (Accept-Encoding: identity baked in)
 //   - search-mode dispatch on input/dropdown change
-//   - overlay UX (Esc / click-outside dismiss + focus/click reopen)
+//   - inline results UX (Esc dismiss + focus/click reopen)
 //   - View JSON modal close handlers
 
 import './style/base.css';
@@ -17,7 +17,7 @@ import { universalSearch } from './search/universal.js';
 import { vendorOnly } from './search/vendor.js';
 import { productOnly } from './search/product.js';
 import { boardOnly } from './search/board.js';
-import { showUniOverlay, hideUniOverlay } from './render/overlay.js';
+import { hideUniOverlay, showSearchIntro } from './render/overlay.js';
 import { closeBoardJson, isBoardJsonOpen } from './modal/board-json.js';
 
 const $ = (id) => document.getElementById(id);
@@ -118,7 +118,9 @@ function wireUp() {
     if (e.target.id === 'boardJsonModal') closeBoardJson();
   });
 
-  // Overlay UX: Esc dismiss; click outside dismiss; focus / click reopen
+  showSearchIntro();
+
+  // Results UX: Esc dismiss; focus / click reopen
   $('uniIn').addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hideUniOverlay();
   });
@@ -131,12 +133,6 @@ function wireUp() {
   $('uniIn').addEventListener('focus', reshowIfTyped);
   $('uniIn').addEventListener('click', reshowIfTyped);
 
-  document.addEventListener('click', (e) => {
-    const out = $('uniOut');
-    if (out.hasAttribute('hidden')) return;
-    if (out.contains(e.target) || $('uniIn').contains(e.target)) return;
-    hideUniOverlay();
-  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (isBoardJsonOpen()) {

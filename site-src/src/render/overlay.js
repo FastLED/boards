@@ -1,4 +1,4 @@
-// The result overlay anchored below the search input.
+// The search results panel rendered inline below the search controls.
 
 import { escapeHtml } from '../util/escape.js';
 import { renderBestRow } from './best-row.js';
@@ -8,10 +8,11 @@ import { renderBoardRow } from './board-row.js';
 import { openBoardJson } from '../modal/board-json.js';
 
 const $ = (id) => document.getElementById(id);
+const RESULTS_CLASS = 'uni-results';
 
 export function showUniOverlay(html, kind) {
   const out = $('uniOut');
-  out.className = 'uni-overlay' + (kind ? ' ' + kind : '');
+  out.className = RESULTS_CLASS + (kind ? ' ' + kind : '');
   out.innerHTML = html;
   out.removeAttribute('hidden');
 }
@@ -22,8 +23,17 @@ export function hideUniOverlay() {
   out.innerHTML = '';
 }
 
+export function showSearchIntro() {
+  const template = $('searchIntroTemplate');
+  if (!template) {
+    hideUniOverlay();
+    return;
+  }
+  showUniOverlay(template.innerHTML.trim(), 'intro');
+}
+
 /**
- * Show a small spinner inside the overlay while the search awaits.
+ * Show a small spinner inside the results panel while the search awaits.
  * Placed where the results will eventually land so the user's gaze
  * stays in one spot — renderCombined() (or showUniOverlay('no
  * matches…')) overwrites the spinner the moment the query resolves.
@@ -38,8 +48,20 @@ export function showUniOverlaySpinner() {
   );
 }
 
+function renderNoResults(query) {
+  return (
+    '<div class="search-empty" role="status" aria-live="polite">' +
+    `<h3>No matches for "${escapeHtml(query)}"</h3>` +
+    '<p>Try a USB vendor ID, a VID:PID pair, a board name, or a hardware term.</p>' +
+    '<div class="example-row" aria-label="Example searches">' +
+    '<code>303a</code><code>303a:1001</code><code>espressif</code><code>wifi</code><code>cortex-m7</code>' +
+    '</div>' +
+    '</div>'
+  );
+}
+
 /**
- * Render any combination of categories into the overlay. Single-mode
+ * Render any combination of categories into the results panel. Single-mode
  * searches leave the other arrays empty. Best Hits is a score-ranked
  * union threshold-filtered to ≥ 600.
  *
@@ -48,7 +70,7 @@ export function showUniOverlaySpinner() {
  */
 export function renderCombined(query, { vendors = [], products = [], boards = [] }) {
   if (!vendors.length && !products.length && !boards.length) {
-    showUniOverlay(`no matches for "${escapeHtml(query)}"`, 'empty');
+    showUniOverlay(renderNoResults(query), 'empty');
     return;
   }
 
@@ -96,7 +118,7 @@ export function renderCombined(query, { vendors = [], products = [], boards = []
   }
   showUniOverlay(html);
 
-  // Wire up the View JSON buttons that landed in the overlay.
+  // Wire up the View JSON buttons that landed in the results panel.
   $('uniOut')
     .querySelectorAll('button[data-json-url]')
     .forEach((btn) => {
