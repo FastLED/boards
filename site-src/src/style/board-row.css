@@ -1,14 +1,15 @@
 /* A single board result row: name + metadata + chips + action buttons. */
 
 .board-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) fit-content(28rem);
   align-items: center;
-  gap: 0.5rem;
+  column-gap: 0.8rem;
+  row-gap: 0.55rem;
   padding: 0.45rem 0.55rem;
   margin: 0.25rem 0;
   border: 1px solid var(--border);
   border-radius: 5px;
-  flex-wrap: wrap;
 }
 
 .board-row:hover {
@@ -17,6 +18,10 @@
 
 .board-name {
   font-weight: 600;
+}
+
+.board-main {
+  min-width: 0;
 }
 
 .board-meta {
@@ -45,9 +50,12 @@
 .board-chip.board-chip-fw   { background: #5a8f3a; color: #fff; }
 .board-chip.board-chip-conn { background: #3a6ea5; color: #fff; }
 
-.board-spacer {
-  flex: 1;
-  min-width: 0.5rem;
+.board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .btn {
@@ -79,6 +87,12 @@
   background: var(--hi-bg);
 }
 
-.btn + .btn {
-  margin-left: 0.35rem;
+@media (max-width: 760px) {
+  .board-row {
+    grid-template-columns: 1fr;
+  }
+
+  .board-actions {
+    justify-content: flex-start;
+  }
 }
