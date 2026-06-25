@@ -130,7 +130,22 @@ function previewCoveredVidSet(previews) {
 }
 
 function isBestHitCoveredByPreview(hit, previewVids) {
-  return hit.kind === 'vendor' && previewVids.has(hit.row?.vid);
+  if (hit.kind === 'vendor') return previewVids.has(hit.row?.vid);
+  if (hit.kind === 'product') {
+    return previewVids.has(hit.row?.vid) && hit.reason?.label === 'same VID';
+  }
+  if (hit.kind === 'board') {
+    return previewVids.has(hit.reason?.value) && hit.reason?.label === 'linked via VID';
+  }
+  return false;
+}
+
+function previewHeading(previews) {
+  const exactVidCount = previews.filter(
+    (preview) => preview.kind === 'vid' && (preview.reason?.exact || preview.reason?.strength === 'exact'),
+  ).length;
+  if (exactVidCount === previews.length) return 'Exact VID match';
+  return 'Preview';
 }
 
 /**
@@ -165,7 +180,7 @@ export function renderCombined(
 
   let html = '';
   if (previews.length) {
-    html += '<div class="cat previews"><div class="cat-head">Preview</div>';
+    html += `<div class="cat previews"><div class="cat-head">${previewHeading(previews)}</div>`;
     for (const preview of previews) html += renderPreviewRow(preview, query);
     html += '</div>';
   }
