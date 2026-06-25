@@ -41,6 +41,39 @@ QUERY_MJS = REPO / "tools" / "query.mjs"
 LIVE_URL = "https://fastled.github.io/boards/boards.db"
 
 
+RAW_VID_COUNTS_SCRIPT = r"""
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const [repo, dbSource, vid] = process.argv.slice(2);
+const { openDb } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/db/index.js')).href
+);
+
+const db = await openDb({ source: dbSource });
+try {
+  const products = await db.query(
+    'SELECT COUNT(*) AS n FROM vidpid WHERE vid = ?',
+    [vid],
+  );
+  const boards = await db.query(
+    'SELECT COUNT(*) AS n FROM (' +
+      'SELECT DISTINCT b.rowid FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      'WHERE bv.vid = ?' +
+    ')',
+    [vid],
+  );
+  process.stdout.write(JSON.stringify({
+    products: products[0].n,
+    boards: boards[0].n,
+  }));
+} finally {
+  await db.close();
+}
+"""
+
+
 def _db_arg() -> str:
     """Honor BOARDS_DB env override; fall back to the live URL."""
     override = os.environ.get("BOARDS_DB")
@@ -70,6 +103,27 @@ def _run_batch(db: str, items: list[dict], timeout: int = 120) -> list[dict]:
         ) from e
     finally:
         os.unlink(batch_path)
+    return json.loads(proc.stdout)
+
+
+def _raw_vid_counts(db: str, vid: str, timeout: int = 120) -> dict:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".mjs", delete=False, encoding="utf-8"
+    ) as fh:
+        fh.write(RAW_VID_COUNTS_SCRIPT.strip() + "\n")
+        script_path = fh.name
+    try:
+        proc = subprocess.run(
+            [BUN, script_path, str(REPO), db, vid],
+            capture_output=True, text=True, timeout=timeout, check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise AssertionError(
+            f"bun raw VID count exit {e.returncode}\nstderr:\n{e.stderr}\n"
+            f"stdout:\n{e.stdout[:1000]}"
+        ) from e
+    finally:
+        os.unlink(script_path)
     return json.loads(proc.stdout)
 
 
@@ -117,6 +171,27 @@ class LiveQueryJsTests(unittest.TestCase):
         ]
         self.assertFalse(non_teensy,
                          f"non-Teensy boards in 16c0:0483 result: {non_teensy}")
+
+    def test_303a_returns_vid_preview_document(self) -> None:
+        results = _run_batch(self.db, [{"text": "303a", "mode": "anything"}])
+        r = results[0]
+        previews = r["data"].get("previews", [])
+        preview = next(
+            (p for p in previews if p.get("kind") == "vid" and p.get("vid") == "303a"),
+            None,
+        )
+        self.assertIsNotNone(preview, f"303a should return a VID preview: {r}")
+        self.assertEqual(preview["vendor"], "Espressif Systems")
+        self.assertEqual(preview["reason"]["label"], "exact VID")
+        self.assertEqual(preview["reason"]["field"], "vid")
+        self.assertEqual(preview["reason"]["value"], "303a")
+        self.assertEqual(preview["reason"]["strength"], "exact")
+
+        raw_counts = _raw_vid_counts(self.db, "303a")
+        self.assertEqual(preview["knownBoards"]["total"], raw_counts["boards"])
+        self.assertEqual(preview["knownProducts"]["total"], raw_counts["products"])
+        self.assertGreater(preview["knownBoards"]["total"], 0)
+        self.assertTrue(preview["knownBoards"]["sample"])
 
     def test_alias_fix_terms_resolve_via_engine_js(self) -> None:
         """The four marquee aliases from the keyword/aliases work

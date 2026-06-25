@@ -133,6 +133,20 @@ async function countRows(query, sql, args) {
   return Number(rows?.[0]?.n || 0);
 }
 
+async function fetchProductsForVid(query, vid, limit = PRODUCT_LIMIT) {
+  const total = await countRows(
+    query,
+    'SELECT COUNT(*) AS n FROM vidpid WHERE vid = ?',
+    [vid],
+  );
+  const rows = await query(
+    'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+      `WHERE vid = ? ORDER BY is_primary DESC, product LIMIT ${limit}`,
+    [vid],
+  );
+  return { rows, total };
+}
+
 function uniquePairsFromRows(rows) {
   const seen = new Set();
   const pairs = [];
@@ -207,12 +221,37 @@ async function fetchLinkedBoards(query, vidpidPairs, limit = LINKED_BOARD_LIMIT)
   return { rows, total, pairCount: capped.length };
 }
 
-async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why, reasonObj, meta) {
-  const linked = await fetchLinkedBoards(query, vidpidPairs);
+async function fetchBoardsForVid(query, vid, limit = LINKED_BOARD_LIMIT) {
+  const total = await countRows(
+    query,
+    'SELECT COUNT(*) AS n FROM (' +
+      'SELECT DISTINCT b.rowid FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      'WHERE bv.vid = ?' +
+    ')',
+    [vid],
+  );
+  const rows = await query(
+    `SELECT DISTINCT ${BOARD_COLUMNS} ` +
+      'FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      'WHERE bv.vid = ? ' +
+      `LIMIT ${limit}`,
+    [vid],
+  );
+  return { rows, total, pairCount: 1 };
+}
+
+function enrichFromLinkedRows(boards, linked, score, why, reasonObj, meta) {
   setMeta(meta, 'boards', linked.total, linked.rows.length);
   for (const r of linked.rows) {
     bumpOrPush(boards, boardKey, r, score, why, { reason: reasonObj });
   }
+}
+
+async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why, reasonObj, meta) {
+  const linked = await fetchLinkedBoards(query, vidpidPairs);
+  enrichFromLinkedRows(boards, linked, score, why, reasonObj, meta);
   return linked;
 }
 
@@ -226,6 +265,34 @@ function linkedBoardSummary(linked) {
       layer: row.layer,
       sublayer: row.sublayer,
     })),
+  };
+}
+
+function productSummary(products) {
+  return {
+    total: products.total,
+    loaded: products.rows.length,
+    sample: products.rows.slice(0, 5).map((row) => ({
+      vid: row.vid,
+      pid: row.pid,
+      product: row.product,
+      source: row.source,
+      is_primary: row.is_primary,
+    })),
+  };
+}
+
+function makeVidPreview(vid, vendorRow, products, linked) {
+  if (!vendorRow && !products.total && !linked.total) return null;
+  return {
+    kind: 'vid',
+    vid,
+    vendor: vendorRow?.vendor || null,
+    source: vendorRow?.source || null,
+    score: 1000,
+    reason: reason('exact VID', 'vid', vid, 'exact'),
+    knownProducts: productSummary(products),
+    knownBoards: linkedBoardSummary(linked) || { total: 0, sample: [] },
   };
 }
 
@@ -257,6 +324,7 @@ export async function searchUniversal(text, query) {
   const vendors = [];
   const products = [];
   const boards = [];
+  const previews = [];
   const meta = {};
 
   if (hex) {
@@ -307,33 +375,26 @@ export async function searchUniversal(text, query) {
         });
       }
 
-      const totalProducts = await countRows(
-        query,
-        'SELECT COUNT(*) AS n FROM vidpid WHERE vid = ?',
-        [vidExact],
-      );
-      const vp = await query(
-        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
-          `WHERE vid = ? ORDER BY is_primary DESC, product LIMIT ${PRODUCT_LIMIT}`,
-        [vidExact],
-      );
-      setMeta(meta, 'products', totalProducts, vp.length);
+      const vidProducts = await fetchProductsForVid(query, vidExact);
+      const vp = vidProducts.rows;
+      setMeta(meta, 'products', vidProducts.total, vp.length);
       for (const r of vp) {
         bumpOrPush(products, prodKey, r, 600, 'same VID', {
           reason: reason('same VID', 'vidpid', r.vid, 'exact'),
         });
       }
 
-      const pairs = uniquePairsFromRows(vp);
-      await enrichWithLinkedBoards(
-        query,
+      const linked = await fetchBoardsForVid(query, vidExact);
+      enrichFromLinkedRows(
         boards,
-        pairs,
+        linked,
         760,
         'linked via VID',
         reason('linked via VID', 'vidpids', vidExact, 'exact'),
         meta,
       );
+      const preview = makeVidPreview(vidExact, rows[0], vidProducts, linked);
+      if (preview) previews.push(preview);
 
       const pidHits = await query(
         'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
@@ -445,7 +506,7 @@ export async function searchUniversal(text, query) {
     a.row.product.localeCompare(b.row.product));
   boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
 
-  const result = { vendors, products, boards, meta };
+  const result = { previews, vendors, products, boards, meta };
   _cachePut('universal', q, result);
   return result;
 }
@@ -459,6 +520,7 @@ export async function searchVendor(text, query) {
   const hex = cleanHex(q);
   const vidExact = asVid4(q);
   const vendors = [];
+  const previews = [];
 
   if (vidExact) {
     const exact = await query(
@@ -470,6 +532,10 @@ export async function searchVendor(text, query) {
         reason: reason('exact VID', 'vid', r.vid, 'exact'),
       });
     }
+    const vidProducts = await fetchProductsForVid(query, vidExact, 5);
+    const linked = await fetchBoardsForVid(query, vidExact, 5);
+    const preview = makeVidPreview(vidExact, exact[0], vidProducts, linked);
+    if (preview) previews.push(preview);
   } else if (hex && hex.length < 4) {
     const pref = await query(
       'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
@@ -499,7 +565,7 @@ export async function searchVendor(text, query) {
     }
   }
   vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
-  const result = { vendors, products: [], boards: [] };
+  const result = { previews, vendors, products: [], boards: [] };
   _cachePut('vendor', q, result);
   return result;
 }

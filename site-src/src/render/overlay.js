@@ -5,6 +5,7 @@ import { renderBestRow } from './best-row.js';
 import { renderVendorRow } from './vendor-row.js';
 import { renderProductRow } from './product-row.js';
 import { renderBoardRow } from './board-row.js';
+import { renderPreviewRow } from './preview-row.js';
 import { openBoardJson } from '../modal/board-json.js';
 import { wireBoardDefineButtons } from '../modal/board-defines.js';
 
@@ -126,15 +127,15 @@ function bestSort(a, b) {
  * union threshold-filtered to >= 600.
  *
  * @param {string} query
- * @param {{vendors?: Array, products?: Array, boards?: Array, meta?: Object}} cats
+ * @param {{previews?: Array, vendors?: Array, products?: Array, boards?: Array, meta?: Object}} cats
  * @param {string} mode
  */
 export function renderCombined(
   query,
-  { vendors = [], products = [], boards = [], meta = {} },
+  { previews = [], vendors = [], products = [], boards = [], meta = {} },
   mode = 'anything',
 ) {
-  if (!vendors.length && !products.length && !boards.length) {
+  if (!previews.length && !vendors.length && !products.length && !boards.length) {
     showUniOverlay(renderNoResults(query, mode), 'empty');
     return;
   }
@@ -149,6 +150,12 @@ export function renderCombined(
     .slice(0, 6);
 
   let html = '';
+  if (previews.length) {
+    html += '<div class="cat previews"><div class="cat-head">Preview</div>';
+    for (const preview of previews) html += renderPreviewRow(preview, query);
+    html += '</div>';
+  }
+
   if (best.length) {
     html += '<div class="cat best"><div class="cat-head">Best hits</div>';
     for (const h of best) html += renderBestRow(h, query);
