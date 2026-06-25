@@ -121,6 +121,18 @@ function bestSort(a, b) {
   );
 }
 
+function previewCoveredVidSet(previews) {
+  return new Set(
+    previews
+      .filter((preview) => preview.kind === 'vid' && preview.vid)
+      .map((preview) => preview.vid),
+  );
+}
+
+function isBestHitCoveredByPreview(hit, previewVids) {
+  return hit.kind === 'vendor' && previewVids.has(hit.row?.vid);
+}
+
 /**
  * Render any combination of categories into the results panel. Single-mode
  * searches leave the other arrays empty. Best Hits is a score-ranked
@@ -140,11 +152,13 @@ export function renderCombined(
     return;
   }
 
+  const previewVids = previewCoveredVidSet(previews);
   const best = [
     ...vendors.map((h) => ({ kind: 'vendor', ...h })),
     ...boards.map((h) => ({ kind: 'board', ...h })),
     ...products.map((h) => ({ kind: 'product', ...h })),
   ]
+    .filter((h) => !isBestHitCoveredByPreview(h, previewVids))
     .filter((h) => h.score >= 600)
     .sort(bestSort)
     .slice(0, 6);

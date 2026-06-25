@@ -135,6 +135,72 @@ try {
 """
 
 
+RENDER_303A_OVERLAY_SCRIPT = r"""
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const [repo, dbSource] = process.argv.slice(2);
+const { openDb } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/db/index.js')).href
+);
+const { searchUniversal } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/search/engine.js')).href
+);
+
+const elements = new Map();
+function element(id) {
+  if (!elements.has(id)) {
+    elements.set(id, {
+      id,
+      className: '',
+      innerHTML: '',
+      hidden: false,
+      removeAttribute(name) {
+        if (name === 'hidden') this.hidden = false;
+      },
+      setAttribute(name, value) {
+        if (name === 'hidden') this.hidden = true;
+        this[name] = value ?? '';
+      },
+      hasAttribute(name) {
+        return name === 'hidden' ? this.hidden : this[name] != null;
+      },
+      querySelectorAll() {
+        return [];
+      },
+    });
+  }
+  return elements.get(id);
+}
+
+globalThis.document = { getElementById: element };
+const { renderCombined } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/render/overlay.js')).href
+);
+
+const db = await openDb({ source: dbSource });
+try {
+  const data = await searchUniversal('303a', db.query.bind(db));
+  renderCombined('303a', data, 'anything');
+  const html = element('uniOut').innerHTML;
+  const bestStart = html.indexOf('<div class="cat best">');
+  const boardsStart = html.indexOf('<div class="cat"><div class="cat-head">Boards');
+  const bestHtml =
+    bestStart >= 0 && boardsStart > bestStart
+      ? html.slice(bestStart, boardsStart)
+      : '';
+  process.stdout.write(JSON.stringify({
+    hasPreview: html.includes('<div class="cat previews">'),
+    bestHtml,
+    bestHasVendorTag: bestHtml.includes('<span class="tag vendor">USB VID</span>'),
+    bestHasExactVidVendor: bestHtml.includes('Espressif Systems'),
+  }));
+} finally {
+  await db.close();
+}
+"""
+
+
 def _render_303a_board_rows(db: str) -> dict:
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".mjs", delete=False, encoding="utf-8"
@@ -152,6 +218,30 @@ def _render_303a_board_rows(db: str) -> dict:
     except subprocess.CalledProcessError as e:
         raise AssertionError(
             f"bun render check exit {e.returncode}\nstderr:\n{e.stderr}\n"
+            f"stdout:\n{e.stdout[:1000]}"
+        ) from e
+    finally:
+        os.unlink(script_path)
+    return json.loads(proc.stdout)
+
+
+def _render_303a_overlay(db: str) -> dict:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".mjs", delete=False, encoding="utf-8"
+    ) as fh:
+        fh.write(textwrap.dedent(RENDER_303A_OVERLAY_SCRIPT).strip() + "\n")
+        script_path = fh.name
+    try:
+        proc = subprocess.run(
+            [BUN, script_path, str(REPO), db],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise AssertionError(
+            f"bun overlay render check exit {e.returncode}\nstderr:\n{e.stderr}\n"
             f"stdout:\n{e.stdout[:1000]}"
         ) from e
     finally:
@@ -216,6 +306,20 @@ class RenderedSearchNameTests(unittest.TestCase):
         self.assertIn("exact VID", text)
         self.assertIn("known boards", text)
         self.assertIn(str(preview["knownBoards"]["total"]), text)
+
+    def test_303a_preview_replaces_duplicate_vid_best_hit(self) -> None:
+        payload = _render_303a_overlay(_db_arg())
+        self.assertTrue(payload["hasPreview"], f"303a preview missing: {payload!r}")
+        self.assertFalse(
+            payload["bestHasVendorTag"],
+            "Best Hits should not repeat the exact VID vendor row when the "
+            f"VID preview is already rendered:\n{payload['bestHtml']}",
+        )
+        self.assertFalse(
+            payload["bestHasExactVidVendor"],
+            "Best Hits should not repeat Espressif Systems as a vendor hit "
+            f"when the VID preview is already rendered:\n{payload['bestHtml']}",
+        )
 
 
 if __name__ == "__main__":
