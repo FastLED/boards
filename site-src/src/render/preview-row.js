@@ -1,5 +1,5 @@
 import { escapeHtml } from '../util/escape.js';
-import { fmtVid } from './fmt.js';
+import { fmtPair, fmtVid } from './fmt.js';
 import { highlightText, reasonBadge } from './match.js';
 
 function boardSampleText(preview) {
@@ -13,12 +13,33 @@ function boardSampleText(preview) {
     .join(', ');
 }
 
+function productSampleHtml(preview, query = '') {
+  const sample = preview.knownProducts?.sample || [];
+  if (!sample.length) return '';
+  return sample
+    .slice(0, 5)
+    .map((product) => {
+      const pair = fmtPair(product.vid, product.pid, 'field-hit');
+      const name = highlightText(product.product || '', query, [
+        product.vid,
+        product.pid,
+        `${product.vid}:${product.pid}`,
+      ]);
+      return `${pair} ${name}`;
+    })
+    .join(', ');
+}
+
 function renderVidPreview(preview, query = '') {
   const boardTotal = preview.knownBoards?.total || 0;
   const productTotal = preview.knownProducts?.total || 0;
-  const sample = boardSampleText(preview);
-  const sampleHtml = sample
-    ? `<div class="preview-sample">Board samples: ${sample}</div>`
+  const boardSample = boardSampleText(preview);
+  const productSample = productSampleHtml(preview, query);
+  const productSampleMarkup = productSample
+    ? `<div class="preview-sample">Product samples: ${productSample}</div>`
+    : '';
+  const boardSampleMarkup = boardSample
+    ? `<div class="preview-sample">Board samples: ${boardSample}</div>`
     : '<div class="preview-sample empty">No linked board definitions found yet.</div>';
   const vendor = preview.vendor || 'Unknown vendor';
 
@@ -35,7 +56,8 @@ function renderVidPreview(preview, query = '') {
           `<span><strong>${Number(boardTotal).toLocaleString()}</strong> known boards</span>` +
           `<span><strong>${Number(productTotal).toLocaleString()}</strong> USB products</span>` +
         '</div>' +
-        `${sampleHtml}` +
+        `${productSampleMarkup}` +
+        `${boardSampleMarkup}` +
       '</div>' +
     '</div>'
   );

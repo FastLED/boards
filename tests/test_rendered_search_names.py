@@ -30,6 +30,9 @@ def _db_arg() -> str:
     override = os.environ.get("BOARDS_DB")
     if override and os.path.exists(override):
         return override
+    local_db = REPO / "site-src" / "dist" / "boards.db"
+    if local_db.exists():
+        return str(local_db)
     return LIVE_URL
 
 
@@ -139,11 +142,11 @@ RENDER_303A_OVERLAY_SCRIPT = r"""
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const [repo, dbSource] = process.argv.slice(2);
+const [repo, dbSource, mode = 'anything'] = process.argv.slice(2);
 const { openDb } = await import(
   pathToFileURL(path.join(repo, 'site-src/src/db/index.js')).href
 );
-const { searchUniversal } = await import(
+const { searchUniversal, searchProduct } = await import(
   pathToFileURL(path.join(repo, 'site-src/src/search/engine.js')).href
 );
 
@@ -180,8 +183,9 @@ const { renderCombined } = await import(
 
 const db = await openDb({ source: dbSource });
 try {
-  const data = await searchUniversal('303a', db.query.bind(db));
-  renderCombined('303a', data, 'anything');
+  const search = mode === 'product' ? searchProduct : searchUniversal;
+  const data = await search('303a', db.query.bind(db));
+  renderCombined('303a', data, mode);
   const html = element('uniOut').innerHTML;
   const bestStart = html.indexOf('<div class="cat best">');
   const boardsStart = html.indexOf('<div class="cat"><div class="cat-head">Boards');
@@ -196,6 +200,7 @@ try {
     bestHasExactVidVendor: bestHtml.includes('Espressif Systems'),
     hasBoardsCategory: html.includes('<div class="cat"><div class="cat-head">Boards'),
     hasProductsCategory: html.includes('<div class="cat"><div class="cat-head">USB Products'),
+    hasProductSamples: html.includes('Product samples:'),
     searchHitCount: (html.match(/class="[^"]*search-hit/g) || []).length,
     htmlBytes: html.length,
   }));
@@ -229,7 +234,7 @@ def _render_303a_board_rows(db: str) -> dict:
     return json.loads(proc.stdout)
 
 
-def _render_303a_overlay(db: str) -> dict:
+def _render_303a_overlay(db: str, mode: str = "anything") -> dict:
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".mjs", delete=False, encoding="utf-8"
     ) as fh:
@@ -237,7 +242,7 @@ def _render_303a_overlay(db: str) -> dict:
         script_path = fh.name
     try:
         proc = subprocess.run(
-            [BUN, script_path, str(REPO), db],
+            [BUN, script_path, str(REPO), db, mode],
             capture_output=True,
             text=True,
             timeout=120,
@@ -332,6 +337,15 @@ class RenderedSearchNameTests(unittest.TestCase):
         self.assertFalse(payload["hasProductsCategory"], payload)
         self.assertLessEqual(payload["searchHitCount"], 2, payload)
         self.assertLess(payload["htmlBytes"], 20_000, payload)
+
+    def test_product_mode_303a_overlay_uses_compact_vid_preview(self) -> None:
+        payload = _render_303a_overlay(_db_arg(), mode="product")
+        self.assertTrue(payload["hasPreview"], f"303a product preview missing: {payload!r}")
+        self.assertTrue(payload["hasProductSamples"], payload)
+        self.assertFalse(payload["hasBoardsCategory"], payload)
+        self.assertFalse(payload["hasProductsCategory"], payload)
+        self.assertLessEqual(payload["searchHitCount"], 1, payload)
+        self.assertLess(payload["htmlBytes"], 12_000, payload)
 
 
 if __name__ == "__main__":
