@@ -102,6 +102,39 @@ try {
 """
 
 
+RENDER_303A_PREVIEW_SCRIPT = r"""
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const [repo, dbSource] = process.argv.slice(2);
+const { openDb } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/db/index.js')).href
+);
+const { searchUniversal } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/search/engine.js')).href
+);
+const { renderPreviewRow } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/render/preview-row.js')).href
+);
+
+function htmlText(html) {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+const db = await openDb({ source: dbSource });
+try {
+  const data = await searchUniversal('303a', db.query.bind(db));
+  const preview = data.previews.find((p) => p.kind === 'vid' && p.vid === '303a');
+  process.stdout.write(JSON.stringify({
+    preview,
+    text: preview ? htmlText(renderPreviewRow(preview, '303a')) : '',
+  }));
+} finally {
+  await db.close();
+}
+"""
+
+
 def _render_303a_board_rows(db: str) -> dict:
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".mjs", delete=False, encoding="utf-8"
@@ -119,6 +152,30 @@ def _render_303a_board_rows(db: str) -> dict:
     except subprocess.CalledProcessError as e:
         raise AssertionError(
             f"bun render check exit {e.returncode}\nstderr:\n{e.stderr}\n"
+            f"stdout:\n{e.stdout[:1000]}"
+        ) from e
+    finally:
+        os.unlink(script_path)
+    return json.loads(proc.stdout)
+
+
+def _render_303a_preview(db: str) -> dict:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".mjs", delete=False, encoding="utf-8"
+    ) as fh:
+        fh.write(textwrap.dedent(RENDER_303A_PREVIEW_SCRIPT).strip() + "\n")
+        script_path = fh.name
+    try:
+        proc = subprocess.run(
+            [BUN, script_path, str(REPO), db],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise AssertionError(
+            f"bun preview render check exit {e.returncode}\nstderr:\n{e.stderr}\n"
             f"stdout:\n{e.stdout[:1000]}"
         ) from e
     finally:
@@ -147,6 +204,18 @@ class RenderedSearchNameTests(unittest.TestCase):
             "`Vendor · Vendor ...`:\n"
             + json.dumps(payload["duplicates"], indent=2),
         )
+
+
+    def test_303a_vid_preview_renders_known_board_summary(self) -> None:
+        payload = _render_303a_preview(_db_arg())
+        preview = payload["preview"]
+        self.assertIsNotNone(preview, f"303a preview missing: {payload!r}")
+        text = payload["text"]
+        self.assertIn("0x303a", text)
+        self.assertIn("Espressif Systems", text)
+        self.assertIn("exact VID", text)
+        self.assertIn("known boards", text)
+        self.assertIn(str(preview["knownBoards"]["total"]), text)
 
 
 if __name__ == "__main__":
