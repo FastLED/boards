@@ -273,6 +273,28 @@ class LiveQueryJsTests(unittest.TestCase):
             + json.dumps(payload["calls"], indent=2),
         )
 
+    def test_hex_vid_prefixes_use_btree_vendor_prefix_only(self) -> None:
+        for text in ("3", "30", "303"):
+            with self.subTest(text=text):
+                payload = _query_shape(self.db, text)
+                self.assertEqual(payload["counts"]["previews"], 0, payload)
+                self.assertGreaterEqual(payload["counts"]["vendors"], 1, payload)
+                self.assertEqual(payload["counts"]["products"], 0, payload)
+                self.assertEqual(payload["counts"]["boards"], 0, payload)
+
+                sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
+                self.assertNotIn(" match ", sql_text)
+                self.assertNotIn("_fts", sql_text)
+                self.assertNotIn("bm25", sql_text)
+                self.assertLessEqual(
+                    len(payload["calls"]),
+                    1,
+                    f"VID prefix {text!r} should be one indexed range query:\n"
+                    + json.dumps(payload["calls"], indent=2),
+                )
+                for hit in payload["data"]["vendors"]:
+                    self.assertTrue(hit["row"]["vid"].startswith(text), hit)
+
     def test_mixed_vid_and_vendor_text_refines_linked_boards(self) -> None:
         results = _run_batch(self.db, [{"text": "303a Adafruit", "mode": "anything"}])
         r = results[0]
