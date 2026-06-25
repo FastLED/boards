@@ -80,7 +80,7 @@ function repeatsRenderedVendor(row, renderedText) {
 
 const db = await openDb({ source: dbSource });
 try {
-  const data = await searchUniversal('303a', db.query.bind(db));
+  const data = await searchUniversal('303a Adafruit', db.query.bind(db));
   const rows = data.boards.map((h) => h.row);
   const prefixedRows = rows.filter(hasVendorPrefixedName);
   const rendered = prefixedRows.map((row) => ({
@@ -194,6 +194,10 @@ try {
     bestHtml,
     bestHasVendorTag: bestHtml.includes('<span class="tag vendor">USB VID</span>'),
     bestHasExactVidVendor: bestHtml.includes('Espressif Systems'),
+    hasBoardsCategory: html.includes('<div class="cat"><div class="cat-head">Boards'),
+    hasProductsCategory: html.includes('<div class="cat"><div class="cat-head">USB Products'),
+    searchHitCount: (html.match(/class="[^"]*search-hit/g) || []).length,
+    htmlBytes: html.length,
   }));
 } finally {
   await db.close();
@@ -275,12 +279,12 @@ def _render_303a_preview(db: str) -> dict:
 
 @unittest.skipIf(BUN is None, "bun runtime not installed")
 class RenderedSearchNameTests(unittest.TestCase):
-    def test_303a_board_rows_do_not_repeat_vendor_prefix(self) -> None:
+    def test_303a_adafruit_board_rows_do_not_repeat_vendor_prefix(self) -> None:
         payload = _render_303a_board_rows(_db_arg())
         self.assertGreater(
             payload["boardCount"],
             0,
-            f"303a should return board rows: {payload!r}",
+            f"303a Adafruit should return board rows: {payload!r}",
         )
         self.assertGreater(
             payload["prefixedCount"],
@@ -320,6 +324,14 @@ class RenderedSearchNameTests(unittest.TestCase):
             "Best Hits should not repeat Espressif Systems as a vendor hit "
             f"when the VID preview is already rendered:\n{payload['bestHtml']}",
         )
+
+    def test_303a_overlay_uses_compact_exact_vid_fast_path(self) -> None:
+        payload = _render_303a_overlay(_db_arg())
+        self.assertTrue(payload["hasPreview"], f"303a preview missing: {payload!r}")
+        self.assertFalse(payload["hasBoardsCategory"], payload)
+        self.assertFalse(payload["hasProductsCategory"], payload)
+        self.assertLessEqual(payload["searchHitCount"], 2, payload)
+        self.assertLess(payload["htmlBytes"], 20_000, payload)
 
 
 if __name__ == "__main__":

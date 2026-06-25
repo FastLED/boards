@@ -74,6 +74,43 @@ try {
 """
 
 
+QUERY_SHAPE_SCRIPT = r"""
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const [repo, dbSource, text] = process.argv.slice(2);
+const { openDb } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/db/index.js')).href
+);
+const { searchUniversal } = await import(
+  pathToFileURL(path.join(repo, 'site-src/src/search/engine.js')).href
+);
+
+const db = await openDb({ source: dbSource });
+const calls = [];
+const query = async (sql, args = []) => {
+  calls.push({ sql, args });
+  return db.query(sql, args);
+};
+
+try {
+  const data = await searchUniversal(text, query);
+  process.stdout.write(JSON.stringify({
+    data,
+    calls,
+    counts: {
+      previews: data.previews?.length ?? 0,
+      vendors: data.vendors?.length ?? 0,
+      products: data.products?.length ?? 0,
+      boards: data.boards?.length ?? 0,
+    },
+  }));
+} finally {
+  await db.close();
+}
+"""
+
+
 def _db_arg() -> str:
     """Honor BOARDS_DB env override; fall back to the live URL."""
     override = os.environ.get("BOARDS_DB")
@@ -120,6 +157,27 @@ def _raw_vid_counts(db: str, vid: str, timeout: int = 120) -> dict:
     except subprocess.CalledProcessError as e:
         raise AssertionError(
             f"bun raw VID count exit {e.returncode}\nstderr:\n{e.stderr}\n"
+            f"stdout:\n{e.stdout[:1000]}"
+        ) from e
+    finally:
+        os.unlink(script_path)
+    return json.loads(proc.stdout)
+
+
+def _query_shape(db: str, text: str, timeout: int = 120) -> dict:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".mjs", delete=False, encoding="utf-8"
+    ) as fh:
+        fh.write(QUERY_SHAPE_SCRIPT.strip() + "\n")
+        script_path = fh.name
+    try:
+        proc = subprocess.run(
+            [BUN, script_path, str(REPO), db, text],
+            capture_output=True, text=True, timeout=timeout, check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise AssertionError(
+            f"bun query-shape exit {e.returncode}\nstderr:\n{e.stderr}\n"
             f"stdout:\n{e.stdout[:1000]}"
         ) from e
     finally:
@@ -188,10 +246,32 @@ class LiveQueryJsTests(unittest.TestCase):
         self.assertEqual(preview["reason"]["strength"], "exact")
 
         raw_counts = _raw_vid_counts(self.db, "303a")
+        self.assertEqual(len(r["data"]["vendors"]), 1)
+        self.assertEqual(r["data"]["vendors"][0]["row"]["vid"], "303a")
+        self.assertEqual(r["data"]["products"], [])
+        self.assertEqual(r["data"]["boards"], [])
         self.assertEqual(preview["knownBoards"]["total"], raw_counts["boards"])
         self.assertEqual(preview["knownProducts"]["total"], raw_counts["products"])
         self.assertGreater(preview["knownBoards"]["total"], 0)
         self.assertTrue(preview["knownBoards"]["sample"])
+
+    def test_exact_vid_fast_path_avoids_unscoped_fts(self) -> None:
+        payload = _query_shape(self.db, "303a")
+        self.assertEqual(
+            payload["counts"],
+            {"previews": 1, "vendors": 1, "products": 0, "boards": 0},
+            payload,
+        )
+        sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
+        self.assertNotIn(" match ", sql_text)
+        self.assertNotIn("_fts", sql_text)
+        self.assertNotIn("bm25", sql_text)
+        self.assertLessEqual(
+            len(payload["calls"]),
+            5,
+            "exact VID should only fetch vendor plus preview product/board summaries:\n"
+            + json.dumps(payload["calls"], indent=2),
+        )
 
     def test_mixed_vid_and_vendor_text_refines_linked_boards(self) -> None:
         results = _run_batch(self.db, [{"text": "303a Adafruit", "mode": "anything"}])
