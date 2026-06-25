@@ -256,8 +256,7 @@ class LiveQueryJsTests(unittest.TestCase):
         self.assertEqual(preview["reason"]["strength"], "exact")
 
         raw_counts = _raw_vid_counts(self.db, "303a")
-        self.assertEqual(len(r["data"]["vendors"]), 1)
-        self.assertEqual(r["data"]["vendors"][0]["row"]["vid"], "303a")
+        self.assertEqual(r["data"]["vendors"], [])
         self.assertEqual(r["data"]["products"], [])
         self.assertEqual(r["data"]["boards"], [])
         self.assertEqual(preview["knownBoards"]["total"], raw_counts["boards"])
@@ -269,7 +268,7 @@ class LiveQueryJsTests(unittest.TestCase):
         payload = _query_shape(self.db, "303a")
         self.assertEqual(
             payload["counts"],
-            {"previews": 1, "vendors": 1, "products": 0, "boards": 0},
+            {"previews": 1, "vendors": 0, "products": 0, "boards": 0},
             payload,
         )
         sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
@@ -302,16 +301,23 @@ class LiveQueryJsTests(unittest.TestCase):
         self.assertEqual(preview["knownProducts"]["total"], raw_counts["products"])
         self.assertEqual(preview["knownBoards"]["total"], raw_counts["boards"])
         self.assertTrue(preview["knownProducts"]["sample"])
-        self.assertEqual(r["data"].get("products"), [])
+        products = r["data"].get("products", [])
+        self.assertGreaterEqual(
+            len(products),
+            25,
+            "USB Products mode should expose scoped VID:PID rows under the exact VID",
+        )
+        self.assertTrue(all(p["row"]["vid"] == "303a" for p in products))
         self.assertEqual(r["data"].get("boards"), [])
+        self.assertEqual(r["data"]["meta"]["products"]["total"], raw_counts["products"])
+        self.assertEqual(r["data"]["meta"]["products"]["loaded"], len(products))
 
     def test_product_mode_exact_vid_avoids_unscoped_fts(self) -> None:
         payload = _query_shape(self.db, "303a", mode="product")
-        self.assertEqual(
-            payload["counts"],
-            {"previews": 1, "vendors": 0, "products": 0, "boards": 0},
-            payload,
-        )
+        self.assertEqual(payload["counts"]["previews"], 1, payload)
+        self.assertEqual(payload["counts"]["vendors"], 0, payload)
+        self.assertGreaterEqual(payload["counts"]["products"], 25, payload)
+        self.assertEqual(payload["counts"]["boards"], 0, payload)
         sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
         self.assertNotIn(" match ", sql_text)
         self.assertNotIn("_fts", sql_text)

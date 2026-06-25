@@ -196,9 +196,12 @@ try {
   process.stdout.write(JSON.stringify({
     hasPreview: html.includes('<div class="cat previews">'),
     bestHtml,
+    hasExactVidHeading: html.includes('<div class="cat-head">Exact VID match</div>'),
+    hasBestCategory: html.includes('<div class="cat best">'),
     bestHasVendorTag: bestHtml.includes('<span class="tag vendor">USB VID</span>'),
     bestHasExactVidVendor: bestHtml.includes('Espressif Systems'),
     hasBoardsCategory: html.includes('<div class="cat"><div class="cat-head">Boards'),
+    hasVendorsCategory: html.includes('<div class="cat"><div class="cat-head">USB Vendors'),
     hasProductsCategory: html.includes('<div class="cat"><div class="cat-head">USB Products'),
     hasProductSamples: html.includes('Product samples:'),
     searchHitCount: (html.match(/class="[^"]*search-hit/g) || []).length,
@@ -319,6 +322,8 @@ class RenderedSearchNameTests(unittest.TestCase):
     def test_303a_preview_replaces_duplicate_vid_best_hit(self) -> None:
         payload = _render_303a_overlay(_db_arg())
         self.assertTrue(payload["hasPreview"], f"303a preview missing: {payload!r}")
+        self.assertTrue(payload["hasExactVidHeading"], payload)
+        self.assertFalse(payload["hasBestCategory"], payload)
         self.assertFalse(
             payload["bestHasVendorTag"],
             "Best Hits should not repeat the exact VID vendor row when the "
@@ -333,19 +338,24 @@ class RenderedSearchNameTests(unittest.TestCase):
     def test_303a_overlay_uses_compact_exact_vid_fast_path(self) -> None:
         payload = _render_303a_overlay(_db_arg())
         self.assertTrue(payload["hasPreview"], f"303a preview missing: {payload!r}")
+        self.assertTrue(payload["hasExactVidHeading"], payload)
         self.assertFalse(payload["hasBoardsCategory"], payload)
+        self.assertFalse(payload["hasVendorsCategory"], payload)
         self.assertFalse(payload["hasProductsCategory"], payload)
-        self.assertLessEqual(payload["searchHitCount"], 2, payload)
+        self.assertLessEqual(payload["searchHitCount"], 1, payload)
         self.assertLess(payload["htmlBytes"], 20_000, payload)
 
     def test_product_mode_303a_overlay_uses_compact_vid_preview(self) -> None:
         payload = _render_303a_overlay(_db_arg(), mode="product")
         self.assertTrue(payload["hasPreview"], f"303a product preview missing: {payload!r}")
+        self.assertTrue(payload["hasExactVidHeading"], payload)
         self.assertTrue(payload["hasProductSamples"], payload)
+        self.assertFalse(payload["hasBestCategory"], payload)
         self.assertFalse(payload["hasBoardsCategory"], payload)
-        self.assertFalse(payload["hasProductsCategory"], payload)
-        self.assertLessEqual(payload["searchHitCount"], 1, payload)
-        self.assertLess(payload["htmlBytes"], 12_000, payload)
+        self.assertFalse(payload["hasVendorsCategory"], payload)
+        self.assertTrue(payload["hasProductsCategory"], payload)
+        self.assertGreaterEqual(payload["searchHitCount"], 26, payload)
+        self.assertLess(payload["htmlBytes"], 35_000, payload)
 
 
 if __name__ == "__main__":

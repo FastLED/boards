@@ -8,6 +8,7 @@ import { scoreName, scoreTokenCoverage, bumpOrPush } from '../util/score.js';
 const SEARCH_CACHE_MAX = 64;
 const LINKED_BOARD_LIMIT = 60;
 const PRODUCT_LIMIT = 80;
+const EXACT_VID_PRODUCT_LIMIT = 25;
 const _searchCache = new Map();
 
 function _cacheKey(mode, text) {
@@ -517,7 +518,7 @@ export async function searchUniversal(text, query) {
         const linked = await fetchBoardsForVid(query, vidExact, 5);
         const preview = makeVidPreview(vidExact, rows[0], vidProducts, linked);
         if (preview) previews.push(preview);
-        const result = { previews, vendors, products, boards, meta };
+        const result = { previews, vendors: [], products, boards, meta };
         _cachePut('universal', q, result);
         return result;
       }
@@ -794,11 +795,17 @@ export async function searchProduct(text, query) {
       'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
       [vidExact],
     );
-    const vidProducts = await fetchProductsForVid(query, vidExact, 5);
+    const vidProducts = await fetchProductsForVid(query, vidExact, EXACT_VID_PRODUCT_LIMIT);
     const linked = await fetchBoardsForVid(query, vidExact, 5);
     const preview = makeVidPreview(vidExact, vendorRows[0], vidProducts, linked);
     if (preview) {
       previews.push(preview);
+      setMeta(meta, 'products', vidProducts.total, vidProducts.rows.length);
+      for (const r of vidProducts.rows) {
+        bumpOrPush(products, prodKey, r, 600, 'same VID', {
+          reason: reason('same VID', 'vidpid', r.vid, 'exact'),
+        });
+      }
       const result = { previews, vendors, products, boards, meta };
       _cachePut('product', q, result);
       return result;
