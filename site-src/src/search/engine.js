@@ -714,10 +714,56 @@ export async function searchProduct(text, query) {
   if (cached !== undefined) return cached;
   const nameLc = q.toLowerCase();
   const hex = cleanHex(q);
+  const vidExact = hex ? asVid4(q) : null;
   const vidPidExact = asVidPid8(q);
+  const previews = [];
+  const vendors = [];
   const products = [];
   const boards = [];
   const meta = {};
+
+  const mixedExactVid = hex ? null : parseMixedExactVidQuery(q);
+  if (mixedExactVid) {
+    const { vid, qualifier } = mixedExactVid;
+    const vendorRows = await query(
+      'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
+      [vid],
+    );
+    const allProducts = await fetchProductsForVid(query, vid, 5);
+    const allLinked = await fetchBoardsForVid(query, vid, 5);
+    const preview = makeVidPreview(vid, vendorRows[0], allProducts, allLinked);
+    if (preview) previews.push(preview);
+
+    const matchedProducts = await fetchProductsForVidMatchingText(query, vid, qualifier);
+    setMeta(meta, 'products', matchedProducts.total, matchedProducts.rows.length);
+    for (const r of matchedProducts.rows) {
+      const sc = Math.max(scoreName(r.product, qualifier.toLowerCase()), 720);
+      bumpOrPush(products, prodKey, r, sc, 'same VID + product text', {
+        reason: reason('same VID + product', 'vidpid', `${r.vid}:${r.pid}`, 'exact'),
+      });
+    }
+
+    const matchedBoards = await fetchBoardsForVidMatchingText(query, vid, qualifier);
+    enrichFromLinkedRows(
+      boards,
+      matchedBoards,
+      820,
+      'linked via VID + text',
+      reason('linked via VID + text', 'vidpids', vid, 'exact'),
+      meta,
+    );
+
+    if (preview || products.length || boards.length) {
+      products.sort((a, b) =>
+        b.score - a.score ||
+        (b.row.is_primary || 0) - (a.row.is_primary || 0) ||
+        a.row.product.localeCompare(b.row.product));
+      boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
+      const result = { previews, vendors, products, boards, meta };
+      _cachePut('product', q, result);
+      return result;
+    }
+  }
 
   if (vidPidExact) {
     const pair = [vidPidExact.slice(0, 4), vidPidExact.slice(4)];
@@ -743,6 +789,30 @@ export async function searchProduct(text, query) {
       meta,
     );
     attachLinkedSummaryToHits(productHits, linked);
+  } else if (vidExact && tokenCount(q) === 1) {
+    const vendorRows = await query(
+      'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
+      [vidExact],
+    );
+    const vidProducts = await fetchProductsForVid(query, vidExact, 5);
+    const linked = await fetchBoardsForVid(query, vidExact, 5);
+    const preview = makeVidPreview(vidExact, vendorRows[0], vidProducts, linked);
+    if (preview) {
+      previews.push(preview);
+      const result = { previews, vendors, products, boards, meta };
+      _cachePut('product', q, result);
+      return result;
+    }
+  } else if (hex && hex.length < 4 && tokenCount(q) === 1) {
+    const pref = await fetchVendorsForVidPrefix(query, hex);
+    for (const r of pref) {
+      bumpOrPush(vendors, vidKey, r, 400, 'VID prefix', {
+        reason: reason('VID prefix', 'vid', hex),
+      });
+    }
+    const result = { previews, vendors, products, boards, meta };
+    _cachePut('product', q, result);
+    return result;
   } else if (hex && hex.length >= 1 && hex.length <= 7) {
     const pref = await query(
       'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
@@ -796,7 +866,7 @@ export async function searchProduct(text, query) {
     (b.row.is_primary || 0) - (a.row.is_primary || 0) ||
     a.row.product.localeCompare(b.row.product));
   boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
-  const result = { vendors: [], products, boards, meta };
+  const result = { previews, vendors, products, boards, meta };
   _cachePut('product', q, result);
   return result;
 }

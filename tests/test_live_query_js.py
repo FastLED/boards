@@ -78,13 +78,20 @@ QUERY_SHAPE_SCRIPT = r"""
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const [repo, dbSource, text] = process.argv.slice(2);
+const [repo, dbSource, text, mode = 'anything'] = process.argv.slice(2);
 const { openDb } = await import(
   pathToFileURL(path.join(repo, 'site-src/src/db/index.js')).href
 );
-const { searchUniversal } = await import(
+const { searchUniversal, searchVendor, searchProduct, searchBoard } = await import(
   pathToFileURL(path.join(repo, 'site-src/src/search/engine.js')).href
 );
+
+const MODES = {
+  anything: searchUniversal,
+  vendor: searchVendor,
+  product: searchProduct,
+  board: searchBoard,
+};
 
 const db = await openDb({ source: dbSource });
 const calls = [];
@@ -94,7 +101,7 @@ const query = async (sql, args = []) => {
 };
 
 try {
-  const data = await searchUniversal(text, query);
+  const data = await MODES[mode](text, query);
   process.stdout.write(JSON.stringify({
     data,
     calls,
@@ -116,6 +123,9 @@ def _db_arg() -> str:
     override = os.environ.get("BOARDS_DB")
     if override and os.path.exists(override):
         return override
+    local_db = REPO / "site-src" / "dist" / "boards.db"
+    if local_db.exists():
+        return str(local_db)
     return LIVE_URL
 
 
@@ -164,7 +174,7 @@ def _raw_vid_counts(db: str, vid: str, timeout: int = 120) -> dict:
     return json.loads(proc.stdout)
 
 
-def _query_shape(db: str, text: str, timeout: int = 120) -> dict:
+def _query_shape(db: str, text: str, mode: str = "anything", timeout: int = 120) -> dict:
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".mjs", delete=False, encoding="utf-8"
     ) as fh:
@@ -172,7 +182,7 @@ def _query_shape(db: str, text: str, timeout: int = 120) -> dict:
         script_path = fh.name
     try:
         proc = subprocess.run(
-            [BUN, script_path, str(REPO), db, text],
+            [BUN, script_path, str(REPO), db, text, mode],
             capture_output=True, text=True, timeout=timeout, check=True,
         )
     except subprocess.CalledProcessError as e:
@@ -272,6 +282,69 @@ class LiveQueryJsTests(unittest.TestCase):
             "exact VID should only fetch vendor plus preview product/board summaries:\n"
             + json.dumps(payload["calls"], indent=2),
         )
+
+    def test_product_mode_303a_uses_compact_vid_preview(self) -> None:
+        results = _run_batch(self.db, [{"text": "303a", "mode": "product"}])
+        r = results[0]
+        previews = r["data"].get("previews", [])
+        preview = next(
+            (p for p in previews if p.get("kind") == "vid" and p.get("vid") == "303a"),
+            None,
+        )
+        self.assertIsNotNone(
+            preview,
+            "USB Products mode should answer a bare exact VID with a compact "
+            f"VID preview instead of a long VID:PID dump: {r}",
+        )
+        self.assertEqual(preview["vendor"], "Espressif Systems")
+
+        raw_counts = _raw_vid_counts(self.db, "303a")
+        self.assertEqual(preview["knownProducts"]["total"], raw_counts["products"])
+        self.assertEqual(preview["knownBoards"]["total"], raw_counts["boards"])
+        self.assertTrue(preview["knownProducts"]["sample"])
+        self.assertEqual(r["data"].get("products"), [])
+        self.assertEqual(r["data"].get("boards"), [])
+
+    def test_product_mode_exact_vid_avoids_unscoped_fts(self) -> None:
+        payload = _query_shape(self.db, "303a", mode="product")
+        self.assertEqual(
+            payload["counts"],
+            {"previews": 1, "vendors": 0, "products": 0, "boards": 0},
+            payload,
+        )
+        sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
+        self.assertNotIn(" match ", sql_text)
+        self.assertNotIn("_fts", sql_text)
+        self.assertNotIn("bm25", sql_text)
+        self.assertLessEqual(
+            len(payload["calls"]),
+            5,
+            "product-mode exact VID should only fetch preview summaries:\n"
+            + json.dumps(payload["calls"], indent=2),
+        )
+
+    def test_product_mode_hex_vid_prefixes_use_vendor_prefix_only(self) -> None:
+        for text in ("3", "30", "303"):
+            with self.subTest(text=text):
+                payload = _query_shape(self.db, text, mode="product")
+                self.assertEqual(payload["counts"]["previews"], 0, payload)
+                self.assertGreaterEqual(payload["counts"]["vendors"], 1, payload)
+                self.assertEqual(payload["counts"]["products"], 0, payload)
+                self.assertEqual(payload["counts"]["boards"], 0, payload)
+
+                sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
+                self.assertNotIn(" match ", sql_text)
+                self.assertNotIn("_fts", sql_text)
+                self.assertNotIn("bm25", sql_text)
+                self.assertLessEqual(
+                    len(payload["calls"]),
+                    1,
+                    f"Product-mode VID prefix {text!r} should be one indexed "
+                    "vendor range query:\n"
+                    + json.dumps(payload["calls"], indent=2),
+                )
+                for hit in payload["data"]["vendors"]:
+                    self.assertTrue(hit["row"]["vid"].startswith(text), hit)
 
     def test_hex_vid_prefixes_use_btree_vendor_prefix_only(self) -> None:
         for text in ("3", "30", "303"):
