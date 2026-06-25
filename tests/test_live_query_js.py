@@ -193,6 +193,43 @@ class LiveQueryJsTests(unittest.TestCase):
         self.assertGreater(preview["knownBoards"]["total"], 0)
         self.assertTrue(preview["knownBoards"]["sample"])
 
+    def test_mixed_vid_and_vendor_text_refines_linked_boards(self) -> None:
+        results = _run_batch(self.db, [{"text": "303a Adafruit", "mode": "anything"}])
+        r = results[0]
+        previews = r["data"].get("previews", [])
+        preview = next(
+            (p for p in previews if p.get("kind") == "vid" and p.get("vid") == "303a"),
+            None,
+        )
+        self.assertIsNotNone(preview, f"mixed VID query should keep VID context: {r}")
+
+        boards = r["data"]["boards"]
+        self.assertGreaterEqual(
+            len(boards),
+            2,
+            f"303a Adafruit should return Adafruit boards linked through VID 303a: {r}",
+        )
+        board_ids = {b["row"]["board_id"] for b in boards}
+        self.assertIn("adafruit_qtpy_esp32c3", board_ids)
+        self.assertIn("adafruit_feather_esp32_v2", board_ids)
+
+        off_topic = [
+            b["row"]["board_id"]
+            for b in boards
+            if b.get("why") != "linked via VID + text"
+            or "adafruit" not in (
+                (b["row"].get("vendor") or "")
+                + " "
+                + (b["row"].get("name") or "")
+                + " "
+                + (b["row"].get("board_id") or "")
+            ).lower()
+        ]
+        self.assertFalse(
+            off_topic,
+            f"mixed VID+text query should only return boards matching both terms: {off_topic}",
+        )
+
     def test_alias_fix_terms_resolve_via_engine_js(self) -> None:
         """The four marquee aliases from the keyword/aliases work
         (PR #4) must hit boards mode via the real JS engine — proving

@@ -128,6 +128,26 @@ function setMeta(meta, key, total, loaded) {
   };
 }
 
+function parseMixedExactVidQuery(text) {
+  const tokens = String(text || '').trim().split(/\s+/).filter(Boolean);
+  if (tokens.length < 2) return null;
+
+  let vid = null;
+  const qualifierTokens = [];
+  for (const token of tokens) {
+    const tokenVid = asVid4(token);
+    if (!vid && tokenVid) {
+      vid = tokenVid;
+    } else {
+      qualifierTokens.push(token);
+    }
+  }
+
+  const qualifier = qualifierTokens.join(' ').trim();
+  if (!vid || !qualifier || !ftsQuery(qualifier)) return null;
+  return { vid, qualifier };
+}
+
 async function countRows(query, sql, args) {
   const rows = await query(sql, args);
   return Number(rows?.[0]?.n || 0);
@@ -143,6 +163,27 @@ async function fetchProductsForVid(query, vid, limit = PRODUCT_LIMIT) {
     'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
       `WHERE vid = ? ORDER BY is_primary DESC, product LIMIT ${limit}`,
     [vid],
+  );
+  return { rows, total };
+}
+
+async function fetchProductsForVidMatchingText(query, vid, text, limit = PRODUCT_LIMIT) {
+  const fts = ftsQuery(text);
+  if (!fts) return { rows: [], total: 0 };
+  const match = `product:${fts}`;
+  const total = await countRows(
+    query,
+    'SELECT COUNT(*) AS n FROM vidpid vp ' +
+      'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
+      'WHERE vp.vid = ? AND vidpid_fts MATCH ?',
+    [vid, match],
+  );
+  const rows = await query(
+    'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
+      'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
+      'WHERE vp.vid = ? AND vidpid_fts MATCH ? ' +
+      `ORDER BY vp.is_primary DESC, vp.product LIMIT ${limit}`,
+    [vid, match],
   );
   return { rows, total };
 }
@@ -242,6 +283,32 @@ async function fetchBoardsForVid(query, vid, limit = LINKED_BOARD_LIMIT) {
   return { rows, total, pairCount: 1 };
 }
 
+async function fetchBoardsForVidMatchingText(query, vid, text, limit = LINKED_BOARD_LIMIT) {
+  const fts = ftsQuery(text);
+  if (!fts) return { rows: [], total: 0, pairCount: 1 };
+  const match = scopeToIdentity(fts) || fts;
+  const total = await countRows(
+    query,
+    'SELECT COUNT(*) AS n FROM (' +
+      'SELECT DISTINCT b.rowid FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      'JOIN boards_fts f ON f.rowid = b.rowid ' +
+      'WHERE bv.vid = ? AND boards_fts MATCH ?' +
+    ')',
+    [vid, match],
+  );
+  const rows = await query(
+    `SELECT DISTINCT ${BOARD_COLUMNS} ` +
+      'FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      'JOIN boards_fts f ON f.rowid = b.rowid ' +
+      'WHERE bv.vid = ? AND boards_fts MATCH ? ' +
+      `ORDER BY bm25(boards_fts, ${BM25_WEIGHTS}) LIMIT ${limit}`,
+    [vid, match],
+  );
+  return { rows, total, pairCount: 1 };
+}
+
 function enrichFromLinkedRows(boards, linked, score, why, reasonObj, meta) {
   setMeta(meta, 'boards', linked.total, linked.rows.length);
   for (const r of linked.rows) {
@@ -312,6 +379,15 @@ function pushBoardSearchRows(boards, rows, q, scoreFloor = 0) {
   }
 }
 
+function sortResultCategories(vendors, products, boards) {
+  vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
+  products.sort((a, b) =>
+    b.score - a.score ||
+    (b.row.is_primary || 0) - (a.row.is_primary || 0) ||
+    a.row.product.localeCompare(b.row.product));
+  boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
+}
+
 export async function searchUniversal(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
@@ -326,6 +402,51 @@ export async function searchUniversal(text, query) {
   const boards = [];
   const previews = [];
   const meta = {};
+
+  const mixedExactVid = hex ? null : parseMixedExactVidQuery(q);
+  if (mixedExactVid) {
+    const { vid, qualifier } = mixedExactVid;
+    const vendorRows = await query(
+      'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
+      [vid],
+    );
+    for (const r of vendorRows) {
+      bumpOrPush(vendors, vidKey, r, 1000, 'exact VID', {
+        reason: reason('exact VID', 'vid', r.vid, 'exact'),
+      });
+    }
+
+    const allProducts = await fetchProductsForVid(query, vid);
+    const allLinked = await fetchBoardsForVid(query, vid, 5);
+    const preview = makeVidPreview(vid, vendorRows[0], allProducts, allLinked);
+    if (preview) previews.push(preview);
+
+    const matchedProducts = await fetchProductsForVidMatchingText(query, vid, qualifier);
+    setMeta(meta, 'products', matchedProducts.total, matchedProducts.rows.length);
+    for (const r of matchedProducts.rows) {
+      const sc = Math.max(scoreName(r.product, qualifier.toLowerCase()), 720);
+      bumpOrPush(products, prodKey, r, sc, 'same VID + product text', {
+        reason: reason('same VID + product', 'vidpid', `${r.vid}:${r.pid}`, 'exact'),
+      });
+    }
+
+    const matchedBoards = await fetchBoardsForVidMatchingText(query, vid, qualifier);
+    enrichFromLinkedRows(
+      boards,
+      matchedBoards,
+      820,
+      'linked via VID + text',
+      reason('linked via VID + text', 'vidpids', vid, 'exact'),
+      meta,
+    );
+
+    if (vendorRows.length || allProducts.total || allLinked.total) {
+      sortResultCategories(vendors, products, boards);
+      const result = { previews, vendors, products, boards, meta };
+      _cachePut('universal', q, result);
+      return result;
+    }
+  }
 
   if (hex) {
     const vidExact = asVid4(q);
@@ -499,12 +620,7 @@ export async function searchUniversal(text, query) {
     pushBoardSearchRows(boards, bByName, q);
   }
 
-  vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
-  products.sort((a, b) =>
-    b.score - a.score ||
-    (b.row.is_primary || 0) - (a.row.is_primary || 0) ||
-    a.row.product.localeCompare(b.row.product));
-  boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
+  sortResultCategories(vendors, products, boards);
 
   const result = { previews, vendors, products, boards, meta };
   _cachePut('universal', q, result);
