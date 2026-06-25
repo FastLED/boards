@@ -16,6 +16,10 @@
   background: var(--hi-bg);
 }
 
+.board-row.exact-hit:hover {
+  background: color-mix(in srgb, var(--hi-bg) 86%, var(--bg));
+}
+
 .board-name {
   font-weight: 600;
 }
@@ -94,5 +98,10 @@
 
   .board-actions {
     justify-content: flex-start;
+  }
+
+  .board-actions .btn {
+    flex: 1 1 9rem;
+    text-align: center;
   }
 }

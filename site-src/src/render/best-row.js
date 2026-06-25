@@ -1,49 +1,46 @@
-import { escapeHtml } from '../util/escape.js';
 import { fmtVid, fmtPair, fmtSrc } from './fmt.js';
+import { renderBoardRow } from './board-row.js';
+import {
+  fieldClass,
+  hitClasses,
+  highlightText,
+  reasonBadge,
+} from './match.js';
 
 /**
- * Render a single Best-Hits row. Hits can be vendors, products, or boards;
- * each gets a coloured kind-tag.
+ * Render a single Best-Hits row. Board hits reuse the full board row so
+ * they keep View JSON / View Defines / homepage actions.
  */
-// Human label for each kind — matches the section headers so the
-// Best Hits strip reads as the same vocabulary as the categorized
-// sections below it.
 const KIND_LABEL = {
   vendor: 'USB VID',
   product: 'USB VID:PID',
   board: 'board',
 };
 
-export function renderBestRow(h) {
+export function renderBestRow(h, query = '') {
+  if (h.kind === 'board') return renderBoardRow(h, query);
+
   const label = KIND_LABEL[h.kind] || h.kind;
   const tag = `<span class="tag ${h.kind}">${label}</span>`;
-  const why = h.why ? `<span class="why">${escapeHtml(h.why)}</span>` : '';
+  const reason = h.reason;
 
   if (h.kind === 'vendor') {
     return (
-      `<div class="hit">${tag}${fmtVid(h.row.vid)} &mdash; ` +
-      `<span class="v">${escapeHtml(h.row.vendor)}</span>${why}${fmtSrc(h.row.source)}</div>`
+      `<div class="${hitClasses(h, 'hit')}">${tag}` +
+      `${fmtVid(h.row.vid, fieldClass(h, 'vid'))} &mdash; ` +
+      `<span class="v">${highlightText(h.row.vendor, query, [reason?.value])}</span>` +
+      `${reasonBadge(h)}${fmtSrc(h.row.source)}</div>`
     );
   }
-  if (h.kind === 'board') {
-    const meta = h.row.mcu
-      ? ` <span class="board-meta">${escapeHtml(h.row.mcu)}` +
-        (h.row.frequency_mhz ? ` · ${h.row.frequency_mhz} MHz` : '') +
-        `</span>`
-      : '';
-    return (
-      `<div class="hit">${tag}<span class="k">${escapeHtml(h.row.layer)}/${escapeHtml(h.row.sublayer)}</span> &mdash; ` +
-      `<span class="v">${escapeHtml(h.row.name)}</span>` +
-      ` <span class="board-meta">(${escapeHtml(h.row.board_id)})</span>${meta}${why}</div>`
-    );
-  }
-  // product
+
   const alt =
     h.row.is_primary === 0
       ? ' <span class="src" style="color:#c44">(alternate)</span>'
       : '';
   return (
-    `<div class="hit">${tag}${fmtPair(h.row.vid, h.row.pid)} &mdash; ` +
-    `<span class="v">${escapeHtml(h.row.product)}</span>${alt}${why}${fmtSrc(h.row.source)}</div>`
+    `<div class="${hitClasses(h, 'hit')}">${tag}` +
+    `${fmtPair(h.row.vid, h.row.pid, fieldClass(h, 'vidpid'))} &mdash; ` +
+    `<span class="v">${highlightText(h.row.product, query, [reason?.value])}</span>` +
+    `${alt}${reasonBadge(h)}${fmtSrc(h.row.source)}</div>`
   );
 }

@@ -28,5 +28,5 @@ export async function boardOnly(raw) {
   }
   showUniOverlaySpinner();
   const data = await searchBoard(q, query);
-  renderCombined(q, data);
+  renderCombined(q, data, 'board');
 }

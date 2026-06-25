@@ -1,39 +1,13 @@
 // Pure search engine. Same logic the portal renders, with all I/O
-// (SQL query execution) injected as a `query(sql, bind)` callable.
-//
-// Single source of truth: the UI wrappers in universal.js / vendor.js /
-// product.js / board.js call the corresponding `searchX(text, query)`
-// here, then hand the result to renderCombined(). The Node test CLI
-// calls the same `searchX(text, query)` with a bun:sqlite-backed query
-// and prints the result as JSON. No drift possible — same SQL, same
-// ftsQuery, same scoring, same shape.
-//
-// The four exports each return:
-//   { vendors: Array<{row, score, why}>,
-//     products: Array<{row, score, why}>,
-//     boards:   Array<{row, score, why}> }
-// where empty arrays denote "no results in this category" and the
-// rendering layer decides what to show the user.
+// injected as a `query(sql, bind)` callable.
 
 import { cleanHex, asVid4, asVidPid8 } from '../util/hex.js';
 import { ftsQuery } from '../util/fts.js';
 import { scoreName, scoreTokenCoverage, bumpOrPush } from '../util/score.js';
 
-// Client-side LRU memoization of search results, keyed by mode +
-// trimmed-lowercased query text. Lives in the JS heap; persists across
-// queries within a single page session; resets on reload. Capacity is
-// chosen so repeated typing/back-tracking ("ardu" → "arduino" → "ardui"
-// → ...) all stay cached, but the worst-case memory remains bounded.
-//
-// Why a Map: JS Maps preserve insertion order, so popping from the
-// front (oldest) and re-inserting on touch (most recent) gives O(1)
-// LRU semantics with no library.
-//
-// What we cache: the SHAPED RESULT ({vendors, products, boards}) — i.e.
-// the post-fanout, post-sort output that the UI hands to renderCombined
-// (or the test CLI prints as JSON). Caching skips every SQL roundtrip
-// for repeated queries, including the vendor-prefix fast path.
 const SEARCH_CACHE_MAX = 64;
+const LINKED_BOARD_LIMIT = 60;
+const PRODUCT_LIMIT = 80;
 const _searchCache = new Map();
 
 function _cacheKey(mode, text) {
@@ -45,8 +19,6 @@ function _cacheKey(mode, text) {
 function _cacheGet(mode, text) {
   const key = _cacheKey(mode, text);
   if (key == null || !_searchCache.has(key)) return undefined;
-  // LRU touch: re-insert moves the entry to the end of the iteration
-  // order so it survives the next eviction sweep.
   const v = _searchCache.get(key);
   _searchCache.delete(key);
   _searchCache.set(key, v);
@@ -59,14 +31,13 @@ function _cachePut(mode, text, value) {
   if (_searchCache.has(key)) _searchCache.delete(key);
   _searchCache.set(key, value);
   while (_searchCache.size > SEARCH_CACHE_MAX) {
-    // Map.keys() iterates in insertion order — first key is oldest.
     const oldest = _searchCache.keys().next().value;
     _searchCache.delete(oldest);
   }
 }
 
-const vidKey   = (r) => r.vid;
-const prodKey  = (r) => `${r.vid}${r.pid}|${r.product}`;
+const vidKey = (r) => r.vid;
+const prodKey = (r) => `${r.vid}${r.pid}|${r.product}`;
 const boardKey = (r) => r.rowid;
 
 const BOARD_COLUMNS =
@@ -76,17 +47,105 @@ const BOARD_COLUMNS =
   'b.upload_speed, b.core, b.variant, b.homepage, ' +
   'b.frameworks, b.connectivity, b.vidpids, b.upstream_blob';
 
-// Scope every prefix-token in the FTS5 query to the "identity" columns
-// (name, aliases, board_id, vendor). Broad single-token queries like
-// `arduino` match ~1,667 of 2,088 rows when the keyword-soup column
-// participates, which over HTTP page-fetched SQLite means dozens of
-// round trips just to compute BM25 for the candidate set. Restricting
-// to the identity columns drops that to ~134 — but breaks queries that
-// LEGITIMATELY only live in the keywords column (e.g. `India`,
-// `Default with spiffs`, `-DRP2350_PSRAM_CS=35`).
-//
-// Used as the first phase of a two-phase search: try identity-only;
-// if it returns nothing, fall back to the broad MATCH on `fts`.
+function reason(label, field, value, strength = 'related') {
+  return { label, field, value, strength, exact: strength === 'exact' };
+}
+
+function normalized(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function compact(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function includesLoose(haystack, needle) {
+  const h = String(haystack || '').toLowerCase();
+  const n = String(needle || '').trim().toLowerCase();
+  if (!h || !n) return false;
+  return h.includes(n) || normalized(h).includes(normalized(n)) || compact(h).includes(compact(n));
+}
+
+function csvHas(csv, needle) {
+  return String(csv || '')
+    .split(',')
+    .some((part) => includesLoose(part, needle));
+}
+
+function inferBoardReason(row, rawText, fallback = 'name') {
+  const q = String(rawText || '').trim();
+  const qLc = q.toLowerCase();
+  const hex = cleanHex(q);
+  const vidpids = String(row.vidpids || '').toLowerCase();
+  const vidpidCompact = compact(vidpids);
+
+  if (hex?.length === 8 && vidpidCompact.includes(hex)) {
+    return reason('matches VID:PID', 'vidpids', `${hex.slice(0, 4)}:${hex.slice(4)}`, 'exact');
+  }
+  if (hex?.length === 4 && vidpids.includes(hex)) {
+    return reason('matches VID', 'vidpids', hex, 'exact');
+  }
+  if (row.board_id && row.board_id.toLowerCase() === qLc) {
+    return reason('exact board id', 'board_id', row.board_id, 'exact');
+  }
+  if (includesLoose(row.board_id, q)) return reason('board id', 'board_id', q);
+  if (includesLoose(row.architecture, q)) return reason('architecture', 'architecture', q);
+  if (includesLoose(row.mcu, q)) return reason('MCU', 'mcu', q);
+  if (csvHas(row.frameworks, q)) return reason('framework', 'frameworks', q);
+  if (csvHas(row.connectivity, q)) return reason('feature', 'connectivity', q);
+  if (includesLoose(row.vendor, q)) return reason('vendor', 'name', q);
+  if (includesLoose(row.sublayer, q) || includesLoose(row.layer, q)) {
+    return reason('platform', 'layer', q);
+  }
+  if (includesLoose(row.name, q)) return reason('name', 'name', q);
+  return reason(fallback, 'name', q);
+}
+
+function scoreBoard(row, nameLc) {
+  const haystack = [
+    row.name,
+    row.board_id,
+    row.mcu,
+    row.architecture,
+    row.frameworks,
+    row.connectivity,
+    row.vendor,
+    row.sublayer,
+  ].filter(Boolean).join(' ');
+  return Math.max(
+    scoreName(row.name || '', nameLc),
+    scoreName(row.board_id || '', nameLc),
+    scoreTokenCoverage(haystack, nameLc),
+  );
+}
+
+function setMeta(meta, key, total, loaded) {
+  if (total == null) return;
+  const prev = meta[key] || {};
+  meta[key] = {
+    total: Math.max(Number(prev.total || 0), Number(total || 0), loaded || 0),
+    loaded: Math.max(Number(prev.loaded || 0), loaded || 0),
+  };
+}
+
+async function countRows(query, sql, args) {
+  const rows = await query(sql, args);
+  return Number(rows?.[0]?.n || 0);
+}
+
+function uniquePairsFromRows(rows) {
+  const seen = new Set();
+  const pairs = [];
+  for (const r of rows) {
+    const key = r.vid + r.pid;
+    if (!seen.has(key)) {
+      seen.add(key);
+      pairs.push([r.vid, r.pid]);
+    }
+  }
+  return pairs;
+}
+
 function scopeToIdentity(ftsExpr) {
   const tokens = (ftsExpr || '').split(' ').filter(Boolean);
   if (!tokens.length) return null;
@@ -96,13 +155,6 @@ function scopeToIdentity(ftsExpr) {
 const BM25_WEIGHTS = '1, 2, 1, 1, 1, 1, 1, 1, 1, 0.2';
 
 async function fts5BoardSearch(query, fts, rawText) {
-  // Phase 0 (fast path): single alphabetic token → check the
-  // precomputed vendor_prefix_results table. For broad-vendor queries
-  // like `arduino` this turns >1 second of HTTP-paged FTS5 work into a
-  // single PK lookup that returns a pre-rendered JSON blob. Triggered
-  // ONLY for single alphabetic tokens (whitespace trimmed and
-  // lowercased) — multi-token queries and queries with digits /
-  // punctuation continue through the regular FTS5 path.
   const word = (rawText || '').trim().toLowerCase();
   if (/^[a-z]+$/.test(word)) {
     try {
@@ -113,18 +165,15 @@ async function fts5BoardSearch(query, fts, rawText) {
       if (cached.length > 0 && cached[0].results_json) {
         return JSON.parse(cached[0].results_json);
       }
-    } catch (e) {
-      // Table may not exist on older DBs — silently fall through.
+    } catch {
+      // Older DBs may not have the prefix cache.
     }
   }
 
-  // Two-phase FTS5: identity-only first (fast over HTTP), broad fallback
-  // only if identity returned nothing. The identity scope keeps the same
-  // BM25 weighting, so ranking quality stays consistent across phases.
-  const SQL = `SELECT ${BOARD_COLUMNS} `
-            + 'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid '
-            + 'WHERE boards_fts MATCH ? '
-            + `ORDER BY bm25(boards_fts, ${BM25_WEIGHTS}) LIMIT 20`;
+  const SQL = `SELECT ${BOARD_COLUMNS} ` +
+    'FROM boards b JOIN boards_fts f ON f.rowid = b.rowid ' +
+    'WHERE boards_fts MATCH ? ' +
+    `ORDER BY bm25(boards_fts, ${BM25_WEIGHTS}) LIMIT 20`;
   const scoped = scopeToIdentity(fts);
   if (scoped) {
     const rows = await query(SQL, [scoped]);
@@ -133,29 +182,69 @@ async function fts5BoardSearch(query, fts, rawText) {
   return query(SQL, [fts]);
 }
 
-async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why) {
-  if (!vidpidPairs.length) return;
-  const capped = vidpidPairs.slice(0, 40);
+async function fetchLinkedBoards(query, vidpidPairs, limit = LINKED_BOARD_LIMIT) {
+  if (!vidpidPairs.length) return { rows: [], total: 0, pairCount: 0 };
+  const capped = vidpidPairs.slice(0, 80);
   const placeholders = capped.map(() => '(?,?)').join(',');
   const args = capped.flat();
+  const total = await countRows(
+    query,
+    'SELECT COUNT(*) AS n FROM (' +
+      'SELECT DISTINCT b.rowid FROM boards b ' +
+      'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
+      `WHERE (bv.vid, bv.pid) IN (${placeholders})` +
+    ')',
+    args,
+  );
   const rows = await query(
     `SELECT DISTINCT ${BOARD_COLUMNS} ` +
       'FROM boards b ' +
       'JOIN board_vidpids bv ON bv.board_rowid = b.rowid ' +
       `WHERE (bv.vid, bv.pid) IN (${placeholders}) ` +
-      'LIMIT 30',
+      `LIMIT ${limit}`,
     args,
   );
-  for (const r of rows) bumpOrPush(boards, boardKey, r, score, why);
+  return { rows, total, pairCount: capped.length };
 }
 
-/**
- * "Anything" mode — fans out across vendor + product + board lookups
- * and returns the merged, sorted union.
- *
- * @param {string} text user-typed free-text query
- * @param {(sql:string, bind?:Array|Object)=>Promise<Object[]>} query
- */
+async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why, reasonObj, meta) {
+  const linked = await fetchLinkedBoards(query, vidpidPairs);
+  setMeta(meta, 'boards', linked.total, linked.rows.length);
+  for (const r of linked.rows) {
+    bumpOrPush(boards, boardKey, r, score, why, { reason: reasonObj });
+  }
+  return linked;
+}
+
+function linkedBoardSummary(linked) {
+  if (!linked?.total) return null;
+  return {
+    total: linked.total,
+    sample: linked.rows.slice(0, 3).map((row) => ({
+      board_id: row.board_id,
+      name: row.name,
+      layer: row.layer,
+      sublayer: row.sublayer,
+    })),
+  };
+}
+
+function attachLinkedSummaryToHits(hits, linked) {
+  const summary = linkedBoardSummary(linked);
+  if (!summary) return;
+  for (const hit of hits) hit.linkedBoards = summary;
+}
+
+function pushBoardSearchRows(boards, rows, q, scoreFloor = 0) {
+  const nameLc = q.toLowerCase();
+  for (const r of rows) {
+    const sc = Math.max(scoreBoard(r, nameLc), scoreFloor);
+    bumpOrPush(boards, boardKey, r, sc, 'name', {
+      reason: inferBoardReason(r, q),
+    });
+  }
+}
+
 export async function searchUniversal(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
@@ -168,54 +257,95 @@ export async function searchUniversal(text, query) {
   const vendors = [];
   const products = [];
   const boards = [];
+  const meta = {};
 
   if (hex) {
     const vidExact = asVid4(q);
     const vidPidExact = asVidPid8(q);
 
     if (vidPidExact) {
+      const pair = [vidPidExact.slice(0, 4), vidPidExact.slice(4)];
       const rows = await query(
         'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
           'WHERE vidpid = ? ORDER BY is_primary DESC, product',
         [vidPidExact],
       );
-      for (const r of rows) bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID');
+      setMeta(meta, 'products', rows.length, rows.length);
+      const productHits = [];
+      for (const r of rows) {
+        productHits.push(bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID', {
+          reason: reason('exact VID:PID', 'vidpid', `${r.vid}:${r.pid}`, 'exact'),
+        }));
+      }
       const v = await query(
         'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
-        [vidPidExact.slice(0, 4)],
+        [pair[0]],
       );
-      for (const r of v) bumpOrPush(vendors, vidKey, r, 800, 'vendor of VID:PID');
-      await enrichWithLinkedBoards(query, boards,
-        [[vidPidExact.slice(0, 4), vidPidExact.slice(4)]], 800, 'linked to VID:PID');
+      for (const r of v) {
+        bumpOrPush(vendors, vidKey, r, 800, 'vendor of VID:PID', {
+          reason: reason('vendor for VID', 'vid', r.vid, 'exact'),
+        });
+      }
+      const linked = await enrichWithLinkedBoards(
+        query,
+        boards,
+        [pair],
+        850,
+        'linked to VID:PID',
+        reason('linked to VID:PID', 'vidpids', `${pair[0]}:${pair[1]}`, 'exact'),
+        meta,
+      );
+      attachLinkedSummaryToHits(productHits, linked);
     } else if (vidExact) {
       const rows = await query(
         'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
         [vidExact],
       );
-      for (const r of rows) bumpOrPush(vendors, vidKey, r, 1000, 'exact VID');
+      for (const r of rows) {
+        bumpOrPush(vendors, vidKey, r, 1000, 'exact VID', {
+          reason: reason('exact VID', 'vid', r.vid, 'exact'),
+        });
+      }
 
-      const vp = await query(
-        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
-          'WHERE vid = ? ORDER BY is_primary DESC, product LIMIT 50',
+      const totalProducts = await countRows(
+        query,
+        'SELECT COUNT(*) AS n FROM vidpid WHERE vid = ?',
         [vidExact],
       );
-      for (const r of vp) bumpOrPush(products, prodKey, r, 600, 'same VID');
-
-      const seen = new Set();
-      const pairs = [];
+      const vp = await query(
+        'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
+          `WHERE vid = ? ORDER BY is_primary DESC, product LIMIT ${PRODUCT_LIMIT}`,
+        [vidExact],
+      );
+      setMeta(meta, 'products', totalProducts, vp.length);
       for (const r of vp) {
-        const k = r.vid + r.pid;
-        if (!seen.has(k)) { seen.add(k); pairs.push([r.vid, r.pid]); }
+        bumpOrPush(products, prodKey, r, 600, 'same VID', {
+          reason: reason('same VID', 'vidpid', r.vid, 'exact'),
+        });
       }
-      await enrichWithLinkedBoards(query, boards, pairs, 700, 'linked via VID');
+
+      const pairs = uniquePairsFromRows(vp);
+      await enrichWithLinkedBoards(
+        query,
+        boards,
+        pairs,
+        760,
+        'linked via VID',
+        reason('linked via VID', 'vidpids', vidExact, 'exact'),
+        meta,
+      );
 
       const pidHits = await query(
         'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
-          'WHERE pid = ? ORDER BY is_primary DESC, product LIMIT 50',
+          `WHERE pid = ? ORDER BY is_primary DESC, product LIMIT ${PRODUCT_LIMIT}`,
         [vidExact],
       );
       for (const r of pidHits) {
-        if (r.vid !== vidExact) bumpOrPush(products, prodKey, r, 300, 'PID match');
+        if (r.vid !== vidExact) {
+          bumpOrPush(products, prodKey, r, 300, 'PID match', {
+            reason: reason('PID match', 'vidpid', r.pid),
+          });
+        }
       }
     } else {
       if (hex.length < 4) {
@@ -225,29 +355,43 @@ export async function searchUniversal(text, query) {
             'WHERE vid_vendor_fts MATCH ? LIMIT 50',
           [`vid:${hex}*`],
         );
-        for (const r of pref) bumpOrPush(vendors, vidKey, r, 400, 'VID prefix');
+        for (const r of pref) {
+          bumpOrPush(vendors, vidKey, r, 400, 'VID prefix', {
+            reason: reason('VID prefix', 'vid', hex),
+          });
+        }
       } else if (hex.length >= 5 && hex.length <= 7) {
         const pref = await query(
           'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
             'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
-            'WHERE vidpid_fts MATCH ? ORDER BY vp.is_primary DESC, vp.product LIMIT 50',
+            `WHERE vidpid_fts MATCH ? ORDER BY vp.is_primary DESC, vp.product LIMIT ${PRODUCT_LIMIT}`,
           [`vidpid:${hex}*`],
         );
-        for (const r of pref) bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix');
+        for (const r of pref) {
+          bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix', {
+            reason: reason('VID:PID prefix', 'vidpid', hex),
+          });
+        }
 
         const v = await query(
           'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
           [hex.slice(0, 4)],
         );
-        for (const r of v) bumpOrPush(vendors, vidKey, r, 600, 'vendor of VID');
-
-        const seen = new Set();
-        const pairs = [];
-        for (const r of pref) {
-          const k = r.vid + r.pid;
-          if (!seen.has(k)) { seen.add(k); pairs.push([r.vid, r.pid]); }
+        for (const r of v) {
+          bumpOrPush(vendors, vidKey, r, 600, 'vendor of VID', {
+            reason: reason('vendor for VID', 'vid', r.vid, 'exact'),
+          });
         }
-        await enrichWithLinkedBoards(query, boards, pairs, 650, 'linked via VID:PID prefix');
+
+        await enrichWithLinkedBoards(
+          query,
+          boards,
+          uniquePairsFromRows(pref),
+          650,
+          'linked via VID:PID prefix',
+          reason('linked via VID:PID prefix', 'vidpids', hex),
+          meta,
+        );
       }
     }
   }
@@ -260,9 +404,10 @@ export async function searchUniversal(text, query) {
       [`vendor:${fts}`],
     );
     for (const r of vByName) {
-      const sc = Math.max(scoreName(r.vendor, nameLc),
-                          scoreTokenCoverage(r.vendor, nameLc));
-      bumpOrPush(vendors, vidKey, r, sc, 'name');
+      const sc = Math.max(scoreName(r.vendor, nameLc), scoreTokenCoverage(r.vendor, nameLc));
+      bumpOrPush(vendors, vidKey, r, sc, 'name', {
+        reason: reason('vendor name', 'name', q),
+      });
     }
 
     const pByName = await query(
@@ -272,48 +417,25 @@ export async function searchUniversal(text, query) {
       [`product:${fts}`],
     );
     for (const r of pByName) {
-      const sc = Math.max(scoreName(r.product, nameLc),
-                          scoreTokenCoverage(r.product, nameLc));
-      bumpOrPush(products, prodKey, r, sc, 'name');
+      const sc = Math.max(scoreName(r.product, nameLc), scoreTokenCoverage(r.product, nameLc));
+      bumpOrPush(products, prodKey, r, sc, 'name', {
+        reason: reason('product name', 'name', q),
+      });
     }
 
     const topProducts = [...products].sort((a, b) => b.score - a.score).slice(0, 20);
-    const seen = new Set();
-    const pairs = [];
-    for (const p of topProducts) {
-      const k = p.row.vid + p.row.pid;
-      if (!seen.has(k)) { seen.add(k); pairs.push([p.row.vid, p.row.pid]); }
-    }
-    await enrichWithLinkedBoards(query, boards, pairs, 630, 'linked via product name');
+    await enrichWithLinkedBoards(
+      query,
+      boards,
+      uniquePairsFromRows(topProducts.map((h) => h.row)),
+      630,
+      'linked via product name',
+      reason('linked via product name', 'vidpids', q),
+      meta,
+    );
 
-    // Two-phase FTS5 board search (see fts5BoardSearch above). The
-    // first phase scopes the MATCH to identity columns to keep the
-    // candidate set small over HTTP page-fetched SQLite; the second
-    // phase falls back to the broad MATCH for queries that only hit
-    // keyword soup. Same BM25 weights apply to both phases so
-    // ranking stays consistent.
-    //
-    // BM25 weight rationale (also see HISTORICAL note below): name=2.0
-    // captures most of the achievable lift (+1.5pp top-1); keywords=0.2
-    // dampens the long keyword-soup column so a 1-token name match
-    // outranks a 5-token keyword match.
-    //
-    // HISTORICAL: BM25 ordering had been used here previously, then
-    // degraded to ORDER BY name (allegedly for perf). See
-    // tests/test_board_name_combos.py for the regression that exposed
-    // that degradation.
     const bByName = await fts5BoardSearch(query, fts, q);
-    for (const r of bByName) {
-      const haystack = [r.name, r.board_id, r.mcu, r.architecture,
-                        r.frameworks, r.connectivity, r.vendor, r.sublayer]
-        .filter(Boolean).join(' ');
-      const sc = Math.max(
-        scoreName(r.name, nameLc),
-        scoreName(r.board_id, nameLc),
-        scoreTokenCoverage(haystack, nameLc),
-      );
-      bumpOrPush(boards, boardKey, r, sc, 'name');
-    }
+    pushBoardSearchRows(boards, bByName, q);
   }
 
   vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
@@ -323,12 +445,11 @@ export async function searchUniversal(text, query) {
     a.row.product.localeCompare(b.row.product));
   boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
 
-  const result = { vendors, products, boards };
+  const result = { vendors, products, boards, meta };
   _cachePut('universal', q, result);
   return result;
 }
 
-/** Vendors-only mode. */
 export async function searchVendor(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
@@ -341,15 +462,26 @@ export async function searchVendor(text, query) {
 
   if (vidExact) {
     const exact = await query(
-      'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?', [vidExact]);
-    for (const r of exact) bumpOrPush(vendors, vidKey, r, 1000, 'exact VID');
+      'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',
+      [vidExact],
+    );
+    for (const r of exact) {
+      bumpOrPush(vendors, vidKey, r, 1000, 'exact VID', {
+        reason: reason('exact VID', 'vid', r.vid, 'exact'),
+      });
+    }
   } else if (hex && hex.length < 4) {
     const pref = await query(
       'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
         'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
         'WHERE vid_vendor_fts MATCH ? LIMIT 50',
-      [`vid:${hex}*`]);
-    for (const r of pref) bumpOrPush(vendors, vidKey, r, 400, 'VID prefix');
+      [`vid:${hex}*`],
+    );
+    for (const r of pref) {
+      bumpOrPush(vendors, vidKey, r, 400, 'VID prefix', {
+        reason: reason('VID prefix', 'vid', hex),
+      });
+    }
   }
 
   const fts = ftsQuery(q);
@@ -358,9 +490,13 @@ export async function searchVendor(text, query) {
       'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
         'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
         'WHERE vid_vendor_fts MATCH ? LIMIT 60',
-      [`vendor:${fts}`]);
-    for (const r of byName)
-      bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name');
+      [`vendor:${fts}`],
+    );
+    for (const r of byName) {
+      bumpOrPush(vendors, vidKey, r, scoreName(r.vendor, nameLc), 'name', {
+        reason: reason('vendor name', 'name', q),
+      });
+    }
   }
   vendors.sort((a, b) => b.score - a.score || a.row.vendor.localeCompare(b.row.vendor));
   const result = { vendors, products: [], boards: [] };
@@ -368,7 +504,6 @@ export async function searchVendor(text, query) {
   return result;
 }
 
-/** Products-only mode. */
 export async function searchProduct(text, query) {
   const q = (text || '').trim();
   if (!q) return { vendors: [], products: [], boards: [] };
@@ -378,20 +513,54 @@ export async function searchProduct(text, query) {
   const hex = cleanHex(q);
   const vidPidExact = asVidPid8(q);
   const products = [];
+  const boards = [];
+  const meta = {};
 
   if (vidPidExact) {
+    const pair = [vidPidExact.slice(0, 4), vidPidExact.slice(4)];
     const exact = await query(
       'SELECT vid, pid, product, source, is_primary FROM vidpid ' +
         'WHERE vidpid = ? ORDER BY is_primary DESC, product',
-      [vidPidExact]);
-    for (const r of exact) bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID');
+      [vidPidExact],
+    );
+    setMeta(meta, 'products', exact.length, exact.length);
+    const productHits = [];
+    for (const r of exact) {
+      productHits.push(bumpOrPush(products, prodKey, r, 1000, 'exact VID:PID', {
+        reason: reason('exact VID:PID', 'vidpid', `${r.vid}:${r.pid}`, 'exact'),
+      }));
+    }
+    const linked = await enrichWithLinkedBoards(
+      query,
+      boards,
+      [pair],
+      850,
+      'linked to VID:PID',
+      reason('linked to VID:PID', 'vidpids', `${pair[0]}:${pair[1]}`, 'exact'),
+      meta,
+    );
+    attachLinkedSummaryToHits(productHits, linked);
   } else if (hex && hex.length >= 1 && hex.length <= 7) {
     const pref = await query(
       'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
         'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
-        'WHERE vidpid_fts MATCH ? ORDER BY vp.is_primary DESC, vp.product LIMIT 50',
-      [`vidpid:${hex}*`]);
-    for (const r of pref) bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix');
+        `WHERE vidpid_fts MATCH ? ORDER BY vp.is_primary DESC, vp.product LIMIT ${PRODUCT_LIMIT}`,
+      [`vidpid:${hex}*`],
+    );
+    for (const r of pref) {
+      bumpOrPush(products, prodKey, r, 500, 'VID:PID prefix', {
+        reason: reason('VID:PID prefix', 'vidpid', hex),
+      });
+    }
+    await enrichWithLinkedBoards(
+      query,
+      boards,
+      uniquePairsFromRows(pref),
+      650,
+      'linked via VID:PID prefix',
+      reason('linked via VID:PID prefix', 'vidpids', hex),
+      meta,
+    );
   }
 
   const fts = ftsQuery(q);
@@ -400,20 +569,35 @@ export async function searchProduct(text, query) {
       'SELECT vp.vid, vp.pid, vp.product, vp.source, vp.is_primary FROM vidpid vp ' +
         'JOIN vidpid_fts f ON f.rowid = vp.rowid ' +
         'WHERE vidpid_fts MATCH ? LIMIT 80',
-      [`product:${fts}`]);
-    for (const r of byName)
-      bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name');
+      [`product:${fts}`],
+    );
+    for (const r of byName) {
+      bumpOrPush(products, prodKey, r, scoreName(r.product, nameLc), 'name', {
+        reason: reason('product name', 'name', q),
+      });
+    }
+    const topProducts = [...products].sort((a, b) => b.score - a.score).slice(0, 20);
+    await enrichWithLinkedBoards(
+      query,
+      boards,
+      uniquePairsFromRows(topProducts.map((h) => h.row)),
+      630,
+      'linked via product name',
+      reason('linked via product name', 'vidpids', q),
+      meta,
+    );
   }
+
   products.sort((a, b) =>
     b.score - a.score ||
     (b.row.is_primary || 0) - (a.row.is_primary || 0) ||
     a.row.product.localeCompare(b.row.product));
-  const result = { vendors: [], products, boards: [] };
+  boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
+  const result = { vendors: [], products, boards, meta };
   _cachePut('product', q, result);
   return result;
 }
 
-/** Boards-only mode. */
 export async function searchBoard(text, query) {
   const q = (text || '').trim();
   if (!q || q.length < 2) return { vendors: [], products: [], boards: [] };
@@ -422,15 +606,9 @@ export async function searchBoard(text, query) {
   const fts = ftsQuery(q);
   if (!fts) return { vendors: [], products: [], boards: [] };
 
-  // Two-phase FTS5 search (see fts5BoardSearch). Identity columns
-  // first for speed; broad MATCH fallback only if needed.
   const rows = await fts5BoardSearch(query, fts, q);
-  const nameLc = q.toLowerCase();
-  const boards = rows.map((row) => ({
-    row,
-    score: Math.max(scoreName(row.name, nameLc), scoreName(row.board_id, nameLc)),
-    why: 'name',
-  }));
+  const boards = [];
+  pushBoardSearchRows(boards, rows, q);
   boards.sort((a, b) => b.score - a.score || a.row.name.localeCompare(b.row.name));
   const result = { vendors: [], products: [], boards };
   _cachePut('board', q, result);

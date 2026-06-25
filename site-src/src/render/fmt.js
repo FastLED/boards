@@ -2,12 +2,16 @@
 
 import { escapeHtml } from '../util/escape.js';
 
-export function fmtVid(v) {
-  return `<span class="k">0x${escapeHtml(v)}</span>`;
+function cls(base, extra) {
+  return [base, extra].filter(Boolean).map((part) => part.trim()).join(' ');
 }
 
-export function fmtPair(v, p) {
-  return `<span class="k">0x${escapeHtml(v)}:0x${escapeHtml(p)}</span>`;
+export function fmtVid(v, extraClass = '') {
+  return `<span class="${cls('k', extraClass)}">0x${escapeHtml(v)}</span>`;
+}
+
+export function fmtPair(v, p, extraClass = '') {
+  return `<span class="${cls('k', extraClass)}">0x${escapeHtml(v)}:0x${escapeHtml(p)}</span>`;
 }
 
 export function fmtSrc(s) {
