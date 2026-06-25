@@ -496,6 +496,16 @@ export async function searchUniversal(text, query) {
         });
       }
 
+      if (q.split(/\s+/).filter(Boolean).length === 1 && rows.length) {
+        const vidProducts = await fetchProductsForVid(query, vidExact, 5);
+        const linked = await fetchBoardsForVid(query, vidExact, 5);
+        const preview = makeVidPreview(vidExact, rows[0], vidProducts, linked);
+        if (preview) previews.push(preview);
+        const result = { previews, vendors, products, boards, meta };
+        _cachePut('universal', q, result);
+        return result;
+      }
+
       const vidProducts = await fetchProductsForVid(query, vidExact);
       const vp = vidProducts.rows;
       setMeta(meta, 'products', vidProducts.total, vp.length);
