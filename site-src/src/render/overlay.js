@@ -34,12 +34,12 @@ export function showSearchIntro() {
   showUniOverlay(template.innerHTML.trim(), 'intro');
 }
 
-export function showQueuedSearch(query) {
+export function showQueuedSearch(query, message = 'database is still loading.') {
   const label = query ? `Queued "${escapeHtml(query)}"` : 'Preparing search';
   showUniOverlay(
     '<div class="spinner-row" role="status" aria-live="polite">' +
       '<span class="spinner" aria-hidden="true"></span>' +
-      `<span>${label}; database is still loading.</span>` +
+      `<span>${label}; ${escapeHtml(message)}</span>` +
     '</div>',
     'loading queued',
   );

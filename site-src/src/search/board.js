@@ -12,21 +12,21 @@ import {
 import { ftsQuery } from '../util/fts.js';
 import { searchBoard } from './engine.js';
 
-export async function boardOnly(raw) {
+export async function boardOnly(raw, { shouldRender = () => true } = {}) {
   const q = (raw || '').trim();
   if (!q) {
-    showSearchIntro();
+    if (shouldRender()) showSearchIntro();
     return;
   }
   if (q.length < 2) {
-    showUniOverlay('Enter at least 2 characters.', 'empty');
+    if (shouldRender()) showUniOverlay('Enter at least 2 characters.', 'empty');
     return;
   }
   if (!ftsQuery(q)) {
-    showUniOverlay('nothing to search.', 'empty');
+    if (shouldRender()) showUniOverlay('nothing to search.', 'empty');
     return;
   }
-  showUniOverlaySpinner();
+  if (shouldRender()) showUniOverlaySpinner();
   const data = await searchBoard(q, query);
-  renderCombined(q, data, 'board');
+  if (shouldRender()) renderCombined(q, data, 'board');
 }
