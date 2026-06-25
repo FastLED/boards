@@ -18,5 +18,5 @@ export async function vendorOnly(raw) {
   }
   showUniOverlaySpinner();
   const data = await searchVendor(q, query);
-  renderCombined(q, data);
+  renderCombined(q, data, 'vendor');
 }

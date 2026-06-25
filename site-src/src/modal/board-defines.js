@@ -5,15 +5,14 @@ const PRIMARY_FLAG_RE = /(^|_)extra_flags$/;
 let activeToken = 0;
 let hideTimer = null;
 let popover = null;
+let activeAnchor = null;
+let pinned = false;
 
 function valueToText(value) {
   if (value == null) return '';
   if (typeof value === 'string') return value.trim();
   if (Array.isArray(value)) {
-    return value
-      .map(valueToText)
-      .filter(Boolean)
-      .join('\n');
+    return value.map(valueToText).filter(Boolean).join('\n');
   }
   if (typeof value === 'object') return JSON.stringify(value, null, 2).trim();
   return String(value).trim();
@@ -80,12 +79,28 @@ function ensurePopover() {
   popover.id = 'boardDefinesPopover';
   popover.className = 'board-defines-popover';
   popover.hidden = true;
-  popover.setAttribute('role', 'tooltip');
+  popover.setAttribute('role', 'dialog');
+  popover.setAttribute('aria-label', 'Board defines');
   popover.innerHTML =
-    '<div class="board-defines-title"></div>' +
-    '<pre class="board-defines-body"></pre>';
+    '<div class="board-defines-head">' +
+      '<div class="board-defines-title"></div>' +
+      '<button class="board-defines-close" type="button" aria-label="close defines">x</button>' +
+    '</div>' +
+    '<pre class="board-defines-body" tabindex="0"></pre>';
   popover.addEventListener('pointerenter', () => clearTimeout(hideTimer));
-  popover.addEventListener('pointerleave', hideDefinesPopover);
+  popover.addEventListener('pointerleave', () => {
+    if (!pinned) scheduleClose();
+  });
+  popover.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      closeBoardDefines();
+    }
+  });
+  popover.querySelector('.board-defines-close').addEventListener('click', () => {
+    closeBoardDefines();
+  });
   document.body.appendChild(popover);
   return popover;
 }
@@ -117,12 +132,16 @@ function positionPopover(anchor) {
   el.style.top = `${top}px`;
 }
 
-async function showDefinesPopover(anchor) {
+async function showDefinesPopover(anchor, options = {}) {
   clearTimeout(hideTimer);
+  const el = ensurePopover();
   const token = ++activeToken;
   const url = anchor.getAttribute('data-defines-url');
   const title = anchor.getAttribute('data-title') || 'defines';
 
+  activeAnchor = anchor;
+  pinned = options.pin === true;
+  anchor.setAttribute('aria-expanded', 'true');
   setPopoverContent(title, 'loading defines...');
   positionPopover(anchor);
 
@@ -131,6 +150,7 @@ async function showDefinesPopover(anchor) {
     if (token !== activeToken) return;
     setPopoverContent(title, formatBoardFlags(flags), flags.length === 0);
     positionPopover(anchor);
+    if (pinned) el.querySelector('.board-defines-body').focus({ preventScroll: true });
   } catch (err) {
     if (token !== activeToken) return;
     setPopoverContent(title, `failed to load defines\n\n${err.message}`, true);
@@ -138,20 +158,40 @@ async function showDefinesPopover(anchor) {
   }
 }
 
-function hideDefinesPopover() {
+function scheduleClose() {
   clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
-    activeToken += 1;
-    if (popover) popover.hidden = true;
-  }, 120);
+    const el = ensurePopover();
+    if (pinned) return;
+    if (el.contains(document.activeElement) || activeAnchor === document.activeElement) return;
+    closeBoardDefines({ restoreFocus: false });
+  }, 140);
+}
+
+export function closeBoardDefines(options = {}) {
+  clearTimeout(hideTimer);
+  activeToken += 1;
+  if (activeAnchor) activeAnchor.setAttribute('aria-expanded', 'false');
+  const shouldFocus = options.restoreFocus !== false;
+  const focusTarget = activeAnchor;
+  activeAnchor = null;
+  pinned = false;
+  if (popover) popover.hidden = true;
+  if (shouldFocus && focusTarget?.focus) focusTarget.focus({ preventScroll: true });
+}
+
+export function isBoardDefinesOpen() {
+  return !!popover && !popover.hidden;
 }
 
 export function wireBoardDefineButtons(root) {
   root.querySelectorAll('button[data-defines-url]').forEach((btn) => {
+    btn.setAttribute('aria-haspopup', 'dialog');
+    btn.setAttribute('aria-expanded', 'false');
     btn.addEventListener('pointerenter', () => showDefinesPopover(btn));
     btn.addEventListener('focus', () => showDefinesPopover(btn));
-    btn.addEventListener('click', () => showDefinesPopover(btn));
-    btn.addEventListener('pointerleave', hideDefinesPopover);
-    btn.addEventListener('blur', hideDefinesPopover);
+    btn.addEventListener('click', () => showDefinesPopover(btn, { pin: true }));
+    btn.addEventListener('pointerleave', scheduleClose);
+    btn.addEventListener('blur', scheduleClose);
   });
 }

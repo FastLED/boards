@@ -18,5 +18,5 @@ export async function universalSearch(raw) {
   }
   showUniOverlaySpinner();
   const data = await searchUniversal(q, query);
-  renderCombined(q, data);
+  renderCombined(q, data, 'anything');
 }

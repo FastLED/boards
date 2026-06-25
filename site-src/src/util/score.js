@@ -62,16 +62,26 @@ export function scoreTokenCoverage(haystack, needle) {
  * @param {T} row
  * @param {number} score
  * @param {string} why
+ * @param {Object=} extra
+ * @returns {{row: T, score: number, why: string}}
  */
-export function bumpOrPush(arr, keyFn, row, score, why) {
+export function bumpOrPush(arr, keyFn, row, score, why, extra = {}) {
   const key = keyFn(row);
   const existing = arr.find((h) => keyFn(h.row) === key);
   if (existing) {
     if (score > existing.score) {
       existing.score = score;
       existing.why = why;
+      Object.assign(existing, extra);
+    } else {
+      if (!existing.reason && extra.reason) existing.reason = extra.reason;
+      if (extra.linkedBoards) existing.linkedBoards = extra.linkedBoards;
+      if (extra.total != null) existing.total = extra.total;
     }
+    return existing;
   } else {
-    arr.push({ row, score, why });
+    const hit = { row, score, why, ...extra };
+    arr.push(hit);
+    return hit;
   }
 }

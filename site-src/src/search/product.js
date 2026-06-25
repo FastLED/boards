@@ -18,5 +18,5 @@ export async function productOnly(raw) {
   }
   showUniOverlaySpinner();
   const data = await searchProduct(q, query);
-  renderCombined(q, data);
+  renderCombined(q, data, 'product');
 }

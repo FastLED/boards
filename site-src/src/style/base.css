@@ -29,6 +29,10 @@ body {
   font: 14px/1.5 -apple-system, system-ui, sans-serif;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 .wrap {
   max-width: 900px;
   margin: 0 auto;
@@ -108,6 +112,13 @@ section h2 {
 
 .hit:hover {
   background: var(--hi-bg);
+}
+
+mark {
+  background: color-mix(in srgb, var(--hi) 28%, transparent);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 0.08rem;
 }
 
 .k {

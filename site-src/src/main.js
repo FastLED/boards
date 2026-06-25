@@ -17,8 +17,9 @@ import { universalSearch } from './search/universal.js';
 import { vendorOnly } from './search/vendor.js';
 import { productOnly } from './search/product.js';
 import { boardOnly } from './search/board.js';
-import { hideUniOverlay, showSearchIntro } from './render/overlay.js';
+import { hideUniOverlay, showQueuedSearch, showSearchIntro } from './render/overlay.js';
 import { closeBoardJson, isBoardJsonOpen } from './modal/board-json.js';
+import { closeBoardDefines, isBoardDefinesOpen } from './modal/board-defines.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -45,6 +46,8 @@ function runCurrentSearch() {
   const mode = $('modeIn').value;
   if (!dbReady) {
     pendingQuery = { q, mode };
+    if (q.trim()) showQueuedSearch(q.trim());
+    else showSearchIntro();
     return;
   }
   modeFn(mode)(q).catch((err) => console.error(err));
@@ -83,16 +86,18 @@ async function init() {
     dbReady = true;
 
     const t = (meta && meta.totals) || {};
-    const cv = Number(t.vendors || 0);
-    const cp = Number(t.vidpid_rows || t.vidpid_keys || 0);
-    let bc = Number(t.boards || 0);
-    if (!bc) {
+    const countOrFallback = async (sql, fallback) => {
       try {
-        bc = (await query('SELECT COUNT(*) AS n FROM boards'))[0].n;
+        return Number((await query(sql))[0].n || 0);
       } catch {
-        /* boards table not present in older DBs */
+        return Number(fallback || 0);
       }
-    }
+    };
+    const [cv, cp, bc] = await Promise.all([
+      countOrFallback('SELECT COUNT(*) AS n FROM vid_vendor', t.vendors),
+      countOrFallback('SELECT COUNT(*) AS n FROM vidpid', t.vidpid_rows || t.vidpid_keys),
+      countOrFallback('SELECT COUNT(*) AS n FROM boards', t.boards),
+    ]);
 
     $('dbStatus').textContent = 'database loaded (HTTP range-fetched)';
     $('dbCounts').textContent =
@@ -113,7 +118,7 @@ function wireUp() {
   $('modeIn').addEventListener('change', runCurrentSearch);
 
   // View JSON modal close handlers
-  $('boardJsonClose').addEventListener('click', closeBoardJson);
+  $('boardJsonClose').addEventListener('click', () => closeBoardJson());
   $('boardJsonModal').addEventListener('click', (e) => {
     if (e.target.id === 'boardJsonModal') closeBoardJson();
   });
@@ -122,24 +127,39 @@ function wireUp() {
 
   // Results UX: Esc dismiss; focus / click reopen
   $('uniIn').addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideUniOverlay();
+    if (e.key !== 'Escape') return;
+    if (!$('uniOut').hasAttribute('hidden')) {
+      hideUniOverlay();
+      e.stopPropagation();
+    }
   });
-  const reshowIfTyped = () => {
+  const reshowIfRelevant = () => {
     const v = $('uniIn').value.trim();
     if (v && $('uniOut').hasAttribute('hidden')) {
       modeFn($('modeIn').value)(v).catch((err) => console.error(err));
+    } else if (!v && $('uniOut').hasAttribute('hidden')) {
+      showSearchIntro();
     }
   };
-  $('uniIn').addEventListener('focus', reshowIfTyped);
-  $('uniIn').addEventListener('click', reshowIfTyped);
+  $('uniIn').addEventListener('focus', reshowIfRelevant);
+  $('uniIn').addEventListener('click', reshowIfRelevant);
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (isBoardJsonOpen()) {
-      closeBoardJson();
+    if (isBoardDefinesOpen()) {
+      closeBoardDefines();
+      e.preventDefault();
       return;
     }
-    if (!$('uniOut').hasAttribute('hidden')) hideUniOverlay();
+    if (isBoardJsonOpen()) {
+      closeBoardJson();
+      e.preventDefault();
+      return;
+    }
+    if (!$('uniOut').hasAttribute('hidden')) {
+      hideUniOverlay();
+      e.preventDefault();
+    }
   });
 
   $('uniIn').focus();

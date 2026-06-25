@@ -74,6 +74,11 @@
   padding: 0 0.3rem;
 }
 
+#boardJsonModal .copy-error {
+  border-color: #c44;
+  color: #c44;
+}
+
 .board-defines-popover {
   position: fixed;
   z-index: 120;
@@ -87,14 +92,33 @@
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
 }
 
-.board-defines-title {
+.board-defines-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 0.55rem 0.7rem;
   border-bottom: 1px solid var(--border);
+}
+
+.board-defines-title {
+  flex: 1;
+  min-width: 0;
   color: var(--muted);
   font: 0.76rem ui-monospace, SFMono-Regular, Menlo, monospace;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.board-defines-close {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font: 0.72rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
 }
 
 .board-defines-body {
@@ -112,4 +136,27 @@
 .board-defines-popover.empty .board-defines-body {
   color: var(--muted);
   font-style: italic;
+}
+
+@media (max-width: 760px) {
+  #boardJsonModal {
+    align-items: stretch;
+    padding: 0.6rem;
+  }
+
+  #boardJsonModal .modal-body {
+    max-height: calc(100vh - 1.2rem);
+  }
+
+  #boardJsonModal header {
+    flex-wrap: wrap;
+  }
+
+  #boardJsonModal header .title {
+    flex-basis: 100%;
+  }
+
+  #boardJsonModal header .btn {
+    flex: 1 1 auto;
+  }
 }
