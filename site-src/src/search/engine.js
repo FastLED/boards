@@ -128,6 +128,14 @@ function setMeta(meta, key, total, loaded) {
   };
 }
 
+function tokenCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function vidPrefixUpperBound(prefix) {
+  return `${prefix}g`;
+}
+
 function parseMixedExactVidQuery(text) {
   const tokens = String(text || '').trim().split(/\s+/).filter(Boolean);
   if (tokens.length < 2) return null;
@@ -165,6 +173,14 @@ async function fetchProductsForVid(query, vid, limit = PRODUCT_LIMIT) {
     [vid],
   );
   return { rows, total };
+}
+
+async function fetchVendorsForVidPrefix(query, prefix, limit = 50) {
+  return query(
+    'SELECT vid, vendor, source FROM vid_vendor ' +
+      `WHERE vid >= ? AND vid < ? ORDER BY vid LIMIT ${limit}`,
+    [prefix, vidPrefixUpperBound(prefix)],
+  );
 }
 
 async function fetchProductsForVidMatchingText(query, vid, text, limit = PRODUCT_LIMIT) {
@@ -496,7 +512,7 @@ export async function searchUniversal(text, query) {
         });
       }
 
-      if (q.split(/\s+/).filter(Boolean).length === 1 && rows.length) {
+      if (tokenCount(q) === 1 && rows.length) {
         const vidProducts = await fetchProductsForVid(query, vidExact, 5);
         const linked = await fetchBoardsForVid(query, vidExact, 5);
         const preview = makeVidPreview(vidExact, rows[0], vidProducts, linked);
@@ -541,16 +557,16 @@ export async function searchUniversal(text, query) {
       }
     } else {
       if (hex.length < 4) {
-        const pref = await query(
-          'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
-            'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
-            'WHERE vid_vendor_fts MATCH ? LIMIT 50',
-          [`vid:${hex}*`],
-        );
+        const pref = await fetchVendorsForVidPrefix(query, hex);
         for (const r of pref) {
           bumpOrPush(vendors, vidKey, r, 400, 'VID prefix', {
             reason: reason('VID prefix', 'vid', hex),
           });
+        }
+        if (tokenCount(q) === 1) {
+          const result = { previews, vendors, products, boards, meta };
+          _cachePut('universal', q, result);
+          return result;
         }
       } else if (hex.length >= 5 && hex.length <= 7) {
         const pref = await query(
@@ -663,12 +679,7 @@ export async function searchVendor(text, query) {
     const preview = makeVidPreview(vidExact, exact[0], vidProducts, linked);
     if (preview) previews.push(preview);
   } else if (hex && hex.length < 4) {
-    const pref = await query(
-      'SELECT vv.vid, vv.vendor, vv.source FROM vid_vendor vv ' +
-        'JOIN vid_vendor_fts f ON f.rowid = vv.rowid ' +
-        'WHERE vid_vendor_fts MATCH ? LIMIT 50',
-      [`vid:${hex}*`],
-    );
+    const pref = await fetchVendorsForVidPrefix(query, hex);
     for (const r of pref) {
       bumpOrPush(vendors, vidKey, r, 400, 'VID prefix', {
         reason: reason('VID prefix', 'vid', hex),
