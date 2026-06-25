@@ -17,6 +17,10 @@ import { universalSearch } from './search/universal.js';
 import { vendorOnly } from './search/vendor.js';
 import { productOnly } from './search/product.js';
 import { boardOnly } from './search/board.js';
+import {
+  createLatestOnlySearchScheduler,
+  normalizeSearchIntent,
+} from './search/scheduler.js';
 import { hideUniOverlay, showQueuedSearch, showSearchIntro } from './render/overlay.js';
 import { closeBoardJson, isBoardJsonOpen } from './modal/board-json.js';
 import { closeBoardDefines, isBoardDefinesOpen } from './modal/board-defines.js';
@@ -41,31 +45,40 @@ function modeFn(mode) {
   }
 }
 
-function runCurrentSearch() {
-  const q = $('uniIn').value;
-  const mode = $('modeIn').value;
+const searchScheduler = createLatestOnlySearchScheduler({
+  run: async ({ q, mode }, shouldRender) => {
+    await modeFn(mode)(q, { shouldRender });
+  },
+  onQueued: ({ q }) => {
+    if (q) showQueuedSearch(q, 'waiting for the current search to finish.');
+    else showSearchIntro();
+  },
+  onError: (err) => console.error(err),
+});
+
+function currentSearchIntent() {
+  return {
+    q: $('uniIn').value,
+    mode: $('modeIn').value,
+  };
+}
+
+function requestCurrentSearch(options = {}) {
+  const intent = normalizeSearchIntent(currentSearchIntent());
   if (!dbReady) {
-    pendingQuery = { q, mode };
-    if (q.trim()) showQueuedSearch(q.trim());
+    pendingQuery = intent;
+    if (intent.q) showQueuedSearch(intent.q);
     else showSearchIntro();
     return;
   }
-  modeFn(mode)(q).catch((err) => console.error(err));
+  searchScheduler.request(intent, options);
 }
 
 function replayPending() {
   if (pendingQuery && pendingQuery.q) {
-    modeFn(pendingQuery.mode)(pendingQuery.q).catch((err) => console.error(err));
+    searchScheduler.request(pendingQuery, { immediate: true });
   }
   pendingQuery = null;
-}
-
-function debounced(fn, ms = 120) {
-  let t;
-  return (...a) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...a), ms);
-  };
 }
 
 async function init() {
@@ -113,9 +126,8 @@ async function init() {
 }
 
 function wireUp() {
-  const debouncedRun = debounced(runCurrentSearch);
-  $('uniIn').addEventListener('input', debouncedRun);
-  $('modeIn').addEventListener('change', runCurrentSearch);
+  $('uniIn').addEventListener('input', () => requestCurrentSearch());
+  $('modeIn').addEventListener('change', () => requestCurrentSearch({ immediate: true }));
 
   // View JSON modal close handlers
   $('boardJsonClose').addEventListener('click', () => closeBoardJson());
@@ -136,7 +148,7 @@ function wireUp() {
   const reshowIfRelevant = () => {
     const v = $('uniIn').value.trim();
     if (v && $('uniOut').hasAttribute('hidden')) {
-      modeFn($('modeIn').value)(v).catch((err) => console.error(err));
+      requestCurrentSearch({ immediate: true });
     } else if (!v && $('uniOut').hasAttribute('hidden')) {
       showSearchIntro();
     }

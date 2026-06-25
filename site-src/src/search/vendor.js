@@ -10,13 +10,13 @@ import {
 } from '../render/overlay.js';
 import { searchVendor } from './engine.js';
 
-export async function vendorOnly(raw) {
+export async function vendorOnly(raw, { shouldRender = () => true } = {}) {
   const q = (raw || '').trim();
   if (!q) {
-    showSearchIntro();
+    if (shouldRender()) showSearchIntro();
     return;
   }
-  showUniOverlaySpinner();
+  if (shouldRender()) showUniOverlaySpinner();
   const data = await searchVendor(q, query);
-  renderCombined(q, data, 'vendor');
+  if (shouldRender()) renderCombined(q, data, 'vendor');
 }

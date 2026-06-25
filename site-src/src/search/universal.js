@@ -10,13 +10,13 @@ import {
 } from '../render/overlay.js';
 import { searchUniversal } from './engine.js';
 
-export async function universalSearch(raw) {
+export async function universalSearch(raw, { shouldRender = () => true } = {}) {
   const q = (raw || '').trim();
   if (!q) {
-    showSearchIntro();
+    if (shouldRender()) showSearchIntro();
     return;
   }
-  showUniOverlaySpinner();
+  if (shouldRender()) showUniOverlaySpinner();
   const data = await searchUniversal(q, query);
-  renderCombined(q, data, 'anything');
+  if (shouldRender()) renderCombined(q, data, 'anything');
 }
