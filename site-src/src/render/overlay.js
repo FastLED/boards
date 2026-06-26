@@ -130,13 +130,11 @@ function previewCoveredVidSet(previews) {
 }
 
 function isBestHitCoveredByPreview(hit, previewVids) {
+  // The preview card already shows the vendor row at the top of the panel,
+  // so the same vendor as the top Best Hits row is pure duplication. Linked
+  // products and boards stay — Best Hits is exactly where the user expects
+  // to scan them.
   if (hit.kind === 'vendor') return previewVids.has(hit.row?.vid);
-  if (hit.kind === 'product') {
-    return previewVids.has(hit.row?.vid) && hit.reason?.label === 'same VID';
-  }
-  if (hit.kind === 'board') {
-    return previewVids.has(hit.reason?.value) && hit.reason?.label === 'linked via VID';
-  }
   return false;
 }
 
@@ -230,4 +228,21 @@ export function renderCombined(
       );
     });
   wireBoardDefineButtons($('uniOut'));
+
+  // Expanded preview board chips → drop the board_id into the search input
+  // and fire `input` so the scheduler treats it as a new query.
+  const input = $('uniIn');
+  if (input) {
+    $('uniOut')
+      .querySelectorAll('button.preview-board-chip[data-board-id]')
+      .forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const boardId = btn.getAttribute('data-board-id');
+          if (!boardId) return;
+          input.value = boardId;
+          input.focus();
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      });
+  }
 }

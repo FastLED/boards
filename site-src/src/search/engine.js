@@ -341,14 +341,20 @@ async function enrichWithLinkedBoards(query, boards, vidpidPairs, score, why, re
 
 function linkedBoardSummary(linked) {
   if (!linked?.total) return null;
+  const lean = (row) => ({
+    board_id: row.board_id,
+    name: row.name,
+    layer: row.layer,
+    sublayer: row.sublayer,
+  });
   return {
     total: linked.total,
-    sample: linked.rows.slice(0, 3).map((row) => ({
-      board_id: row.board_id,
-      name: row.name,
-      layer: row.layer,
-      sublayer: row.sublayer,
-    })),
+    // First 3 power the inline "Board samples:" hint inside the preview.
+    sample: linked.rows.slice(0, 3).map(lean),
+    // All fetched rows feed the expandable click-to-search board list. Capped
+    // upstream by fetchBoardsForVid's limit — when total > all.length, the
+    // expansion shows that gap as "showing first N of TOTAL".
+    all: linked.rows.map(lean),
   };
 }
 
@@ -522,8 +528,28 @@ export async function searchUniversal(text, query) {
       }
 
       if (tokenCount(q) === 1 && rows.length) {
-        const vidProducts = await fetchProductsForVid(query, vidExact, 5);
-        const linked = await fetchBoardsForVid(query, vidExact, 5);
+        // Eager-fetch full product + linked-board lists so the preview
+        // expansion lists every board for this VID AND Best Hits has real
+        // content to show beneath the preview card. Still no FTS — this
+        // path stays 5 indexed lookups (vendor + 2 product + 2 board).
+        const vidProducts = await fetchProductsForVid(query, vidExact);
+        const linked = await fetchBoardsForVid(query, vidExact, 500);
+
+        setMeta(meta, 'products', vidProducts.total, vidProducts.rows.length);
+        for (const r of vidProducts.rows) {
+          bumpOrPush(products, prodKey, r, 600, 'same VID', {
+            reason: reason('same VID', 'vidpid', r.vid, 'exact'),
+          });
+        }
+        enrichFromLinkedRows(
+          boards,
+          linked,
+          760,
+          'linked via VID',
+          reason('linked via VID', 'vidpids', vidExact, 'exact'),
+          meta,
+        );
+
         const preview = makeVidPreview(vidExact, rows[0], vidProducts, linked);
         if (preview) previews.push(preview);
         const result = { previews, vendors: [], products, boards, meta };

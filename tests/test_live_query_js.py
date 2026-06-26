@@ -256,21 +256,35 @@ class LiveQueryJsTests(unittest.TestCase):
         self.assertEqual(preview["reason"]["strength"], "exact")
 
         raw_counts = _raw_vid_counts(self.db, "303a")
+        # Vendor row is suppressed (the preview already shows it at the top
+        # of the panel), but products + boards now feed Best Hits beneath
+        # the preview so the user sees real linked devices, not just a card.
         self.assertEqual(r["data"]["vendors"], [])
-        self.assertEqual(r["data"]["products"], [])
-        self.assertEqual(r["data"]["boards"], [])
+        self.assertTrue(r["data"]["products"],
+                        "303a should expose same-VID products for Best Hits")
+        self.assertTrue(r["data"]["boards"],
+                        "303a should expose linked boards for Best Hits")
+        self.assertTrue(all(p["row"]["vid"] == "303a" for p in r["data"]["products"]))
         self.assertEqual(preview["knownBoards"]["total"], raw_counts["boards"])
         self.assertEqual(preview["knownProducts"]["total"], raw_counts["products"])
         self.assertGreater(preview["knownBoards"]["total"], 0)
         self.assertTrue(preview["knownBoards"]["sample"])
+        # `all` powers the expandable click-to-search board list inside the
+        # preview card. Either we got the whole set, or the fetch cap kicked
+        # in — both are acceptable, but it should never be empty.
+        self.assertTrue(preview["knownBoards"]["all"])
+        self.assertLessEqual(len(preview["knownBoards"]["all"]),
+                             preview["knownBoards"]["total"])
 
     def test_exact_vid_fast_path_avoids_unscoped_fts(self) -> None:
         payload = _query_shape(self.db, "303a")
-        self.assertEqual(
-            payload["counts"],
-            {"previews": 1, "vendors": 0, "products": 0, "boards": 0},
-            payload,
-        )
+        # The fast-path contract isn't "empty arrays" — it's "no FTS, bounded
+        # SQL count". Products + boards are now populated so Best Hits can
+        # render real rows under the preview card.
+        self.assertEqual(payload["counts"]["previews"], 1, payload)
+        self.assertEqual(payload["counts"]["vendors"], 0, payload)
+        self.assertGreater(payload["counts"]["products"], 0, payload)
+        self.assertGreater(payload["counts"]["boards"], 0, payload)
         sql_text = "\n".join(call["sql"] for call in payload["calls"]).lower()
         self.assertNotIn(" match ", sql_text)
         self.assertNotIn("_fts", sql_text)
@@ -278,7 +292,8 @@ class LiveQueryJsTests(unittest.TestCase):
         self.assertLessEqual(
             len(payload["calls"]),
             5,
-            "exact VID should only fetch vendor plus preview product/board summaries:\n"
+            "exact VID should only fetch vendor + product count/select + board "
+            "count/select (5 indexed lookups):\n"
             + json.dumps(payload["calls"], indent=2),
         )
 

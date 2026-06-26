@@ -251,6 +251,68 @@
   font-size: 0.8rem;
 }
 
+.preview-board-list {
+  margin-top: 0.6rem;
+}
+
+.preview-board-list > summary {
+  cursor: pointer;
+  width: fit-content;
+  color: var(--hi);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0;
+  list-style: none;
+}
+
+.preview-board-list > summary::-webkit-details-marker { display: none; }
+
+.preview-board-list > summary::before {
+  content: '\25B8';
+  display: inline-block;
+  margin-right: 0.35rem;
+  transition: transform 0.15s ease;
+}
+
+.preview-board-list[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.preview-board-grid {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.35rem;
+}
+
+.preview-board-chip {
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--fg);
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.preview-board-chip:hover {
+  background: var(--hi-bg);
+  border-color: var(--hi);
+  color: var(--hi);
+}
+
+.preview-board-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-color: var(--hi);
+}
+
 .search-hit.exact-hit {
   border-color: var(--hi);
   background:

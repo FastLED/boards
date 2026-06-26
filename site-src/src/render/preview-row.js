@@ -13,6 +13,35 @@ function boardSampleText(preview) {
     .join(', ');
 }
 
+function boardListMarkup(preview) {
+  const all = preview.knownBoards?.all || [];
+  if (all.length < 2) return '';
+  const total = Number(preview.knownBoards?.total || all.length);
+  const truncated = total > all.length;
+  const heading = truncated
+    ? `Show all ${all.length.toLocaleString()} of ${total.toLocaleString()} boards`
+    : `Show all ${all.length.toLocaleString()} boards`;
+  const chips = all
+    .map((board) => {
+      const id = board.board_id || '';
+      if (!id) return '';
+      const label = board.name || id;
+      return (
+        '<button type="button" class="preview-board-chip" ' +
+        `data-board-id="${escapeHtml(id)}" ` +
+        `title="${escapeHtml(id)}">` +
+        `${escapeHtml(label)}</button>`
+      );
+    })
+    .join('');
+  return (
+    '<details class="preview-board-list">' +
+      `<summary>${heading}</summary>` +
+      `<div class="preview-board-grid">${chips}</div>` +
+    '</details>'
+  );
+}
+
 function productSampleHtml(preview, query = '') {
   const sample = preview.knownProducts?.sample || [];
   if (!sample.length) return '';
@@ -58,6 +87,7 @@ function renderVidPreview(preview, query = '') {
         '</div>' +
         `${productSampleMarkup}` +
         `${boardSampleMarkup}` +
+        `${boardListMarkup(preview)}` +
       '</div>' +
     '</div>'
   );
