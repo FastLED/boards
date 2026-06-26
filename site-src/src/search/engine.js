@@ -502,6 +502,14 @@ export async function searchUniversal(text, query) {
         meta,
       );
       attachLinkedSummaryToHits(productHits, linked);
+      // Emit a VID preview so isBestHitCoveredByPreview can suppress the
+      // vendor + same-VID product rows from the Best Hits strip; the exact
+      // VID:PID product and the linked boards survive the filter (their
+      // reasons key off vidpid / `linked to VID:PID`, not `same VID`).
+      const allProducts = await fetchProductsForVid(query, pair[0], 5);
+      const allLinked = await fetchBoardsForVid(query, pair[0], 5);
+      const preview = makeVidPreview(pair[0], v[0], allProducts, allLinked);
+      if (preview) previews.push(preview);
     } else if (vidExact) {
       const rows = await query(
         'SELECT vid, vendor, source FROM vid_vendor WHERE vid = ?',

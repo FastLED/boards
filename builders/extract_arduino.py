@@ -145,6 +145,10 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
 
         per_core_counts[core_slug] = per_core_counts.get(core_slug, 0) + 1
         src = f"arduino:{core_slug}/{board_json.stem}"
+        # Vendor hints belong to the core, not the first board we happened to
+        # see — otherwise vid_vendor.source ends up pointing at a random board
+        # JSON path (e.g. `arduino:espressif-arduino-esp32/Bee_Data_Logger`).
+        vendor_src = f"arduino:{core_slug}"
 
         for vid, pid in pairs:
             products.append({
@@ -157,7 +161,7 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
             # already named the VID.
             hint = CORE_VENDOR_HINTS.get(core_slug)
             if hint and (vid not in seen_vendor_vids):
-                vendors.append({"vid": vid, "vendor": hint, "source": src,
+                vendors.append({"vid": vid, "vendor": hint, "source": vendor_src,
                                 "hint": True})
                 seen_vendor_vids.add(vid)
 
