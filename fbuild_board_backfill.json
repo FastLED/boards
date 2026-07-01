@@ -1,0 +1,40 @@
+[
+  {
+    "_comment": "Curated USB VID:PID rows for community boards fbuild ships (or wants to identify) that weren't in an upstream layer. Sourced 2026-07-01 during FastLED/fbuild#740 back-fill. Each `_source` field points to authoritative vendor documentation (bootloader `board.h`, Arduino core `boards.txt`, or CircuitPython `mpconfigboard.mk`). Cross-checked against fbuild's `crates/fbuild-config/assets/boards/json/` after PR FastLED/fbuild#917.",
+    "_provenance": [
+      "adafruit_qt_py_rp2040 (239a:80f8): adafruit/circuitpython/ports/raspberrypi/boards/adafruit_qtpy_rp2040/mpconfigboard.mk — USB_VID = 0x239A / USB_PID = 0x80F8. BOOTSEL bootloader stays at 2e8a:0003 like every RP2040.",
+      "seeed_xiao_rp2040 (2e8a:000a): earlephilhower/arduino-pico/tools/json/seeed_xiao_rp2040.json — usb_vid=0x2E8A usb_pid=0x000A hwids [2e8a:00c0, 2e8a:000a]. Seeed did not sub-license a dedicated PID; runtime uses the RP2040 default.",
+      "seeed_xiao_mg24 (2886:0062): SiliconLabsSoftware/arduino/boards.txt — xiao_mg24.vid.0=0x2886 / xiao_mg24.pid.0=0x0062. Exposed USB device is the onboard SAMD11 running Seeed CMSIS-DAP firmware (EFR32MG24 has no USB).",
+      "nice_nano (239a:00b3): adafruit/Adafruit_nRF52_Bootloader/src/boards/nice_nano/board.h — USB_DESC_VID 0x239A / USB_DESC_UF2_PID 0x00B3 / USB_DESC_CDC_ONLY_PID 0x00B3. Bootloader and runtime PID intentionally unified.",
+      "nrfmicro (1209:5284): adafruit/Adafruit_nRF52_Bootloader/src/boards/nrfmicro/board.h — USB_DESC_VID 0x1209 / USB_DESC_UF2_PID 0x5284 / USB_DESC_CDC_ONLY_PID 0x5284. pid.codes openmoko allocation, confirmed at https://pid.codes/1209/5284/.",
+      "esp32-s2-saola-1 (10c4:ea60): docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s2/esp32-s2-saola-1/user_guide_v1.2.html — 'Single USB-UART bridge chip provides transfer rates up to 3 Mbps.' Chip is a CP2102 with the default Silicon Labs descriptor.",
+      "sparkfun_thingplusmatter (1366:0101): learn.sparkfun.com/tutorials/sparkfun-thing-plus-matter---mgm240p-hookup-guide/all — 'An EFM32GG12B410F1024GL120-A microcontroller is used as J-Link programmer and debugging IC on the board.' VID 1366 is Segger; 0101 is the standard J-Link PID (uncertain vs 0105 J-Link OB CDC without a physical dump). Silicon Labs Arduino boards.txt omits VID/PID for this board.",
+      "ch32v003f4p6_evt_r0 (1a86:8010): docs.zephyrproject.org/latest/boards/wch/ch32v003f4p6_dev_board — the EVT board has no onboard USB and is shipped with a WCH-LinkE debugger. RISC-V mode 8010 is required (ARM mode 8012 cannot flash RISC-V chips)."
+    ],
+    "_skip": "ignored by extract_other.py (only records with vid+pid+vendor/product fields are ingested)"
+  },
+
+  {"vid": "239a", "pid": "80f8", "product": "Adafruit QT Py RP2040",
+   "_source": "adafruit/circuitpython/ports/raspberrypi/boards/adafruit_qtpy_rp2040/mpconfigboard.mk"},
+
+  {"vid": "2e8a", "pid": "000a", "product": "Seeed Studio XIAO RP2040",
+   "_source": "earlephilhower/arduino-pico/tools/json/seeed_xiao_rp2040.json"},
+
+  {"vid": "2886", "pid": "0062", "product": "Seeed Studio XIAO MG24",
+   "_source": "SiliconLabsSoftware/arduino/boards.txt"},
+
+  {"vid": "239a", "pid": "00b3", "product": "nice!nano",
+   "_source": "adafruit/Adafruit_nRF52_Bootloader/src/boards/nice_nano/board.h"},
+
+  {"vid": "1209", "pid": "5284", "product": "nRFMicro (nRF52840)",
+   "_source": "adafruit/Adafruit_nRF52_Bootloader/src/boards/nrfmicro/board.h; pid.codes/1209/5284"},
+
+  {"vid": "10c4", "pid": "ea60", "product": "CP210x UART Bridge (Espressif ESP32-S2-Saola-1 and other CP2102-based boards)",
+   "_source": "docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s2/esp32-s2-saola-1/user_guide_v1.2.html"},
+
+  {"vid": "1366", "pid": "0101", "product": "J-Link (SparkFun Thing Plus Matter onboard debugger)",
+   "_source": "learn.sparkfun.com/tutorials/sparkfun-thing-plus-matter---mgm240p-hookup-guide/all"},
+
+  {"vid": "1a86", "pid": "8010", "product": "WCH-LinkE (RISC-V mode; bundled with CH32V003F4P6-EVT-R0)",
+   "_source": "docs.zephyrproject.org/latest/boards/wch/ch32v003f4p6_dev_board"}
+]
