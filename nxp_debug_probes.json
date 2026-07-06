@@ -1,0 +1,13 @@
+[
+  {
+    "vid": "1fc9",
+    "vendor": "NXP Semiconductors",
+    "_source": "USB-IF vendor allocation: NXP Semiconductors (0x1FC9)"
+  },
+  {
+    "vid": "1fc9",
+    "pid": "0132",
+    "product": "NXP LPC-Link2 (CMSIS-DAP debug probe)",
+    "_source": "LPC-Link2 CMSIS-DAP firmware — the on-board debug probe / USB-VCOM bridge on LPC845-BRK and LPCXpresso boards (carries the target's USART0 as a virtual COM port). Distinct from 1fc9:0135 (IMXRT ROM serial-download bootloader)."
+  }
+]
