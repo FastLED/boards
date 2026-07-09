@@ -1,42 +1,52 @@
 {
-  "schema_version": 2,
-  "description": "Layer-4 overrides applied AFTER vendors/arduino/platformio. `vid_overrides` and `vidpid_overrides` UNCONDITIONALLY replace earlier names (used for re-attribution where the registered VID owner is not the recognizable consumer brand). `vidpid_board_links` is polyfill-only — its junction rows are inserted with INSERT OR IGNORE so a board whose upstream JSON DOES carry hwids keeps its upstream linkage; the curated rule only fills in for boards where upstream is silent. The headline case is Teensy: PlatformIO ships hwids for teensy40 only, so the curated rule transparently completes the linkage for teensy30/31/35/36/41/LC/2.0/++2.0/MicroMod.",
-  "vid_overrides": {
-    "16c0": "PJRC (Teensy)"
+ "schema_version": 2,
+ "description": "Layer-4 overrides applied AFTER vendors/arduino/platformio. `vid_overrides` and `vidpid_overrides` UNCONDITIONALLY replace earlier names (used for re-attribution where the registered VID owner is not the recognizable consumer brand). `vidpid_board_links` is polyfill-only — its junction rows are inserted with INSERT OR IGNORE so a board whose upstream JSON DOES carry hwids keeps its upstream linkage; the curated rule only fills in for boards where upstream is silent. The headline case is Teensy: PlatformIO ships hwids for teensy40 only, so the curated rule transparently completes the linkage for teensy30/31/35/36/41/LC/2.0/++2.0/MicroMod.",
+ "vid_overrides": {
+  "16c0": "PJRC (Teensy)",
+  "10c4": "Silicon Labs",
+  "0403": "FTDI",
+  "1a86": "QinHeng Electronics",
+  "067b": "Prolific Technology"
+ },
+ "vidpid_overrides": {},
+ "vidpid_board_links": [
+  {
+   "id": "teensy-usb-modes",
+   "vidpids": [
+    "16c0:0476",
+    "16c0:0477",
+    "16c0:0478",
+    "16c0:0482",
+    "16c0:0483",
+    "16c0:0485",
+    "16c0:0486",
+    "16c0:0487",
+    "16c0:0488",
+    "16c0:0489",
+    "16c0:048a",
+    "16c0:048b",
+    "16c0:048c",
+    "16c0:04d0",
+    "16c0:04d1",
+    "16c0:04d2",
+    "16c0:04d3",
+    "16c0:04d4",
+    "16c0:04d5"
+   ],
+   "match_boards": {
+    "board_id_glob": "teensy*"
+   },
+   "note": "PJRC reuses the same runtime PID table across every Teensy variant — the active PID is selected by Arduino IDE's USB-type config, not the chip. See other/teensy_pids.json _provenance for upstream sources (teensy4/usb_desc.h, teensy_loader_cli.c)."
   },
-  "vidpid_overrides": {},
-  "vidpid_board_links": [
-    {
-      "id": "teensy-usb-modes",
-      "vidpids": [
-        "16c0:0476",
-        "16c0:0477",
-        "16c0:0478",
-        "16c0:0482",
-        "16c0:0483",
-        "16c0:0485",
-        "16c0:0486",
-        "16c0:0487",
-        "16c0:0488",
-        "16c0:0489",
-        "16c0:048a",
-        "16c0:048b",
-        "16c0:048c",
-        "16c0:04d0",
-        "16c0:04d1",
-        "16c0:04d2",
-        "16c0:04d3",
-        "16c0:04d4",
-        "16c0:04d5"
-      ],
-      "match_boards": { "board_id_glob": "teensy*" },
-      "note": "PJRC reuses the same runtime PID table across every Teensy variant — the active PID is selected by Arduino IDE's USB-type config, not the chip. See other/teensy_pids.json _provenance for upstream sources (teensy4/usb_desc.h, teensy_loader_cli.c)."
-    },
-    {
-      "id": "imxrt-bootloader",
-      "vidpids": ["1fc9:0135"],
-      "match_boards": { "mcu_glob": "imxrt*" },
-      "note": "NXP IMXRT1062 ROM serial-download bootloader. Only the Teensy 4.x variants carry the IMXRT1062 chip; matching by MCU prefix keeps this stable when new IMXRT-class boards are added."
-    }
-  ]
+  {
+   "id": "imxrt-bootloader",
+   "vidpids": [
+    "1fc9:0135"
+   ],
+   "match_boards": {
+    "mcu_glob": "imxrt*"
+   },
+   "note": "NXP IMXRT1062 ROM serial-download bootloader. Only the Teensy 4.x variants carry the IMXRT1062 chip; matching by MCU prefix keeps this stable when new IMXRT-class boards are added."
+  }
+ ]
 }
