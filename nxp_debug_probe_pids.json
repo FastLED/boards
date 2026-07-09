@@ -1,0 +1,12 @@
+[
+  {
+    "_comment": "NXP debug-probe USB PIDs under VID 0x1FC9, manually curated 2026-07 for FastLED/fbuild#722.",
+    "_skip": "ignored by extract_other.py (only records with vid+pid+product are ingested)"
+  },
+  {
+    "vid": "1fc9",
+    "pid": "0143",
+    "product": "NXP MCU-Link (CMSIS-DAP debug probe)",
+    "_source": "NXP MCU-Link firmware VID:PID; onboard debug probe on LPCXpresso / MCX / i.MX RT eval boards. Companion to LPC-Link2 (1fc9:0132)."
+  }
+]
