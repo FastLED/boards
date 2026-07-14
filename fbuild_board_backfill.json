@@ -20,6 +20,18 @@
   {"vid": "2e8a", "pid": "000a", "product": "Seeed Studio XIAO RP2040",
    "_source": "earlephilhower/arduino-pico/tools/json/seeed_xiao_rp2040.json"},
 
+  {"vid": "2e8a", "pid": "0003", "product": "Raspberry Pi RP2 BOOTSEL (RP2040/RP2350)",
+   "_source": "raspberrypi/pico-sdk/src/boards/include/boards/pico.h; Raspberry Pi UF2 ROM documentation",
+   "_note": "Stock ROM mass-storage mode (RPI-RP2); this is not the application CDC endpoint."},
+
+  {"vid": "2e8a", "pid": "000a", "product": "Raspberry Pi Pico (runtime USB CDC)",
+   "_source": "earlephilhower/arduino-pico/boards.txt (rpipico); Raspberry Pi pico-sdk USB CDC defaults",
+   "_note": "Default Arduino-Pico application CDC identity; use this VID:PID for strict serial-port matching."},
+
+  {"vid": "2e8a", "pid": "000f", "product": "Raspberry Pi Pico 2 (runtime USB CDC)",
+   "_source": "earlephilhower/arduino-pico/boards.txt (rpipico2); Raspberry Pi pico-sdk RP2350 USB defaults",
+   "_note": "Default Arduino-Pico RP2350 application CDC identity; Pico 2 BOOTSEL still enumerates as 2e8a:0003."},
+
   {"vid": "2886", "pid": "0062", "product": "Seeed Studio XIAO MG24",
    "_source": "SiliconLabsSoftware/arduino/boards.txt"},
 
