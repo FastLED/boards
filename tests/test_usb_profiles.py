@@ -12,13 +12,13 @@ def test_normalization_and_collision_preserve_provenance():
     ])
     assert normalize_vidpid("2E8A:000A") == "2e8a:000a"
     assert len(artifact["identities"]["2e8a:000a"]) == 3
-    assert {x["provenance"] for x in artifact["identities"]["2e8a:000a"]} == {"pio.json", "arduino.json"}
+    assert {x["provenance"]["source_url"] for x in artifact["identities"]["2e8a:000a"]} == {"pio.json", "arduino.json"}
     validate_profiles(artifact)
 
 
 def test_curated_roles_aliases_and_determinism():
     boards = [{"board_id": "x", "aliases": ["z", "a"], "vidpids": ["303a:1001"]}]
-    other = {"usb_profiles": [{"board_id": "x", "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "provenance": "curated#1"}]}
+    other = {"usb_profiles": [{"board_id": "x", "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "reset": "touch-1200", "handoff": "bootloader", "provenance": {"source_url": "curated#1", "source_revision": "r1", "source_class": "other"}}]}
     a = build_profiles(boards, other)
     b = build_profiles(list(reversed(boards)), other)
     assert a == b
@@ -27,7 +27,7 @@ def test_curated_roles_aliases_and_determinism():
 
 
 def test_generic_bridge_identity_without_board():
-    artifact = build_profiles([], {"usb_profiles": [{"vidpid": "1d50:6018", "role": "usb_uart_bridge", "purpose": "runtime", "provenance": "curated"}]})
+    artifact = build_profiles([], {"usb_profiles": [{"vidpid": "1d50:6018", "role": "usb_uart_bridge", "purpose": "runtime", "reset": "touch-1200", "handoff": "reconnect", "provenance": {"source_url": "curated", "source_revision": "r1", "source_class": "other"}}]})
     assert "1d50:6018" in artifact["identities"]
     assert not artifact["boards"]
 

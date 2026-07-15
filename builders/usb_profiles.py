@@ -33,6 +33,23 @@ def normalize_vidpid(value: Any) -> str:
     return f"{vid_i:04x}:{pid_i:04x}"
 
 
+def normalize_match(value: Any) -> tuple[str, dict[str, Any]]:
+    if isinstance(value, dict):
+        vid = normalize_vidpid(f"{value.get('vid', '')}:0").split(":")[0]
+        pid = value.get("pid")
+        mask = value.get("pid_mask")
+        if pid in (None, "", "*"):
+            return f"{vid}:*", {"vid": vid, "pid": None, "pid_mask": mask}
+        key = normalize_vidpid(f"{vid}:{pid}")
+        return key, {"vid": vid, "pid": key.split(":")[1], "pid_mask": mask}
+    if isinstance(value, str) and value.endswith(":*"):
+        vid = normalize_vidpid(value[:-2] + ":0").split(":")[0]
+        return f"{vid}:*", {"vid": vid, "pid": None, "pid_mask": None}
+    key = normalize_vidpid(value)
+    vid, pid = key.split(":")
+    return key, {"vid": vid, "pid": pid, "pid_mask": None}
+
+
 def _pairs(values: Any) -> Iterable[str]:
     if not values:
         return ()
@@ -41,25 +58,34 @@ def _pairs(values: Any) -> Iterable[str]:
     return (normalize_vidpid(v) for v in values)
 
 
-def _profile_record(board: dict[str, Any], key: str, purpose: str, source: str) -> dict[str, Any]:
+def _profile_record(board: dict[str, Any], key: str, purpose: str, source: Any) -> dict[str, Any]:
     if purpose not in PURPOSES:
         raise ValueError(f"invalid USB profile purpose {purpose!r}")
     role = board.get("role") or {"runtime": "runtime_cdc", "compile": "runtime_cdc", "bootloader": "bootloader_uf2", "probe": "debug_probe"}[purpose]
     if role not in DEVICE_ROLES:
         raise ValueError(f"invalid USB profile role {role!r}")
-    if board.get("reset") not in RESETS or board.get("handoff") not in HANDOFFS:
+    reset = board.get("reset", "unknown")
+    handoff = board.get("handoff", "unknown")
+    if reset not in RESETS | {"unknown"} or handoff not in HANDOFFS | {"unknown"}:
         raise ValueError("invalid USB reset or handoff")
+    if role != "runtime_cdc" and (reset == "unknown" or handoff == "unknown"):
+        raise ValueError("curated deploy role requires reset and handoff")
+    if not isinstance(source, dict):
+        source = {"source_url": str(source), "source_revision": None, "source_class": "upstream"}
     return {
+        "match": board.get("match") or {"vid": key.split(":")[0], "pid": key.split(":")[1] if ":" in key and key.split(":")[1] != "*" else None, "pid_mask": None},
         "purpose": purpose,
         "role": role,
         "transport": str(board.get("transport", "usb")),
-        "reset": board.get("reset"),
-        "handoff": board.get("handoff"),
+        "reset": reset,
+        "handoff": handoff,
         "platform": board.get("platform") or board.get("core"),
         "family": board.get("family") or board.get("mcu"),
         "generation": board.get("generation"),
         "interface": board.get("interface"),
         "provenance": source,
+        "priority": int(board.get("priority", 0)),
+        "allow_ambiguous": bool(board.get("allow_ambiguous", source.get("source_class") == "upstream" if isinstance(source, dict) else False)),
     }
 
 
@@ -78,7 +104,7 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
         board_id = str(board.get("board_id", "")).strip()
         if not board_id:
             continue
-        source = str(board.get("upstream_blob") or board.get("source") or board.get("layer", "upstream"))
+        source = {"source_url": board.get("upstream_blob"), "source_revision": board.get("source_revision"), "source_class": board.get("layer", "upstream")}
         purposes = board.get("identity_purposes") or {}
         for vp in _pairs(board.get("vidpids")):
             key_purposes = purposes.get(vp, ["runtime", "compile"])
@@ -95,9 +121,12 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
     records = (other or {}).get("usb_profiles", []) if isinstance(other, dict) else []
     for rec in records:
         board_id = str(rec.get("board_id", "")).strip() or None
-        source = str(rec.get("provenance") or rec.get("source") or "other")
+        source = rec.get("provenance") or {"source_url": rec.get("source_url"), "source_revision": rec.get("source_revision"), "source_class": "other"}
         purpose = rec.get("purpose", "runtime")
-        for vp in _pairs(rec.get("vidpids") or rec.get("vidpid")):
+        for raw in (rec.get("vidpids") or [rec.get("vidpid")]):
+            key, match = normalize_match(raw)
+            rec = dict(rec); rec["match"] = match
+            vp = key
             if board_id:
                 add(board_id, vp, purpose, rec, source)
             else:
@@ -129,8 +158,13 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
         if normalize_vidpid(key) != key or not isinstance(entries, list):
             raise ValueError(f"invalid identity key {key!r}")
         for entry in entries:
-            if entry.get("purpose") not in PURPOSES or entry.get("role") not in DEVICE_ROLES or not entry.get("provenance"):
+            if entry.get("purpose") not in PURPOSES or entry.get("role") not in DEVICE_ROLES or not isinstance(entry.get("provenance"), dict):
                 raise ValueError("identity requires a valid role and provenance")
+            if entry.get("priority") is None:
+                raise ValueError("identity requires priority")
+        priorities = [(e.get("priority"), e.get("purpose"), e.get("role")) for e in entries]
+        if len(priorities) != len(set(priorities)) and not any(e.get("allow_ambiguous") for e in entries):
+            raise ValueError(f"ambiguous identity records for {key}")
     for board_id, profile in artifact.get("boards", {}).items():
         if not board_id or not isinstance(profile.get("identities"), dict):
             raise ValueError(f"invalid board profile {board_id!r}")
