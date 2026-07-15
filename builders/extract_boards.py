@@ -516,6 +516,7 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          vidpids,
             "identity_purposes": identity_purposes,
+            "primary_compile_identity": f"{bvid}:{bpid}" if bvid and bpid else None,
             "upstream_repo":    repo,
             "upstream_blob":    blob,
             # Source path under the layer's data dir — site.py uses this to
@@ -572,6 +573,8 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
         kw_sink: set[str] = set()
         _collect_keywords(b, kw_sink)
         aliases = _extract_aliases(b)
+        build_vid = _norm_hex(build.get("vid", ""), 4)
+        build_pid = _norm_hex(build.get("pid", ""), 4)
         out.append({
             "layer":            "arduino",
             "sublayer":         core,
@@ -597,6 +600,9 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
             "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          _arduino_vidpids(b),
             "identity_purposes": {f"{v}:{p}": ["compile", "runtime"] for v, p in _arduino_vidpids(b)},
+            "primary_compile_identity": (
+                f"{build_vid}:{build_pid}" if build_vid and build_pid else None
+            ),
             "upstream_repo":    upstream,
             "upstream_blob":    upstream,
             "src_relpath":      f"{core}/boards/{board_id}.json",
