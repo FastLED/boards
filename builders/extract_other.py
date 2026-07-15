@@ -122,13 +122,15 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
     vid_overrides: dict[str, str] = {}
     vidpid_overrides: dict[str, str] = {}
     vidpid_board_links: list[dict] = []
+    usb_profiles: list[dict] = []
 
     if not root.is_dir():
         print(f"other: input dir {root} missing; emitting empty record set",
               file=sys.stderr)
         return {"layer": "other", "vendors": vendors, "products": products,
                 "vid_overrides": vid_overrides, "vidpid_overrides": vidpid_overrides,
-                "vidpid_board_links": vidpid_board_links}
+                "vidpid_board_links": vidpid_board_links,
+                "usb_profiles": usb_profiles}
 
     ovr_path = root / "overrides.json"
     if ovr_path.is_file():
@@ -157,6 +159,9 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
                 else:
                     print(f"other[skip vidpid_board_link rule #{i}]: malformed",
                           file=sys.stderr)
+            for rec in ovr.get("usb_profiles") or []:
+                if isinstance(rec, dict):
+                    usb_profiles.append(rec)
             print(f"other: {len(vid_overrides)} vid overrides, "
                   f"{len(vidpid_overrides)} vidpid overrides, "
                   f"{len(vidpid_board_links)} board-link rules",
@@ -195,7 +200,8 @@ def extract(root: pathlib.Path) -> dict[str, Any]:
           file=sys.stderr)
     return {"layer": "other", "vendors": vendors, "products": products,
             "vid_overrides": vid_overrides, "vidpid_overrides": vidpid_overrides,
-            "vidpid_board_links": vidpid_board_links}
+            "vidpid_board_links": vidpid_board_links,
+            "usb_profiles": usb_profiles}
 
 
 def main() -> int:

@@ -38,6 +38,12 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import subprocess as _subprocess
+
+try:  # direct script execution and package imports are both supported
+    from .usb_profiles import artifact_sha256, write_profiles
+except ImportError:
+    from usb_profiles import artifact_sha256, write_profiles
 
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -53,6 +59,21 @@ def _run_script(script: pathlib.Path, *args: str) -> None:
 
 def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def _layer_revision(path: pathlib.Path) -> str:
+    for candidate in (path / "_meta.json", path / "data" / "_meta.json"):
+        if candidate.is_file():
+            try:
+                meta = json.loads(candidate.read_text(encoding="utf-8"))
+                value = meta.get("source_revision") or meta.get("commit") or meta.get("sha")
+                if value:
+                    return str(value)
+            except json.JSONDecodeError:
+                pass
+    try:
+        return _subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True, stderr=_subprocess.DEVNULL).strip()
+    except (OSError, _subprocess.CalledProcessError):
+        return "unknown"
 
 
 def _copy_board_jsons(boards: list[dict], data_root: pathlib.Path,
@@ -133,6 +154,7 @@ def _clean_public(public_dir: pathlib.Path) -> None:
         "site.db",
         "usb-ids.json",
         "usb-vids.proto.zstd",
+        "usb-profiles.json",
         "_meta.json",
     ):
         f = public_dir / name
@@ -193,6 +215,18 @@ def orchestrate(
         "--out", str(boards_path),
     )
     boards_data = json.loads(boards_path.read_text(encoding="utf-8"))
+    other_data = json.loads((normalized / "other.json").read_text(encoding="utf-8"))
+    layer_revisions = {}
+    for layer in ("vendors", "arduino", "platformio", "other"):
+        layer_revisions[layer] = _layer_revision(data_root / layer)
+        if layer_revisions[layer] == "unknown":
+            raise RuntimeError(f"cannot determine immutable revision for data layer {layer}")
+    for board in boards_data.get("boards") or []:
+        board.setdefault("source_revision", layer_revisions.get(board.get("layer"), "unknown"))
+    for record in other_data.get("usb_profiles") or []:
+        provenance = record.get("provenance")
+        if isinstance(provenance, dict):
+            provenance.setdefault("source_revision", layer_revisions["other"])
 
     # 6b: stage the per-board JSONs as Vite static assets
     boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
@@ -212,9 +246,20 @@ def orchestrate(
         "--db",  str(public_dir / "boards.db"),
         "--out", str(public_dir / "usb-ids.json"),
     )
+    usb_profiles = write_profiles(boards_data.get("boards") or [], other_data,
+                                  public_dir / "usb-profiles.json")
 
     # 8: _meta.json (also written into public/ for Vite to serve)
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
+    source_revisions = {}
+    for layer in ("vendors", "arduino", "platformio", "other"):
+        for candidate in (data_root / layer / "_meta.json", data_root / layer / "data" / "_meta.json"):
+            if candidate.is_file():
+                try:
+                    source_revisions[layer] = json.loads(candidate.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    pass
+                break
     stats = merged.get("stats", {})
     meta = {
         "schema_version": 5,
@@ -236,6 +281,10 @@ def orchestrate(
         "database":         "boards.db",
         "usb_ids_download": "usb-ids.json",
         "usb_vids_proto_zstd": "usb-vids.proto.zstd",
+        "usb_profiles": "usb-profiles.json",
+        "usb_profiles_schema_version": usb_profiles["schema_version"],
+        "usb_profiles_sha256": artifact_sha256(usb_profiles),
+        "source_revisions": source_revisions,
         "loader":           "vite",
         "boards_root":      "boards/",
     }

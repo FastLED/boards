@@ -470,12 +470,20 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
         debug = b.get("debug") or {}
 
         vidpids: list[list[str]] = []
+        identity_purposes: dict[str, list[str]] = {}
         for entry in (build.get("hwids") or []):
             if isinstance(entry, (list, tuple)) and len(entry) >= 2:
                 vid = _norm_hex(entry[0], 4)
                 pid = _norm_hex(entry[1], 4)
                 if vid and pid:
                     vidpids.append([vid, pid])
+                    identity_purposes[f"{vid}:{pid}"] = ["runtime"]
+        bvid = _norm_hex(build.get("vid", ""), 4)
+        bpid = _norm_hex(build.get("pid", ""), 4)
+        if bvid and bpid:
+            if [bvid, bpid] not in vidpids:
+                vidpids.append([bvid, bpid])
+            identity_purposes.setdefault(f"{bvid}:{bpid}", []).append("compile")
 
         mcu_str = _str_or_none(build.get("mcu"))
         arch, bits = _derive_arch_bits(mcu_str)
@@ -507,6 +515,7 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             "aliases":          ",".join(aliases) if aliases else None,
             "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          vidpids,
+            "identity_purposes": identity_purposes,
             "upstream_repo":    repo,
             "upstream_blob":    blob,
             # Source path under the layer's data dir — site.py uses this to
@@ -587,6 +596,7 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
             "aliases":          ",".join(aliases) if aliases else None,
             "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          _arduino_vidpids(b),
+            "identity_purposes": {f"{v}:{p}": ["compile", "runtime"] for v, p in _arduino_vidpids(b)},
             "upstream_repo":    upstream,
             "upstream_blob":    upstream,
             "src_relpath":      f"{core}/boards/{board_id}.json",
