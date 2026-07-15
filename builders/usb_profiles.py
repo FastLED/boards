@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import re
 from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
@@ -168,6 +169,9 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
                     or not entry["provenance"].get("source_revision")
                     or not isinstance(match, dict) or not isinstance(match.get("vid"), str)):
                 raise ValueError("identity requires a valid role and provenance")
+            revision = str(entry["provenance"].get("source_revision", ""))
+            if revision.lower() in {"unknown", "main", "master", "head"} or not re.fullmatch(r"[0-9a-fA-F]{40}|[0-9a-fA-F]{64}", revision):
+                raise ValueError("provenance revision must be an immutable commit")
             if entry.get("priority") is None or not isinstance(entry.get("priority"), int) or not 0 <= entry["priority"] <= 1000:
                 raise ValueError("identity requires priority")
             if match.get("pid_mask") is not None:

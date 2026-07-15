@@ -7,9 +7,10 @@ from builders.usb_profiles import build_profiles, normalize_vidpid, validate_pro
 
 def test_normalization_and_collision_preserve_provenance():
     artifact = build_profiles([
-        {"board_id": "pico", "aliases": "Pico2040, pico-alias", "vidpids": [["0x2E8A", "000A"]], "identity_purposes": {"2e8a:000a": ["runtime"]}, "upstream_blob": "pio.json"},
-        {"board_id": "other-pico", "vidpids": [["2e8a", "a"]], "upstream_blob": "arduino.json"},
+        {"board_id": "pico", "aliases": "Pico2040, pico-alias", "vidpids": [["0x2E8A", "000A"]], "identity_purposes": {"2e8a:000a": ["runtime"]}, "source_revision": "a"*40, "upstream_blob": "pio.json"},
+        {"board_id": "other-pico", "vidpids": [["2e8a", "a"]], "source_revision": "b"*40, "upstream_blob": "arduino.json"},
     ])
+    for board in []: pass
     assert normalize_vidpid("2E8A:000A") == "2e8a:000a"
     assert len(artifact["identities"]["2e8a:000a"]) == 3
     assert {x["provenance"]["source_url"] for x in artifact["identities"]["2e8a:000a"]} == {"pio.json", "arduino.json"}
@@ -18,7 +19,7 @@ def test_normalization_and_collision_preserve_provenance():
 
 def test_curated_roles_aliases_and_determinism():
     boards = [{"board_id": "x", "aliases": ["z", "a"], "vidpids": ["303a:1001"]}]
-    other = {"usb_profiles": [{"board_id": "x", "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "reset": "touch-1200", "handoff": "bootloader", "provenance": {"source_url": "curated#1", "source_revision": "r1", "source_class": "other"}}]}
+    other = {"usb_profiles": [{"board_id": "x", "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "reset": "touch-1200", "handoff": "bootloader", "provenance": {"source_url": "curated#1", "source_revision": "c"*40, "source_class": "other"}}]}
     a = build_profiles(boards, other)
     b = build_profiles(list(reversed(boards)), other)
     assert a == b
@@ -27,7 +28,7 @@ def test_curated_roles_aliases_and_determinism():
 
 
 def test_generic_bridge_identity_without_board():
-    artifact = build_profiles([], {"usb_profiles": [{"vidpid": "1d50:6018", "role": "usb_uart_bridge", "purpose": "runtime", "reset": "touch-1200", "handoff": "reconnect", "provenance": {"source_url": "curated", "source_revision": "r1", "source_class": "other"}}]})
+    artifact = build_profiles([], {"usb_profiles": [{"vidpid": "1d50:6018", "role": "usb_uart_bridge", "purpose": "runtime", "reset": "touch-1200", "handoff": "reconnect", "provenance": {"source_url": "curated", "source_revision": "d"*40, "source_class": "other"}}]})
     assert "1d50:6018" in artifact["identities"]
     assert not artifact["boards"]
 
