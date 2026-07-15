@@ -77,6 +77,8 @@ def _profile_record(board: dict[str, Any], key: str, purpose: str, source: Any) 
         raise ValueError("curated deploy role requires reset and handoff")
     if not isinstance(source, dict):
         source = {"source_url": str(source), "source_revision": None, "source_class": "upstream"}
+    source_class = source.get("source_class")
+    upstream_ambiguity = source_class in {"upstream", "platformio", "arduino", "vendors"}
     return {
         "match": board.get("match") or {"vid": key.split(":")[0], "pid": key.split(":")[1] if ":" in key and key.split(":")[1] != "*" else None, "pid_mask": None},
         "purpose": purpose,
@@ -90,7 +92,7 @@ def _profile_record(board: dict[str, Any], key: str, purpose: str, source: Any) 
         "interface": board.get("interface"),
         "provenance": source,
         "priority": int(board.get("priority", 0)),
-        "allow_ambiguous": bool(board.get("allow_ambiguous", source.get("source_class") == "upstream" if isinstance(source, dict) else False)),
+        "allow_ambiguous": bool(board.get("allow_ambiguous", upstream_ambiguity)),
     }
 
 
@@ -119,7 +121,7 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
         aliases = board.get("aliases") or []
         if isinstance(aliases, str):
             aliases = aliases.split(",")
-        profile["aliases"] = sorted({str(x) for x in aliases if str(x).strip()})
+        profile["aliases"] = sorted({str(x).strip() for x in aliases if str(x).strip()})
 
     # Curated special-role records are accepted from the `other` layer.  They
     # are additive, so collisions/alternates remain visible in identities.
@@ -133,7 +135,8 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
         purpose = rec.get("purpose", "runtime")
         for raw in (rec.get("vidpids") or [rec.get("vidpid")]):
             key, match = normalize_match(raw)
-            rec = dict(rec); rec["match"] = match
+            rec = dict(rec)
+            rec["match"] = match
             vp = key
             if board_id:
                 add(board_id, vp, purpose, rec, source)
