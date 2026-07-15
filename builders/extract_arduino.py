@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import re
 import sys
 from typing import Any
 
@@ -79,6 +80,25 @@ def _unquote(s: str | None) -> str | None:
     return s.strip() or None
 
 
+def _compiler_define_hex(value: Any, macro: str) -> str | None:
+    if not isinstance(value, str):
+        return None
+    pattern = rf"(?:^|\s)-D{re.escape(macro)}\s*=\s*(0x[0-9a-fA-F]{{1,4}})(?:\s|$)"
+    match = re.search(pattern, value)
+    return _norm_hex(match.group(1), 4) if match else None
+
+
+def _build_vid_pid(build: dict) -> tuple[str, str] | None:
+    vid = _norm_hex(build.get("vid", ""), 4)
+    pid = _norm_hex(build.get("pid", ""), 4)
+    if vid and pid:
+        return vid, pid
+
+    vid = _compiler_define_hex(build.get("usbvid"), "USBD_VID")
+    pid = _compiler_define_hex(build.get("usbpid"), "USBD_PID")
+    return (vid, pid) if vid and pid else None
+
+
 def _collect_vid_pid_pairs(board: dict) -> list[tuple[str, str]]:
     """Walk the indexed vid.N/pid.N pairs and build.vid/build.pid fallback.
     Returns a deduped list of (vid_lower, pid_lower) 4-hex strings."""
@@ -95,11 +115,11 @@ def _collect_vid_pid_pairs(board: dict) -> list[tuple[str, str]]:
         if vid and pid:
             pairs.append((vid, pid))
 
-    # build.vid + build.pid (singular, runtime default).
-    bv = _norm_hex((board.get("build") or {}).get("vid", ""), 4)
-    bp = _norm_hex((board.get("build") or {}).get("pid", ""), 4)
-    if bv and bp:
-        pairs.append((bv, bp))
+    # Singular runtime default. Arduino-Pico expresses this as compiler
+    # defines in build.usbvid/build.usbpid instead of build.vid/build.pid.
+    build_pair = _build_vid_pid(board.get("build") or {})
+    if build_pair:
+        pairs.append(build_pair)
 
     # Dedupe, preserve order.
     seen: set[tuple[str, str]] = set()
