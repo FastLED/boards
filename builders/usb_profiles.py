@@ -126,6 +126,9 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
     records = (other or {}).get("usb_profiles", []) if isinstance(other, dict) else []
     for rec in records:
         board_id = str(rec.get("board_id", "")).strip() or None
+        aliases = rec.get("aliases") or []
+        if isinstance(aliases, str):
+            aliases = aliases.split(",")
         source = rec.get("provenance") or {"source_url": rec.get("source_url"), "source_revision": rec.get("source_revision") or "unknown", "source_class": "other"}
         purpose = rec.get("purpose", "runtime")
         for raw in (rec.get("vidpids") or [rec.get("vidpid")]):
@@ -139,6 +142,12 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
                 # without a board profile.
                 item = _profile_record(rec, vp, purpose, source)
                 identities.setdefault(vp, []).append(item)
+        if board_id:
+            profile = board_profiles[board_id]
+            profile["aliases"] = sorted({
+                *profile["aliases"],
+                *(str(alias).strip() for alias in aliases if str(alias).strip()),
+            })
 
     for entries in identities.values():
         entries.sort(key=lambda x: json.dumps(x, sort_keys=True, separators=(",", ":")))
