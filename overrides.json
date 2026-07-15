@@ -9,6 +9,335 @@
   "067b": "Prolific Technology"
  },
  "vidpid_overrides": {},
+ "usb_profiles": [
+  {
+   "board_id": "rpipico",
+   "vidpid": "2e8a:0003",
+   "purpose": "bootloader",
+   "role": "bootloader_uf2",
+   "transport": "uf2",
+   "interface": "msc",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2040",
+   "generation": "pico1",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/raspberrypi/picotool/blob/282a3ca05edde0375ec3481be56d59e2c256a8ce/picoboot_connection/picoboot_connection.h#L19-L25",
+    "source_class": "vendor-rom"
+   }
+  },
+  {
+   "board_id": "rpipicow",
+   "vidpid": "2e8a:0003",
+   "purpose": "bootloader",
+   "role": "bootloader_uf2",
+   "transport": "uf2",
+   "interface": "msc",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2040",
+   "generation": "pico1-w",
+   "priority": 1000,
+   "allow_ambiguous": true,
+   "provenance": {
+    "source_url": "https://github.com/raspberrypi/picotool/blob/282a3ca05edde0375ec3481be56d59e2c256a8ce/picoboot_connection/picoboot_connection.h#L19-L25",
+    "source_class": "vendor-rom"
+   }
+  },
+  {
+   "board_id": "rpipico",
+   "aliases": ["Raspberry Pi Pico", "Raspberry Pi Pico H", "pico", "pico-h", "rpipicoh"],
+   "vidpids": ["2e8a:000a", "2e8a:010a", "2e8a:400a", "2e8a:410a", "2e8a:800a", "2e8a:810a", "2e8a:c00a", "2e8a:c10a"],
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "touch-1200",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2040",
+   "generation": "pico1",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/earlephilhower/arduino-pico/blob/49c5f9a9b7c6eaff0aad79437aac5523044da386/tools/makeboards.py",
+    "source_class": "arduino-core"
+   }
+  },
+  {
+   "board_id": "rpipicow",
+   "aliases": ["Raspberry Pi Pico W", "Raspberry Pi Pico WH", "pico-w", "pico-wh", "rpipicowh"],
+   "vidpids": ["2e8a:f00a", "2e8a:f10a"],
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "touch-1200",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2040",
+   "generation": "pico1-w",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/earlephilhower/arduino-pico/blob/49c5f9a9b7c6eaff0aad79437aac5523044da386/tools/makeboards.py",
+    "source_class": "arduino-core"
+   }
+  },
+  {
+   "board_id": "rpipico2",
+   "vidpid": "2e8a:000f",
+   "purpose": "bootloader",
+   "role": "bootloader_uf2",
+   "transport": "uf2",
+   "interface": "msc",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2350",
+   "generation": "pico2",
+   "priority": 1000,
+   "allow_ambiguous": true,
+   "provenance": {
+    "source_url": "https://github.com/raspberrypi/picotool/blob/282a3ca05edde0375ec3481be56d59e2c256a8ce/picoboot_connection/picoboot_connection.h#L19-L25",
+    "source_class": "vendor-rom"
+   }
+  },
+  {
+   "board_id": "rpipico2w",
+   "vidpid": "2e8a:000f",
+   "purpose": "bootloader",
+   "role": "bootloader_uf2",
+   "transport": "uf2",
+   "interface": "msc",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2350",
+   "generation": "pico2-w",
+   "priority": 1000,
+   "allow_ambiguous": true,
+   "provenance": {
+    "source_url": "https://github.com/raspberrypi/picotool/blob/282a3ca05edde0375ec3481be56d59e2c256a8ce/picoboot_connection/picoboot_connection.h#L19-L25",
+    "source_class": "vendor-rom"
+   }
+  },
+  {
+   "board_id": "rpipico2",
+   "aliases": ["Raspberry Pi Pico 2", "Raspberry Pi Pico 2 H", "pico-2", "pico-2-h", "rpipico2h"],
+   "vidpids": ["2e8a:000f", "2e8a:010f", "2e8a:400f", "2e8a:410f", "2e8a:800f", "2e8a:810f", "2e8a:c00f", "2e8a:c10f"],
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "touch-1200",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2350",
+   "generation": "pico2",
+   "priority": 999,
+   "allow_ambiguous": true,
+   "provenance": {
+    "source_url": "https://github.com/earlephilhower/arduino-pico/blob/49c5f9a9b7c6eaff0aad79437aac5523044da386/tools/makeboards.py",
+    "source_class": "arduino-core"
+   }
+  },
+  {
+   "board_id": "rpipico2w",
+   "aliases": ["Raspberry Pi Pico 2 W", "Raspberry Pi Pico 2 WH", "pico-2-w", "pico-2-wh", "rpipico2wh"],
+   "vidpids": ["2e8a:f00f", "2e8a:f10f"],
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "touch-1200",
+   "handoff": "bootloader",
+   "platform": "raspberrypi",
+   "family": "rp2350",
+   "generation": "pico2-w",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/earlephilhower/arduino-pico/blob/49c5f9a9b7c6eaff0aad79437aac5523044da386/tools/makeboards.py",
+    "source_class": "arduino-core"
+   }
+  },
+  {
+   "vidpid": "303a:0002",
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "platform": "espressif32",
+   "family": "esp32-native-usb",
+   "priority": 900,
+   "provenance": {
+    "source_url": "https://github.com/espressif/arduino-esp32/blob/701c6ff51b309523d50fd5a96ed8f1ba1cbde0f7/docs/en/api/usb.rst",
+    "source_class": "arduino-core"
+   }
+  },
+  {
+   "vidpid": "303a:1001",
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "platform": "espressif32",
+   "family": "esp32-usb-serial-jtag",
+   "priority": 900,
+   "provenance": {
+    "source_url": "https://github.com/espressif/openocd-esp32/blob/f67d3e9c82d648ad26adcf6140f47a3725782fe3/doc/usb_adapters/esp_usb_jtag/303a_1001_esp_usb_jtag.txt",
+    "source_class": "vendor-debug-tool"
+   }
+  },
+  {
+   "vidpid": "10c4:ea60",
+   "purpose": "runtime",
+   "role": "usb_uart_bridge",
+   "transport": "serial",
+   "interface": "uart",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "family": "cp210x",
+   "priority": 800,
+   "provenance": {
+    "source_url": "https://github.com/torvalds/linux/blob/58717b2a1365d06c8c64b72aa948541b53fe31eb/drivers/usb/serial/cp210x.c",
+    "source_class": "kernel-driver"
+   }
+  },
+  {
+   "vidpid": "1a86:7523",
+   "purpose": "runtime",
+   "role": "usb_uart_bridge",
+   "transport": "serial",
+   "interface": "uart",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "family": "ch340",
+   "priority": 800,
+   "provenance": {
+    "source_url": "https://github.com/torvalds/linux/blob/58717b2a1365d06c8c64b72aa948541b53fe31eb/drivers/usb/serial/ch341.c",
+    "source_class": "kernel-driver"
+   }
+  },
+  {
+   "vidpid": "0403:6001",
+   "purpose": "runtime",
+   "role": "usb_uart_bridge",
+   "transport": "serial",
+   "interface": "uart",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "family": "ft232",
+   "priority": 800,
+   "provenance": {
+    "source_url": "https://github.com/torvalds/linux/blob/58717b2a1365d06c8c64b72aa948541b53fe31eb/drivers/usb/serial/ftdi_sio_ids.h",
+    "source_class": "kernel-driver"
+   }
+  },
+  {
+   "vidpid": "03eb:6124",
+   "purpose": "bootloader",
+   "role": "recovery_transport",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "family": "at91sam-samba",
+   "priority": 900,
+   "provenance": {
+    "source_url": "https://github.com/atmelcorp/micro-sam-ba/blob/ce830769b66e73dc1046a879914f5b30ce0cac1b/README.md",
+    "source_class": "vendor-loader"
+   }
+  },
+  {
+   "vidpids": ["16c0:0483", "16c0:0489", "16c0:048a", "16c0:048b", "16c0:048c", "16c0:04d5"],
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "touch-1200",
+   "handoff": "bootloader",
+   "platform": "teensy",
+   "family": "teensy",
+   "priority": 900,
+   "allow_ambiguous": true,
+   "provenance": {
+    "source_url": "https://github.com/PaulStoffregen/cores/blob/7f107ee0a309f3813ed13f0d8f615497eca2ee49/teensy4/usb_desc.h",
+    "source_class": "arduino-core"
+   }
+  },
+  {
+   "vidpid": "16c0:0478",
+   "purpose": "bootloader",
+   "role": "bootloader_hid",
+   "transport": "hid",
+   "interface": "hid",
+   "reset": "touch-1200",
+   "handoff": "bootloader",
+   "platform": "teensy",
+   "family": "teensy",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/PaulStoffregen/teensy_loader_cli/blob/03fca4156c244c7ad36bd368cf6e24531dbd566a/teensy_loader_cli.c",
+    "source_class": "vendor-loader"
+   }
+  },
+  {
+   "board_id": "lpc845brk",
+   "vidpid": "16c0:0483",
+   "purpose": "runtime",
+   "role": "runtime_cdc",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "platform": "nxplpc",
+   "family": "lpc8xx-vcom",
+   "priority": 1000,
+   "allow_ambiguous": true,
+   "provenance": {
+    "source_url": "https://github.com/FastLED/framework-arduino-lpc8xx/blob/9e8be028892e6eeb4796b46d0069dbb1a39a47a9/README.md",
+    "source_class": "board-framework"
+   }
+  },
+  {
+   "vidpids": ["1fc9:0090", "1fc9:0132", "1fc9:0143"],
+   "purpose": "probe",
+   "role": "debug_probe",
+   "transport": "swd",
+   "interface": "hid",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "platform": "nxplpc",
+   "family": "lpc-link",
+   "priority": 900,
+   "provenance": {
+    "source_url": "https://github.com/FastLED/fbuild/blob/1f843fa645945d4d82584b2a2990d4818e848741/docs/usb-vidpid-audit.md",
+    "source_class": "hardware-evidence"
+   }
+  },
+  {
+   "vidpid": "1fc9:000c",
+   "purpose": "bootloader",
+   "role": "recovery_transport",
+   "transport": "dfu",
+   "interface": "dfu",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "platform": "nxplpc",
+   "family": "lpc-link2",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/FastLED/fbuild/blob/1f843fa645945d4d82584b2a2990d4818e848741/docs/usb-vidpid-audit.md",
+    "source_class": "hardware-evidence"
+   }
+  }
+ ],
  "vidpid_board_links": [
   {
    "id": "teensy-usb-modes",
