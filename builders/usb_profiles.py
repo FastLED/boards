@@ -155,7 +155,7 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
     if artifact.get("schema_version") != SCHEMA_VERSION or not isinstance(artifact.get("metadata"), dict):
         raise ValueError("invalid USB profile schema metadata")
     for key, entries in artifact.get("identities", {}).items():
-        if normalize_vidpid(key) != key or not isinstance(entries, list):
+        if normalize_match(key)[0] != key or not isinstance(entries, list):
             raise ValueError(f"invalid identity key {key!r}")
         for entry in entries:
             if entry.get("purpose") not in PURPOSES or entry.get("role") not in DEVICE_ROLES or not isinstance(entry.get("provenance"), dict):
