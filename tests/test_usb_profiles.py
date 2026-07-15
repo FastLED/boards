@@ -41,3 +41,11 @@ def test_invalid_role_rejected():
 def test_validation_rejects_unknown_identity():
     with pytest.raises(ValueError):
         validate_profiles({"schema_version": 1, "metadata": {}, "identities": {}, "boards": {"x": {"identities": {"runtime": ["1:2"]}}}})
+
+
+def test_validation_rejects_tampered_transport_and_match():
+    artifact = build_profiles([{"board_id": "x", "vidpids": ["1:2"], "source_revision": "e"*40}])
+    entry = artifact["identities"]["0001:0002"][0]
+    entry["transport"] = "bogus"
+    with pytest.raises(ValueError):
+        validate_profiles(artifact)

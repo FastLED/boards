@@ -169,6 +169,18 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
                     or not entry["provenance"].get("source_revision")
                     or not isinstance(match, dict) or not isinstance(match.get("vid"), str)):
                 raise ValueError("identity requires a valid role and provenance")
+            if entry.get("transport") not in TRANSPORTS or entry.get("interface") not in INTERFACES:
+                raise ValueError("invalid transport/interface")
+            if entry.get("reset") not in RESETS | {"unknown"} or entry.get("handoff") not in HANDOFFS | {"unknown"}:
+                raise ValueError("invalid reset/handoff")
+            if entry.get("role") != "runtime_cdc" and (entry.get("reset") == "unknown" or entry.get("handoff") == "unknown"):
+                raise ValueError("deploy-ready identity requires reset/handoff")
+            vid = match.get("vid", "")
+            pid = match.get("pid")
+            if not re.fullmatch(r"[0-9a-fA-F]{4}", vid):
+                raise ValueError("invalid match VID")
+            if pid is not None and not re.fullmatch(r"[0-9a-fA-F]{4}", str(pid)):
+                raise ValueError("invalid match PID")
             revision = str(entry["provenance"].get("source_revision", ""))
             if revision.lower() in {"unknown", "main", "master", "head"} or not re.fullmatch(r"[0-9a-fA-F]{40}|[0-9a-fA-F]{64}", revision):
                 raise ValueError("provenance revision must be an immutable commit")
