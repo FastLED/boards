@@ -15,13 +15,38 @@ def test_normalization_and_collision_preserve_provenance():
 
 
 def test_curated_roles_aliases_and_determinism():
-    boards = [{"board_id": "x", "aliases": ["z", "a"], "vidpids": ["303a:1001"]}]
+    boards = [{"board_id": "x", "aliases": ["z", "a"], "vidpids": ["303a:1001"], "primary_compile_identity": "303a:1001"}]
     other = {"usb_profiles": [{"board_id": "x", "aliases": ["x-with-headers", "a"], "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "reset": "touch-1200", "handoff": "bootloader", "provenance": {"source_url": "curated#1", "source_revision": "c"*40, "source_class": "other"}}]}
     a = build_profiles(boards, other)
     b = build_profiles(list(reversed(boards)), other)
     assert a == b
     assert a["boards"]["x"]["aliases"] == ["a", "x-with-headers", "z"]
     assert a["boards"]["x"]["identities"]["bootloader"] == ["303a:0002"]
+    assert a["boards"]["x"]["primary_compile_identity"] == "303a:1001"
+
+
+def test_primary_compile_identity_must_reference_compile_role():
+    artifact = build_profiles([{
+        "board_id": "x",
+        "vidpids": ["303a:1001"],
+        "identity_purposes": {"303a:1001": ["runtime"]},
+        "primary_compile_identity": "303a:1001",
+        "source_revision": "f" * 40,
+    }])
+    with pytest.raises(ValueError, match="primary compile identity"):
+        validate_profiles(artifact)
+
+
+def test_platformio_primary_compile_identity_wins_independent_of_input_order():
+    boards = [
+        {"board_id": "x", "layer": "arduino", "aliases": ["arduino-x"], "vidpids": ["feed:0001"], "primary_compile_identity": "feed:0001", "source_revision": "a" * 40},
+        {"board_id": "x", "layer": "platformio", "aliases": ["pio-x"], "vidpids": ["feed:0002"], "primary_compile_identity": "feed:0002", "source_revision": "b" * 40},
+    ]
+    forward = build_profiles(boards)
+    reverse = build_profiles(list(reversed(boards)))
+    assert forward == reverse
+    assert forward["boards"]["x"]["primary_compile_identity"] == "feed:0002"
+    assert forward["boards"]["x"]["aliases"] == ["arduino-x", "pio-x"]
 
 
 def test_generic_bridge_identity_without_board():

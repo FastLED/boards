@@ -99,11 +99,16 @@ def _profile_record(board: dict[str, Any], key: str, purpose: str, source: Any) 
 def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str, Any]:
     identities: dict[str, list[dict[str, Any]]] = {}
     board_profiles: dict[str, dict[str, Any]] = {}
+    primary_compile_identities: dict[str, tuple[int, str]] = {}
 
     def add(board_id: str, vp: str, role: str, record: dict[str, Any], source: str) -> None:
         item = _profile_record(record, vp, role, source)
         identities.setdefault(vp, []).append(item)
-        profile = board_profiles.setdefault(board_id, {"identities": {r: [] for r in PURPOSES}, "aliases": []})
+        profile = board_profiles.setdefault(board_id, {
+            "identities": {r: [] for r in PURPOSES},
+            "aliases": [],
+            "primary_compile_identity": None,
+        })
         if vp not in profile["identities"][role]:
             profile["identities"][role].append(vp)
 
@@ -117,11 +122,27 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
             key_purposes = purposes.get(vp, ["runtime", "compile"])
             for purpose in key_purposes:
                 add(board_id, vp, purpose, board, source)
-        profile = board_profiles.setdefault(board_id, {"identities": {r: [] for r in PURPOSES}, "aliases": []})
+        profile = board_profiles.setdefault(board_id, {
+            "identities": {r: [] for r in PURPOSES},
+            "aliases": [],
+            "primary_compile_identity": None,
+        })
+        primary_compile_identity = board.get("primary_compile_identity")
+        if primary_compile_identity:
+            candidate = normalize_vidpid(primary_compile_identity)
+            source_priority = {"platformio": 2, "arduino": 1}.get(
+                str(board.get("layer", "")).lower(), 0
+            )
+            current = primary_compile_identities.get(board_id)
+            if current is None or (source_priority, candidate) > current:
+                primary_compile_identities[board_id] = (source_priority, candidate)
         aliases = board.get("aliases") or []
         if isinstance(aliases, str):
             aliases = aliases.split(",")
-        profile["aliases"] = sorted({str(x).strip() for x in aliases if str(x).strip()})
+        profile["aliases"] = sorted({
+            *profile["aliases"],
+            *(str(x).strip() for x in aliases if str(x).strip()),
+        })
 
     # Curated special-role records are accepted from the `other` layer.  They
     # are additive, so collisions/alternates remain visible in identities.
@@ -154,6 +175,8 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
 
     for entries in identities.values():
         entries.sort(key=lambda x: json.dumps(x, sort_keys=True, separators=(",", ":")))
+    for board_id, (_, identity) in primary_compile_identities.items():
+        board_profiles[board_id]["primary_compile_identity"] = identity
     for profile in board_profiles.values():
         for role in PURPOSES:
             profile["identities"][role].sort()
@@ -218,6 +241,9 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
             for key in keys:
                 if key not in artifact["identities"]:
                     raise ValueError(f"board references unknown identity {key}")
+        primary = profile.get("primary_compile_identity")
+        if primary is not None and primary not in profile["identities"].get("compile", []):
+            raise ValueError(f"board primary compile identity is not a compile identity: {primary}")
 
 
 def write_profiles(boards: list[dict[str, Any]], other: Any, output) -> dict[str, Any]:
