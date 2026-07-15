@@ -39,7 +39,7 @@ import shutil
 import subprocess
 import sys
 
-from usb_profiles import write_profiles
+from usb_profiles import artifact_sha256, write_profiles
 
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -216,8 +216,8 @@ def orchestrate(
         "--db",  str(public_dir / "boards.db"),
         "--out", str(public_dir / "usb-ids.json"),
     )
-    write_profiles(boards_data.get("boards") or [], other_data,
-                   public_dir / "usb-profiles.json")
+    usb_profiles = write_profiles(boards_data.get("boards") or [], other_data,
+                                  public_dir / "usb-profiles.json")
 
     # 8: _meta.json (also written into public/ for Vite to serve)
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
@@ -243,6 +243,8 @@ def orchestrate(
         "usb_ids_download": "usb-ids.json",
         "usb_vids_proto_zstd": "usb-vids.proto.zstd",
         "usb_profiles": "usb-profiles.json",
+        "usb_profiles_schema_version": usb_profiles["schema_version"],
+        "usb_profiles_sha256": artifact_sha256(usb_profiles),
         "loader":           "vite",
         "boards_root":      "boards/",
     }

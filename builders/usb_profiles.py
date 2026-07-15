@@ -7,11 +7,15 @@ board relationships for fbuild's resolver.
 from __future__ import annotations
 
 import json
+import hashlib
 from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
 ROLES = {"compile", "runtime", "bootloader", "probe"}
 PURPOSES = ROLES
+DEVICE_ROLES = {"runtime_cdc", "usb_uart_bridge", "bootloader_msc", "bootloader_hid", "bootloader_dfu", "bootloader_uf2", "debug_probe", "recovery_transport"}
+RESETS = {None, "touch-1200", "hardware", "software", "manual"}
+HANDOFFS = {None, "reconnect", "reset", "bootloader", "none"}
 
 
 def normalize_vidpid(value: Any) -> str:
@@ -37,10 +41,16 @@ def _pairs(values: Any) -> Iterable[str]:
     return (normalize_vidpid(v) for v in values)
 
 
-def _profile_record(board: dict[str, Any], key: str, role: str, source: str) -> dict[str, Any]:
-    if role not in ROLES:
+def _profile_record(board: dict[str, Any], key: str, purpose: str, source: str) -> dict[str, Any]:
+    if purpose not in PURPOSES:
+        raise ValueError(f"invalid USB profile purpose {purpose!r}")
+    role = board.get("role") or {"runtime": "runtime_cdc", "compile": "runtime_cdc", "bootloader": "bootloader_uf2", "probe": "debug_probe"}[purpose]
+    if role not in DEVICE_ROLES:
         raise ValueError(f"invalid USB profile role {role!r}")
+    if board.get("reset") not in RESETS or board.get("handoff") not in HANDOFFS:
+        raise ValueError("invalid USB reset or handoff")
     return {
+        "purpose": purpose,
         "role": role,
         "transport": str(board.get("transport", "usb")),
         "reset": board.get("reset"),
@@ -69,24 +79,32 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
         if not board_id:
             continue
         source = str(board.get("upstream_blob") or board.get("source") or board.get("layer", "upstream"))
+        purposes = board.get("identity_purposes") or {}
         for vp in _pairs(board.get("vidpids")):
-            for role in (board.get("roles") or ["runtime", "compile"]):
-                add(board_id, vp, role, board, source)
+            key_purposes = purposes.get(vp, ["runtime", "compile"])
+            for purpose in key_purposes:
+                add(board_id, vp, purpose, board, source)
         profile = board_profiles.setdefault(board_id, {"identities": {r: [] for r in PURPOSES}, "aliases": []})
         aliases = board.get("aliases") or []
+        if isinstance(aliases, str):
+            aliases = aliases.split(",")
         profile["aliases"] = sorted({str(x) for x in aliases if str(x).strip()})
 
     # Curated special-role records are accepted from the `other` layer.  They
     # are additive, so collisions/alternates remain visible in identities.
     records = (other or {}).get("usb_profiles", []) if isinstance(other, dict) else []
     for rec in records:
-        board_id = str(rec.get("board_id", "")).strip()
-        if not board_id:
-            continue
+        board_id = str(rec.get("board_id", "")).strip() or None
         source = str(rec.get("provenance") or rec.get("source") or "other")
-        role = rec.get("role", "runtime")
+        purpose = rec.get("purpose", "runtime")
         for vp in _pairs(rec.get("vidpids") or rec.get("vidpid")):
-            add(board_id, vp, role, rec, source)
+            if board_id:
+                add(board_id, vp, purpose, rec, source)
+            else:
+                # Generic bridge/probe identities remain addressable even
+                # without a board profile.
+                item = _profile_record(rec, vp, purpose, source)
+                identities.setdefault(vp, []).append(item)
 
     for entries in identities.values():
         entries.sort(key=lambda x: json.dumps(x, sort_keys=True, separators=(",", ":")))
@@ -111,7 +129,7 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
         if normalize_vidpid(key) != key or not isinstance(entries, list):
             raise ValueError(f"invalid identity key {key!r}")
         for entry in entries:
-            if entry.get("role") not in ROLES or not entry.get("provenance"):
+            if entry.get("purpose") not in PURPOSES or entry.get("role") not in DEVICE_ROLES or not entry.get("provenance"):
                 raise ValueError("identity requires a valid role and provenance")
     for board_id, profile in artifact.get("boards", {}).items():
         if not board_id or not isinstance(profile.get("identities"), dict):
@@ -130,3 +148,8 @@ def write_profiles(boards: list[dict[str, Any]], other: Any, output) -> dict[str
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(artifact, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     return artifact
+
+
+def artifact_sha256(artifact: dict[str, Any]) -> str:
+    raw = json.dumps(artifact, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(raw).hexdigest()
