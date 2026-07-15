@@ -539,11 +539,30 @@ def _arduino_vidpids(b: dict) -> list[list[str]]:
         pid = _norm_hex(pd.get(k, ""), 4)
         if vid and pid:
             pairs.append([vid, pid])
-    bv = _norm_hex((b.get("build") or {}).get("vid", ""), 4)
-    bp = _norm_hex((b.get("build") or {}).get("pid", ""), 4)
-    if bv and bp and [bv, bp] not in pairs:
-        pairs.append([bv, bp])
+    primary = _arduino_primary_compile_identity(b)
+    if primary:
+        bv, bp = primary.split(":", 1)
+        if [bv, bp] not in pairs:
+            pairs.append([bv, bp])
     return pairs
+
+
+def _compiler_define_hex(value: Any, macro: str) -> str | None:
+    if not isinstance(value, str):
+        return None
+    pattern = rf"(?:^|\s)-D{re.escape(macro)}\s*=\s*(0x[0-9a-fA-F]{{1,4}})(?:\s|$)"
+    match = re.search(pattern, value)
+    return _norm_hex(match.group(1), 4) if match else None
+
+
+def _arduino_primary_compile_identity(board: dict) -> str | None:
+    build = board.get("build") or {}
+    vid = _norm_hex(build.get("vid", ""), 4)
+    pid = _norm_hex(build.get("pid", ""), 4)
+    if not (vid and pid):
+        vid = _compiler_define_hex(build.get("usbvid"), "USBD_VID")
+        pid = _compiler_define_hex(build.get("usbpid"), "USBD_PID")
+    return f"{vid}:{pid}" if vid and pid else None
 
 
 def _extract_arduino(root: pathlib.Path) -> list[dict]:
@@ -573,8 +592,7 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
         kw_sink: set[str] = set()
         _collect_keywords(b, kw_sink)
         aliases = _extract_aliases(b)
-        build_vid = _norm_hex(build.get("vid", ""), 4)
-        build_pid = _norm_hex(build.get("pid", ""), 4)
+        primary_compile_identity = _arduino_primary_compile_identity(b)
         out.append({
             "layer":            "arduino",
             "sublayer":         core,
@@ -600,9 +618,7 @@ def _extract_arduino(root: pathlib.Path) -> list[dict]:
             "keywords":         " ".join(sorted(kw_sink)) if kw_sink else None,
             "vidpids":          _arduino_vidpids(b),
             "identity_purposes": {f"{v}:{p}": ["compile", "runtime"] for v, p in _arduino_vidpids(b)},
-            "primary_compile_identity": (
-                f"{build_vid}:{build_pid}" if build_vid and build_pid else None
-            ),
+            "primary_compile_identity": primary_compile_identity,
             "upstream_repo":    upstream,
             "upstream_blob":    upstream,
             "src_relpath":      f"{core}/boards/{board_id}.json",
