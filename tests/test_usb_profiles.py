@@ -19,11 +19,11 @@ def test_normalization_and_collision_preserve_provenance():
 
 def test_curated_roles_aliases_and_determinism():
     boards = [{"board_id": "x", "aliases": ["z", "a"], "vidpids": ["303a:1001"]}]
-    other = {"usb_profiles": [{"board_id": "x", "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "reset": "touch-1200", "handoff": "bootloader", "provenance": {"source_url": "curated#1", "source_revision": "c"*40, "source_class": "other"}}]}
+    other = {"usb_profiles": [{"board_id": "x", "aliases": ["x-with-headers", "a"], "vidpid": "303a:0002", "role": "bootloader_uf2", "purpose": "bootloader", "reset": "touch-1200", "handoff": "bootloader", "provenance": {"source_url": "curated#1", "source_revision": "c"*40, "source_class": "other"}}]}
     a = build_profiles(boards, other)
     b = build_profiles(list(reversed(boards)), other)
     assert a == b
-    assert a["boards"]["x"]["aliases"] == ["a", "z"]
+    assert a["boards"]["x"]["aliases"] == ["a", "x-with-headers", "z"]
     assert a["boards"]["x"]["identities"]["bootloader"] == ["303a:0002"]
 
 
