@@ -16,6 +16,8 @@ PURPOSES = ROLES
 DEVICE_ROLES = {"runtime_cdc", "usb_uart_bridge", "bootloader_msc", "bootloader_hid", "bootloader_dfu", "bootloader_uf2", "debug_probe", "recovery_transport"}
 RESETS = {None, "touch-1200", "hardware", "software", "manual"}
 HANDOFFS = {None, "reconnect", "reset", "bootloader", "none"}
+TRANSPORTS = {"usb", "serial", "hid", "msc", "dfu", "uf2", "jtag", "swd"}
+INTERFACES = {None, "cdc", "uart", "msc", "hid", "dfu", "uf2", "jtag", "swd", "unknown"}
 
 
 def normalize_vidpid(value: Any) -> str:
@@ -66,6 +68,8 @@ def _profile_record(board: dict[str, Any], key: str, purpose: str, source: Any) 
         raise ValueError(f"invalid USB profile role {role!r}")
     reset = board.get("reset", "unknown")
     handoff = board.get("handoff", "unknown")
+    if board.get("transport", "usb") not in TRANSPORTS or board.get("interface") not in INTERFACES:
+        raise ValueError("invalid USB transport or interface")
     if reset not in RESETS | {"unknown"} or handoff not in HANDOFFS | {"unknown"}:
         raise ValueError("invalid USB reset or handoff")
     if role != "runtime_cdc" and (reset == "unknown" or handoff == "unknown"):
@@ -104,7 +108,7 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
         board_id = str(board.get("board_id", "")).strip()
         if not board_id:
             continue
-        source = {"source_url": board.get("upstream_blob"), "source_revision": board.get("source_revision"), "source_class": board.get("layer", "upstream")}
+        source = {"source_url": board.get("upstream_blob"), "source_revision": board.get("source_revision") or "unknown", "source_class": board.get("layer", "upstream")}
         purposes = board.get("identity_purposes") or {}
         for vp in _pairs(board.get("vidpids")):
             key_purposes = purposes.get(vp, ["runtime", "compile"])
@@ -121,7 +125,7 @@ def build_profiles(boards: list[dict[str, Any]], other: Any = None) -> dict[str,
     records = (other or {}).get("usb_profiles", []) if isinstance(other, dict) else []
     for rec in records:
         board_id = str(rec.get("board_id", "")).strip() or None
-        source = rec.get("provenance") or {"source_url": rec.get("source_url"), "source_revision": rec.get("source_revision"), "source_class": "other"}
+        source = rec.get("provenance") or {"source_url": rec.get("source_url"), "source_revision": rec.get("source_revision") or "unknown", "source_class": "other"}
         purpose = rec.get("purpose", "runtime")
         for raw in (rec.get("vidpids") or [rec.get("vidpid")]):
             key, match = normalize_match(raw)
@@ -158,10 +162,22 @@ def validate_profiles(artifact: dict[str, Any]) -> None:
         if normalize_match(key)[0] != key or not isinstance(entries, list):
             raise ValueError(f"invalid identity key {key!r}")
         for entry in entries:
-            if entry.get("purpose") not in PURPOSES or entry.get("role") not in DEVICE_ROLES or not isinstance(entry.get("provenance"), dict):
+            match = entry.get("match")
+            if (entry.get("purpose") not in PURPOSES or entry.get("role") not in DEVICE_ROLES
+                    or not isinstance(entry.get("provenance"), dict)
+                    or not entry["provenance"].get("source_revision")
+                    or not isinstance(match, dict) or not isinstance(match.get("vid"), str)):
                 raise ValueError("identity requires a valid role and provenance")
-            if entry.get("priority") is None:
+            if entry.get("priority") is None or not isinstance(entry.get("priority"), int) or not 0 <= entry["priority"] <= 1000:
                 raise ValueError("identity requires priority")
+            if match.get("pid_mask") is not None:
+                try:
+                    if len(str(match["pid_mask"])) != 4 or int(str(match["pid_mask"]), 16) == 0:
+                        raise ValueError
+                except ValueError as exc:
+                    raise ValueError("invalid pid_mask") from exc
+            if not isinstance(entry.get("allow_ambiguous"), bool):
+                raise ValueError("allow_ambiguous must be boolean")
         priorities = [(e.get("priority"), e.get("purpose"), e.get("role")) for e in entries]
         if len(priorities) != len(set(priorities)) and not any(e.get("allow_ambiguous") for e in entries):
             raise ValueError(f"ambiguous identity records for {key}")
