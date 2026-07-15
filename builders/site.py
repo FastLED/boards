@@ -39,7 +39,10 @@ import shutil
 import subprocess
 import sys
 
-from usb_profiles import artifact_sha256, write_profiles
+try:  # direct script execution and package imports are both supported
+    from .usb_profiles import artifact_sha256, write_profiles
+except ImportError:
+    from usb_profiles import artifact_sha256, write_profiles
 
 
 HERE = pathlib.Path(__file__).resolve().parent
