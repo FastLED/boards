@@ -20,17 +20,23 @@
   {"vid": "2e8a", "pid": "000a", "product": "Seeed Studio XIAO RP2040",
    "_source": "earlephilhower/arduino-pico/tools/json/seeed_xiao_rp2040.json"},
 
-  {"vid": "2e8a", "pid": "0003", "product": "Raspberry Pi RP2 BOOTSEL (RP2040/RP2350)",
-   "_source": "raspberrypi/pico-sdk/src/boards/include/boards/pico.h; Raspberry Pi UF2 ROM documentation",
-   "_note": "Stock ROM mass-storage mode (RPI-RP2); this is not the application CDC endpoint."},
+  {"vid": "2e8a", "pid": "0003", "product": "Raspberry Pi RP2040 BOOTSEL",
+   "_source": "raspberrypi/picotool picoboot_connection.h at 282a3ca05edde0375ec3481be56d59e2c256a8ce",
+   "_note": "RP2040 ROM mass-storage mode (RPI-RP2); this is not an application CDC endpoint and is not the RP2350 BOOTSEL identity."},
 
   {"vid": "2e8a", "pid": "000a", "product": "Raspberry Pi Pico (runtime USB CDC)",
    "_source": "earlephilhower/arduino-pico/boards.txt (rpipico); Raspberry Pi pico-sdk USB CDC defaults",
    "_note": "Default Arduino-Pico application CDC identity; use this VID:PID for strict serial-port matching."},
 
-  {"vid": "2e8a", "pid": "000f", "product": "Raspberry Pi Pico 2 (runtime USB CDC)",
-   "_source": "earlephilhower/arduino-pico/boards.txt (rpipico2); Raspberry Pi pico-sdk RP2350 USB defaults",
-   "_note": "Default Arduino-Pico RP2350 application CDC identity; Pico 2 BOOTSEL still enumerates as 2e8a:0003."},
+  {"vid": "2e8a", "pid": "000f", "product": "Raspberry Pi RP2350 BOOTSEL / Pico 2 runtime USB",
+   "_source": "raspberrypi/picotool picoboot_connection.h at 282a3ca05edde0375ec3481be56d59e2c256a8ce; earlephilhower/arduino-pico tools/makeboards.py at 49c5f9a9b7c6eaff0aad79437aac5523044da386",
+   "_note": "Intentional collision: RP2350 ROM BOOTSEL uses MSC while the default Arduino-Pico Pico 2 application uses CDC. Match the USB interface as well as VID:PID."},
+
+  {"vid": "2e8a", "pid": "f00a", "product": "Raspberry Pi Pico W (runtime USB CDC)",
+   "_source": "earlephilhower/arduino-pico tools/makeboards.py at 49c5f9a9b7c6eaff0aad79437aac5523044da386"},
+
+  {"vid": "2e8a", "pid": "f00f", "product": "Raspberry Pi Pico 2 W (runtime USB CDC)",
+   "_source": "earlephilhower/arduino-pico tools/makeboards.py at 49c5f9a9b7c6eaff0aad79437aac5523044da386"},
 
   {"vid": "2886", "pid": "0062", "product": "Seeed Studio XIAO MG24",
    "_source": "SiliconLabsSoftware/arduino/boards.txt"},

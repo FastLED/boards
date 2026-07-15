@@ -12,6 +12,18 @@ outputs).
 |---|---|---|
 | `overrides.json` | Layer-4 **overrides**: VID-vendor + VIDPID-product replacements that UNCONDITIONALLY win over earlier layers (no warnings/error logged). | `builders/extract_other.py` |
 | `teensy_pids.json` | Curated flat-record table of every PJRC Teensy USB mode (17 modes) + 2 bootloader PIDs + the NXP IMXRT 1062 serial-download recovery PID. | `builders/extract_other.py` (flat-record path) |
+| `fbuild_board_backfill.json` | Product labels for identities missing or conflated in upstream display data. | `builders/extract_other.py` (flat-record path) |
+
+The `usb_profiles` array in `overrides.json` is the semantic deploy layer. It
+records exact identities, typed runtime/bootloader/probe roles, reset and
+handoff behavior, interface type, board aliases, and immutable primary-source
+URLs. Production consumers must use the generated `usb-profiles.json`; these
+records are not a fallback table to copy into application code.
+
+Pico H/WH and Pico 2 H/WH are mechanical aliases of their non-header variants,
+so they share the same profiles. RP2040 BOOTSEL is `2e8a:0003`; RP2350 BOOTSEL
+is `2e8a:000f`. Pico 2's default Arduino runtime also uses `2e8a:000f`, an
+intentional collision disambiguated by MSC versus CDC interface type.
 
 ## `overrides.json`
 
