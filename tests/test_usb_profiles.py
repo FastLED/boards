@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from builders.usb_profiles import build_profiles, normalize_vidpid, validate_profiles
@@ -7,10 +5,9 @@ from builders.usb_profiles import build_profiles, normalize_vidpid, validate_pro
 
 def test_normalization_and_collision_preserve_provenance():
     artifact = build_profiles([
-        {"board_id": "pico", "aliases": "Pico2040, pico-alias", "vidpids": [["0x2E8A", "000A"]], "identity_purposes": {"2e8a:000a": ["runtime"]}, "source_revision": "a"*40, "upstream_blob": "pio.json"},
-        {"board_id": "other-pico", "vidpids": [["2e8a", "a"]], "source_revision": "b"*40, "upstream_blob": "arduino.json"},
+        {"board_id": "pico", "layer": "platformio", "aliases": "Pico2040, pico-alias", "vidpids": [["0x2E8A", "000A"]], "identity_purposes": {"2e8a:000a": ["runtime"]}, "source_revision": "a"*40, "upstream_blob": "pio.json"},
+        {"board_id": "other-pico", "layer": "arduino", "vidpids": [["2e8a", "a"]], "source_revision": "b"*40, "upstream_blob": "arduino.json"},
     ])
-    for board in []: pass
     assert normalize_vidpid("2E8A:000A") == "2e8a:000a"
     assert len(artifact["identities"]["2e8a:000a"]) == 3
     assert {x["provenance"]["source_url"] for x in artifact["identities"]["2e8a:000a"]} == {"pio.json", "arduino.json"}
