@@ -200,6 +200,17 @@ def orchestrate(
     )
     boards_data = json.loads(boards_path.read_text(encoding="utf-8"))
     other_data = json.loads((normalized / "other.json").read_text(encoding="utf-8"))
+    layer_revisions = {}
+    for layer in ("vendors", "arduino", "platformio", "other"):
+        for candidate in (data_root / layer / "_meta.json", data_root / layer / "data" / "_meta.json"):
+            if candidate.is_file():
+                try:
+                    layer_revisions[layer] = json.loads(candidate.read_text(encoding="utf-8")).get("source_revision") or json.loads(candidate.read_text(encoding="utf-8")).get("commit") or "unknown"
+                except json.JSONDecodeError:
+                    layer_revisions[layer] = "unknown"
+                break
+    for board in boards_data.get("boards") or []:
+        board.setdefault("source_revision", layer_revisions.get(board.get("layer"), "unknown"))
 
     # 6b: stage the per-board JSONs as Vite static assets
     boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
