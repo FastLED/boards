@@ -39,6 +39,8 @@ import shutil
 import subprocess
 import sys
 
+from usb_profiles import write_profiles
+
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent
@@ -133,6 +135,7 @@ def _clean_public(public_dir: pathlib.Path) -> None:
         "site.db",
         "usb-ids.json",
         "usb-vids.proto.zstd",
+        "usb-profiles.json",
         "_meta.json",
     ):
         f = public_dir / name
@@ -193,6 +196,7 @@ def orchestrate(
         "--out", str(boards_path),
     )
     boards_data = json.loads(boards_path.read_text(encoding="utf-8"))
+    other_data = json.loads((normalized / "other.json").read_text(encoding="utf-8"))
 
     # 6b: stage the per-board JSONs as Vite static assets
     boards_copied = _copy_board_jsons(boards_data.get("boards") or [],
@@ -212,6 +216,8 @@ def orchestrate(
         "--db",  str(public_dir / "boards.db"),
         "--out", str(public_dir / "usb-ids.json"),
     )
+    write_profiles(boards_data.get("boards") or [], other_data,
+                   public_dir / "usb-profiles.json")
 
     # 8: _meta.json (also written into public/ for Vite to serve)
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
@@ -236,6 +242,7 @@ def orchestrate(
         "database":         "boards.db",
         "usb_ids_download": "usb-ids.json",
         "usb_vids_proto_zstd": "usb-vids.proto.zstd",
+        "usb_profiles": "usb-profiles.json",
         "loader":           "vite",
         "boards_root":      "boards/",
     }
