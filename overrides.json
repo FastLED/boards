@@ -306,7 +306,7 @@
    }
   },
   {
-   "vidpids": ["1fc9:0090", "1fc9:0132", "1fc9:0143"],
+   "vidpids": ["1fc9:0090", "1fc9:0143"],
    "purpose": "probe",
    "role": "debug_probe",
    "transport": "swd",
@@ -322,6 +322,25 @@
    }
   },
   {
+   "board_id": "lpc845brk",
+   "vidpid": "1fc9:0132",
+   "purpose": "probe",
+   "role": "debug_probe",
+   "transport": "swd",
+   "interface": "hid",
+   "reset": "hardware",
+   "handoff": "reconnect",
+   "platform": "nxplpc",
+   "family": "lpc-link2",
+   "generation": "factory-cmsis-dap-v1",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/FastLED/fbuild/issues/921",
+    "source_class": "hardware-evidence"
+   }
+  },
+  {
+   "board_id": "lpc845brk",
    "vidpid": "1fc9:000c",
    "purpose": "bootloader",
    "role": "recovery_transport",
@@ -331,6 +350,7 @@
    "handoff": "bootloader",
    "platform": "nxplpc",
    "family": "lpc-link2",
+   "generation": "rom-dfu",
    "priority": 1000,
    "provenance": {
     "source_url": "https://github.com/FastLED/fbuild/blob/1f843fa645945d4d82584b2a2990d4818e848741/docs/usb-vidpid-audit.md",
