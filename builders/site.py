@@ -224,6 +224,15 @@ def orchestrate(
 
     # 8: _meta.json (also written into public/ for Vite to serve)
     merged = json.loads(merged_path.read_text(encoding="utf-8"))
+    source_revisions = {}
+    for layer in ("vendors", "arduino", "platformio", "other"):
+        for candidate in (data_root / layer / "_meta.json", data_root / layer / "data" / "_meta.json"):
+            if candidate.is_file():
+                try:
+                    source_revisions[layer] = json.loads(candidate.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    pass
+                break
     stats = merged.get("stats", {})
     meta = {
         "schema_version": 5,
@@ -248,6 +257,7 @@ def orchestrate(
         "usb_profiles": "usb-profiles.json",
         "usb_profiles_schema_version": usb_profiles["schema_version"],
         "usb_profiles_sha256": artifact_sha256(usb_profiles),
+        "source_revisions": source_revisions,
         "loader":           "vite",
         "boards_root":      "boards/",
     }

@@ -141,6 +141,12 @@ client-side in sql.js (WASM). Zero server, fully cacheable.
 
 ### From curl / scripts
 
+Consumers of `usb-profiles.json` must fetch `_meta.json` first, require the
+advertised `usb_profiles_schema_version`, then fetch the artifact and verify
+its SHA-256 equals `usb_profiles_sha256`. A failed or mismatched second fetch
+must be treated as stale/corrupt data; never mix metadata from one build with
+an artifact from another.
+
 Once branches exist, raw JSON is available via:
 
 ```
