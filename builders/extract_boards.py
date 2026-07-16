@@ -484,6 +484,16 @@ def _extract_platformio(root: pathlib.Path) -> list[dict]:
             if [bvid, bpid] not in vidpids:
                 vidpids.append([bvid, bpid])
             identity_purposes.setdefault(f"{bvid}:{bpid}", []).append("compile")
+        elif vidpids:
+            # PlatformIO parity: platform builders fall back to hwids[0] for
+            # USB_VID/USB_PID when the manifest has no explicit
+            # build.vid/build.pid (atmelsam is the canonical case). Without
+            # this, hwids-only manifests publish no compile identity and
+            # consumers that source USB_VID/USB_PID from this registry
+            # (FastLED/fbuild#1061) cannot compile USB cores such as
+            # ArduinoCore-samd's USBCore.cpp.
+            bvid, bpid = vidpids[0]
+            identity_purposes.setdefault(f"{bvid}:{bpid}", []).append("compile")
 
         mcu_str = _str_or_none(build.get("mcu"))
         arch, bits = _derive_arch_bits(mcu_str)
