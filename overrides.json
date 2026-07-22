@@ -356,6 +356,62 @@
     "source_url": "https://github.com/FastLED/fbuild/blob/1f843fa645945d4d82584b2a2990d4818e848741/docs/usb-vidpid-audit.md",
     "source_class": "hardware-evidence"
    }
+  },
+  {
+   "board_id": "wch-link",
+   "aliases": ["WCH-Link", "WCH-LinkE", "WCH-LinkW"],
+   "vidpid": "1a86:8010",
+   "purpose": "probe",
+   "role": "debug_probe",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "manual",
+   "handoff": "reconnect",
+   "platform": "ch32v",
+   "family": "wch-link",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/ch32-rs/wlink/blob/249f2c100005827dce8c7d82ff46917e52cddad9/src/usb.rs",
+    "source_revision": "249f2c100005827dce8c7d82ff46917e52cddad9",
+    "source_class": "hardware-evidence"
+   }
+  },
+  {
+   "board_id": "wch-link",
+   "vidpid": "1a86:8012",
+   "purpose": "probe",
+   "role": "debug_probe",
+   "transport": "usb",
+   "interface": "unknown",
+   "reset": "manual",
+   "handoff": "reconnect",
+   "platform": "ch32v",
+   "family": "wch-link-dap",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/ch32-rs/wlink/blob/249f2c100005827dce8c7d82ff46917e52cddad9/src/usb.rs",
+    "source_revision": "249f2c100005827dce8c7d82ff46917e52cddad9",
+    "source_class": "hardware-evidence"
+   }
+  },
+  {
+   "board_id": "ch32-usb-isp",
+   "aliases": ["CH32 factory USB ISP"],
+   "vidpids": ["4348:55e0", "1a86:55e0"],
+   "purpose": "bootloader",
+   "role": "bootloader_dfu",
+   "transport": "usb",
+   "interface": "cdc",
+   "reset": "manual",
+   "handoff": "bootloader",
+   "platform": "ch32v",
+   "family": "wchisp",
+   "priority": 1000,
+   "provenance": {
+    "source_url": "https://github.com/ch32-rs/wchisp/blob/f0f13c471bf04e050b987c19bc80bc394a3dca47/src/transport/usb.rs",
+    "source_revision": "f0f13c471bf04e050b987c19bc80bc394a3dca47",
+    "source_class": "hardware-evidence"
+   }
   }
  ],
  "vidpid_board_links": [
