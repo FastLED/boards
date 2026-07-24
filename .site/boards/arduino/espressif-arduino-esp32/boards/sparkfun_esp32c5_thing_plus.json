@@ -1,0 +1,493 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "ESP32C5_THING_PLUS",
+    "boot": "qio",
+    "bootloader_addr": "0x2000",
+    "cdc_on_boot": "0",
+    "core": "esp32",
+    "defines": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "qio",
+    "flash_size": "8MB",
+    "mcu": "esp32c5",
+    "partitions": "default",
+    "tarch": "riscv32",
+    "target": "esp",
+    "variant": "sparkfun_esp32c5_thing_plus"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Disabled",
+        "build": {
+          "cdc_on_boot": "0"
+        }
+      },
+      "default": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      }
+    },
+    "CPUFreq": {
+      "10": {
+        "": "10MHz",
+        "build": {
+          "f_cpu": "10000000L"
+        }
+      },
+      "120": {
+        "": "120MHz (WiFi)",
+        "build": {
+          "f_cpu": "120000000L"
+        }
+      },
+      "20": {
+        "": "20MHz",
+        "build": {
+          "f_cpu": "20000000L"
+        }
+      },
+      "240": {
+        "": "240MHz (WiFi)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "40": {
+        "": "40MHz",
+        "build": {
+          "f_cpu": "40000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "FlashFreq": {
+      "40": {
+        "": "40MHz",
+        "build": {
+          "flash_freq": "40m"
+        }
+      },
+      "80": {
+        "": "80MHz",
+        "build": {
+          "flash_freq": "80m"
+        }
+      }
+    },
+    "FlashMode": {
+      "dio": {
+        "": "DIO",
+        "build": {
+          "boot": "dio",
+          "flash_mode": "dio"
+        }
+      },
+      "qio": {
+        "": "QIO",
+        "build": {
+          "boot": "qio",
+          "flash_mode": "dio"
+        }
+      }
+    },
+    "FlashSize": {
+      "8M": {
+        "": "8MB (64Mb)",
+        "build": {
+          "flash_size": "8MB"
+        }
+      }
+    },
+    "JTAGAdapter": {
+      "bridge": {
+        "": "ESP USB Bridge",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32c5-bridge.cfg"
+        }
+      },
+      "builtin": {
+        "": "Integrated USB JTAG",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32c5-builtin.cfg"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "copy_jtag_files": "0"
+        }
+      },
+      "external": {
+        "": "FTDI Adapter",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32c5-ftdi.cfg"
+        }
+      }
+    },
+    "PSRAM": {
+      "disabled": {
+        "": "Disabled",
+        "build": {
+          "defines": ""
+        }
+      },
+      "enabled": {
+        "": "Enabled",
+        "build": {
+          "defines": "-DBOARD_HAS_PSRAM"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "custom": {
+        "": "Custom",
+        "build": {
+          "partitions": ""
+        },
+        "upload": {
+          "maximum_size": "8388608"
+        }
+      },
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "default_8MB": {
+        "": "8M with spiffs (3MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "min_spiffs": {
+        "": "Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS)",
+        "build": {
+          "partitions": "min_spiffs"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "minimal": {
+        "": "Minimal (1.3MB APP/700KB SPIFFS)",
+        "build": {
+          "partitions": "minimal"
+        }
+      },
+      "no_fs": {
+        "": "No FS 4MB (2MB APP x2)",
+        "build": {
+          "partitions": "no_fs"
+        },
+        "upload": {
+          "maximum_size": "2031616"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "rainmaker": {
+        "": "RainMaker 4MB",
+        "build": {
+          "partitions": "rainmaker"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "rainmaker_4MB": {
+        "": "RainMaker 4MB No OTA",
+        "build": {
+          "partitions": "rainmaker_4MB_no_ota"
+        },
+        "upload": {
+          "maximum_size": "4038656"
+        }
+      },
+      "rainmaker_8MB": {
+        "": "RainMaker 8MB",
+        "build": {
+          "partitions": "rainmaker_8MB"
+        },
+        "upload": {
+          "maximum_size": "4116480"
+        }
+      },
+      "zigbee": {
+        "": "Zigbee 4MB with spiffs",
+        "build": {
+          "partitions": "zigbee"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "zigbee_2MB": {
+        "": "Zigbee 2MB with spiffs",
+        "build": {
+          "partitions": "zigbee_2MB"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "zigbee_8MB": {
+        "": "Zigbee 8MB with spiffs",
+        "build": {
+          "partitions": "zigbee_8MB"
+        },
+        "upload": {
+          "maximum_size": "3407872"
+        }
+      },
+      "zigbee_zczr": {
+        "": "Zigbee ZCZR 4MB with spiffs",
+        "build": {
+          "partitions": "zigbee_zczr"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "zigbee_zczr_2MB": {
+        "": "Zigbee ZCZR 2MB with spiffs",
+        "build": {
+          "partitions": "zigbee_zczr_2MB"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "zigbee_zczr_8MB": {
+        "": "Zigbee ZCZR 8MB with spiffs",
+        "build": {
+          "partitions": "zigbee_zczr_8MB"
+        },
+        "upload": {
+          "maximum_size": "3407872"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    },
+    "ZigbeeMode": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "zigbee_libs": "",
+          "zigbee_mode": ""
+        }
+      },
+      "ed": {
+        "": "Zigbee ED (end device)",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.ed -lzboss_stack.ed -lzboss_port.native",
+          "zigbee_mode": "-DZIGBEE_MODE_ED"
+        }
+      },
+      "ed_debug": {
+        "": "Zigbee ED (end device) - Debug",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.ed.debug -lzboss_stack.ed.debug -lzboss_port.native.debug",
+          "zigbee_mode": "-DZIGBEE_MODE_ED"
+        }
+      },
+      "zczr": {
+        "": "Zigbee ZCZR (coordinator/router)",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.zczr -lzboss_stack.zczr -lzboss_port.native",
+          "zigbee_mode": "-DZIGBEE_MODE_ZCZR"
+        }
+      },
+      "zczr_debug": {
+        "": "Zigbee ZCZR (coordinator/router) - Debug",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.zczr.debug -lzboss_stack.zczr.debug -lzboss_port.native.debug",
+          "zigbee_mode": "-DZIGBEE_MODE_ZCZR"
+        }
+      }
+    }
+  },
+  "name": "SparkFun ESP32-C5 Thing Plus",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

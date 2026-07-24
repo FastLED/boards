@@ -1,0 +1,62 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xfb",
+    "file": "caterina/Caterina-YunMini.hex",
+    "high_fuses": "0xd8",
+    "lock_bits": "0x2F",
+    "low_fuses": "0xff",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_YUNMINI",
+    "core": "arduino",
+    "extra_flags": "{build.usb_flags}",
+    "f_cpu": "16000000L",
+    "mcu": "atmega32u4",
+    "pid": "0x8050",
+    "usb_product": "\"Arduino Yún Mini\"",
+    "variant": "yun",
+    "vid": "0x2a03"
+  },
+  "name": "Arduino Yún Mini",
+  "pid": {
+    "0": "0x0050",
+    "1": "0x8050"
+  },
+  "upload": {
+    "disable_flushing": "true",
+    "maximum_data_size": "2560",
+    "maximum_size": "28672",
+    "protocol": "avr109",
+    "speed": "57600",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "via_ssh": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0050",
+      "vid": "0x2a03"
+    },
+    "1": {
+      "pid": "0x8050",
+      "vid": "0x2a03"
+    },
+    "2": {
+      "board": "yunmini"
+    }
+  },
+  "vid": {
+    "0": "0x2a03",
+    "1": "0x2a03"
+  }
+}

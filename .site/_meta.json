@@ -1,0 +1,131 @@
+{
+  "schema_version": 5,
+  "generated_at": "2026-07-24T05:34:00Z",
+  "trigger": "schedule",
+  "totals": {
+    "vendors": 36,
+    "vidpid_keys": 1056,
+    "vidpid_rows": 1372,
+    "vidpid_alternates": 316,
+    "boards": 2088,
+    "board_jsons_copied": 2088
+  },
+  "warnings": {
+    "minor.log": 164,
+    "family.log": 243,
+    "distinct.log": 316,
+    "vendor.log": 0
+  },
+  "severity_counts": {
+    "minor": 164,
+    "family": 243,
+    "distinct_kept_both": 128,
+    "distinct_alt_dropped": 188
+  },
+  "per_layer_counts": {
+    "vendors": {
+      "vendors": 1,
+      "products": 1,
+      "hint_vendors": 0
+    },
+    "arduino": {
+      "vendors": 0,
+      "products": 1278,
+      "hint_vendors": 20
+    },
+    "platformio": {
+      "vendors": 0,
+      "products": 590,
+      "hint_vendors": 112
+    },
+    "other": {
+      "vendors": 1,
+      "products": 34,
+      "hint_vendors": 0
+    }
+  },
+  "errors_folder": "errors/",
+  "warnings_folder": "warnings/",
+  "database": "boards.db",
+  "usb_ids_download": "usb-ids.json",
+  "usb_vids_proto_zstd": "usb-vids.proto.zstd",
+  "usb_profiles": "usb-profiles.json",
+  "usb_profiles_schema_version": 1,
+  "usb_profiles_sha256": "b1cd9dd844bc437b864d437b71a6dbbe59970698525e0224d9e254c0fc1c3e97",
+  "source_revisions": {
+    "vendors": {
+      "schema_version": 1,
+      "branch": "vendors",
+      "status": "initialized-empty",
+      "generated_at": null,
+      "description": "Authoritative vendor PID allocation registries + the curated vendor_names_inlined overlay.",
+      "sources": [
+        {
+          "name": "raspberrypi/usb-pid",
+          "url": "https://github.com/raspberrypi/usb-pid"
+        },
+        {
+          "name": "espressif/usb-pids",
+          "url": "https://github.com/espressif/usb-pids"
+        },
+        {
+          "name": "vendor_names_inlined",
+          "url": "in-tree on main (online-data-tools/vendor_names_inlined.py)",
+          "note": "253-entry curated overlay for VIDs missing from upstream usb.ids text databases"
+        }
+      ],
+      "note": "This branch is bot-pushed only. Direct human edits are blocked by branch protection. To regenerate, run the matching workflow on main: .github/workflows/sync-vendors.yml"
+    },
+    "arduino": {
+      "schema_version": 1,
+      "branch": "arduino",
+      "status": "initialized-empty",
+      "generated_at": null,
+      "description": "Parsed JSON form of boards.txt from upstream Arduino cores (AVR, SAMD, Espressif, Adafruit nRF52, STM32duino, Silicon Labs).",
+      "sources": [
+        {
+          "name": "arduino/ArduinoCore-avr",
+          "url": "https://github.com/arduino/ArduinoCore-avr"
+        },
+        {
+          "name": "arduino/ArduinoCore-samd",
+          "url": "https://github.com/arduino/ArduinoCore-samd"
+        },
+        {
+          "name": "espressif/arduino-esp32",
+          "url": "https://github.com/espressif/arduino-esp32"
+        },
+        {
+          "name": "adafruit/Adafruit_nRF52_Arduino",
+          "url": "https://github.com/adafruit/Adafruit_nRF52_Arduino"
+        },
+        {
+          "name": "stm32duino/Arduino_Core_STM32",
+          "url": "https://github.com/stm32duino/Arduino_Core_STM32"
+        },
+        {
+          "name": "SiliconLabs/arduino",
+          "url": "https://github.com/SiliconLabs/arduino"
+        }
+      ],
+      "note": "This branch is bot-pushed only. Direct human edits are blocked by branch protection. To regenerate, run the matching workflow on main: .github/workflows/sync-arduino.yml"
+    },
+    "platformio": {
+      "schema_version": 1,
+      "branch": "platformio",
+      "status": "initialized-empty",
+      "generated_at": null,
+      "description": "Slim mirror of platformio/platform-*/boards/*.json (Apache-2.0) and platform.json files.",
+      "sources": [
+        {
+          "name": "platformio/platform-*",
+          "url": "https://github.com/platformio",
+          "note": "37 platform repos; one boards/ directory per platform"
+        }
+      ],
+      "note": "This branch is bot-pushed only. Direct human edits are blocked by branch protection. To regenerate, run the matching workflow on main: .github/workflows/sync-platformio.yml"
+    }
+  },
+  "loader": "vite",
+  "boards_root": "boards/"
+}

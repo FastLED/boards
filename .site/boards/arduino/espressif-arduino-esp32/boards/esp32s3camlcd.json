@@ -1,0 +1,249 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "ESP32S3_CAM_LCD",
+    "boot": "opi",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "0",
+    "core": "esp32",
+    "defines": "-DBOARD_HAS_PSRAM",
+    "dfu_on_boot": "0",
+    "event_core": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dout",
+    "flash_size": "4MB",
+    "loop_core": "",
+    "mcu": "esp32s3",
+    "memory_type": "opi_opi",
+    "msc_on_boot": "0",
+    "partitions": "default",
+    "tarch": "xtensa",
+    "target": "esp32s3",
+    "usb_mode": "1",
+    "variant": "esp32s3camlcd"
+  },
+  "menu": {
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "EventsCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1"
+        }
+      }
+    },
+    "LoopCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=1"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "min_spiffs": {
+        "": "Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS)",
+        "build": {
+          "partitions": "min_spiffs"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "minimal": {
+        "": "Minimal (1.3MB APP/700KB SPIFFS)",
+        "build": {
+          "partitions": "minimal"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "ESP32S3 CAM LCD",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

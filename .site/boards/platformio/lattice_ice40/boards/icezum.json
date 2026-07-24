@@ -1,0 +1,25 @@
+{
+  "build": {
+    "core": "icezum",
+    "cpu": "fpga",
+    "f_cpu": "12000000L",
+    "hwids": [
+      [
+        "0x0403",
+        "0x6010"
+      ]
+    ],
+    "mcu": "iCE40-HX1K-TQ144",
+    "pack": "tq144",
+    "size": "1k",
+    "type": "hx"
+  },
+  "frameworks": [],
+  "name": "IceZUM Alhambra FPGA",
+  "upload": {
+    "maximum_ram_size": 32768,
+    "maximum_size": 32768
+  },
+  "url": "https://github.com/FPGAwars/icezum/wiki",
+  "vendor": "FPGAwars"
+}

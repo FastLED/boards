@@ -1,0 +1,248 @@
+/* Page-level theme tokens + layout primitives. */
+
+:root {
+  --bg: #ffffff;
+  --bg-page: #f4f5f7;
+  --bg-soft: #fafbfc;
+  --fg: #1a1d22;
+  --muted: #6b7280;
+  --hi: #1268d1;
+  --hi-bg: #e6f0ff;
+  --border: #e3e6ea;
+  --border-soft: #eef0f3;
+
+  --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+  --shadow-2: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.06);
+  --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--hi) 25%, transparent);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --space-1: 0.35rem;
+  --space-2: 0.6rem;
+  --space-3: 0.9rem;
+  --space-4: 1.25rem;
+  --space-5: 1.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f2229;
+    --bg-page: #14161b;
+    --bg-soft: #1a1d23;
+    --fg: #e6e9ed;
+    --muted: #9aa1ab;
+    --hi: #6fb1ff;
+    --hi-bg: #1c2940;
+    --border: #2c313a;
+    --border-soft: #23272f;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 1px rgba(0, 0, 0, 0.35);
+    --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.5);
+    --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--hi) 35%, transparent);
+  }
+}
+
+html,
+body {
+  background: var(--bg-page);
+  color: var(--fg);
+  margin: 0;
+  padding: 0;
+  font: 14px/1.55 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.2rem 1.4rem 4rem;
+}
+
+h1 {
+  margin: 0 0 0.3rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.sub {
+  color: var(--muted);
+  margin: 0 0 1.6rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.row {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.6rem 0 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+input[type='text'] {
+  font: 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  min-width: 13ch;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+input[type='text']:focus,
+input[type='text']:focus-visible {
+  outline: none;
+  border-color: var(--hi);
+  box-shadow: var(--shadow-focus);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+section {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  box-shadow: var(--shadow-1);
+}
+
+section h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.stat {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.hit {
+  padding: 0.5rem 0.65rem;
+  margin: 0.3rem 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.hit + .hit {
+  margin-top: 0.35rem;
+}
+
+.hit:hover {
+  background: var(--hi-bg);
+  border-color: color-mix(in srgb, var(--hi) 35%, var(--border));
+}
+
+mark {
+  background: color-mix(in srgb, var(--hi) 28%, transparent);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 0.08rem;
+}
+
+.k {
+  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--hi);
+}
+
+.v {
+  font-weight: 500;
+}
+
+.src {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+  padding: 0.4rem 0;
+}
+
+.head-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.2rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0.6rem;
+}
+
+.head-info + .head-info {
+  margin-top: 0;
+}
+
+.head-info:last-of-type {
+  margin-bottom: 1.5rem;
+}
+
+code {
+  background: var(--hi-bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  /* In light mode `<code>` has a faint blue tint; if a link wraps it
+     and the visited browser-default purple shows through, contrast
+     against the blue tint drops below WCAG AA. Force the inner code
+     to inherit the link's explicit color (which we set below). */
+  color: inherit;
+}
+
+/* Links — explicit colours for both themes plus an always-on
+   underline so they read as interactive on the off-blue `<code>`
+   tints in the header and help cards. Default browser blue + visited
+   purple were both failing contrast against --hi-bg in light mode
+   and looking washed-out in dark mode. */
+a {
+  color: var(--hi);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--hi) 55%, transparent);
+}
+a:visited { color: var(--hi); }
+a:hover { text-decoration-color: var(--hi); }
+a:focus-visible {
+  outline: 2px solid var(--hi);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+footer {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-top: 3rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.err {
+  color: #c44;
+  padding: 0.4rem 0;
+}

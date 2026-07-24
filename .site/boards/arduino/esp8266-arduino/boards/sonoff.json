@@ -1,0 +1,662 @@
+{
+  "build": {
+    "board": "ESP8266_SONOFF_SV",
+    "core": "esp8266",
+    "debug_level": "",
+    "debug_optim": "",
+    "debug_port": "",
+    "flash_flags": "-DFLASHMODE_DOUT",
+    "flash_freq": "40",
+    "flash_mode": "dout",
+    "flash_size": "1M",
+    "mcu": "esp8266",
+    "spiffs_pagesize": "256",
+    "variant": "itead"
+  },
+  "menu": {
+    "BoardModel": {
+      "sonoffBasic": {
+        "": "ITEAD Sonoff Basic",
+        "build": {
+          "board": "ESP8266_SONOFF_BASIC"
+        }
+      },
+      "sonoffS20": {
+        "": "ITEAD Sonoff S20",
+        "build": {
+          "board": "ESP8266_SONOFF_S20"
+        }
+      },
+      "sonoffSV": {
+        "": "ITEAD Sonoff SV",
+        "build": {
+          "board": "ESP8266_SONOFF_SV"
+        }
+      },
+      "sonoffTH": {
+        "": "ITEAD Sonoff TH",
+        "build": {
+          "board": "ESP8266_SONOFF_TH"
+        }
+      }
+    },
+    "baud": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "linux": "230400",
+        "macosx": "230400",
+        "upload": {
+          "speed": "230400"
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "3000000": {
+        "": "3000000",
+        "upload": {
+          "speed": "3000000"
+        }
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "57600": {
+        "": "57600",
+        "upload": {
+          "speed": "57600"
+        }
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    },
+    "dbg": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "debug_port": ""
+        }
+      },
+      "Serial": {
+        "": "Serial",
+        "build": {
+          "debug_port": "-DDEBUG_ESP_PORT=Serial"
+        }
+      },
+      "Serial1": {
+        "": "Serial1",
+        "build": {
+          "debug_port": "-DDEBUG_ESP_PORT=Serial1"
+        }
+      }
+    },
+    "eesz": {
+      "1M": {
+        "": "1MB (FS:none OTA:~502KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_pagesize": "256"
+        }
+      },
+      "1M128": {
+        "": "1MB (FS:128KB OTA:~438KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m128.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "4096",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0xDB000"
+        }
+      },
+      "1M144": {
+        "": "1MB (FS:144KB OTA:~430KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m144.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "4096",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0xD7000"
+        }
+      },
+      "1M160": {
+        "": "1MB (FS:160KB OTA:~422KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m160.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "4096",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0xD3000"
+        }
+      },
+      "1M192": {
+        "": "1MB (FS:192KB OTA:~406KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m192.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "4096",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0xCB000"
+        }
+      },
+      "1M256": {
+        "": "1MB (FS:256KB OTA:~374KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m256.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "4096",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0xBB000"
+        }
+      },
+      "1M512": {
+        "": "1MB (FS:512KB OTA:~246KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m512.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "8192",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0x7B000"
+        }
+      },
+      "1M64": {
+        "": "1MB (FS:64KB OTA:~470KB)",
+        "build": {
+          "flash_ld": "eagle.flash.1m64.ld",
+          "flash_size": "1M",
+          "rfcal_addr": "0xFC000",
+          "spiffs_blocksize": "4096",
+          "spiffs_end": "0xFB000",
+          "spiffs_pagesize": "256",
+          "spiffs_start": "0xEB000"
+        }
+      },
+      "autoflash": {
+        "": "Mapping defined by Hardware and Sketch",
+        "build": {
+          "extra_flags": "-DFLASH_MAP_SUPPORT=1",
+          "flash_ld": "eagle.flash.auto.ld",
+          "flash_size": "16M"
+        },
+        "upload": {
+          "maximum_size": "1044464"
+        }
+      }
+    },
+    "exception": {
+      "disabled": {
+        "": "Disabled (new aborts on oom)",
+        "build": {
+          "exception_flags": "-fno-exceptions",
+          "stdcpp_lib": "-lstdc++"
+        }
+      },
+      "enabled": {
+        "": "Enabled",
+        "build": {
+          "exception_flags": "-fexceptions",
+          "stdcpp_lib": "-lstdc++-exc"
+        }
+      }
+    },
+    "ip": {
+      "hb2f": {
+        "": "v2 Higher Bandwidth",
+        "build": {
+          "lwip_flags": "-DLWIP_OPEN_SRC -DTCP_MSS=1460 -DLWIP_FEATURES=1 -DLWIP_IPV6=0",
+          "lwip_include": "lwip2/include",
+          "lwip_lib": "-llwip2-1460-feat"
+        }
+      },
+      "hb2n": {
+        "": "v2 Higher Bandwidth (no features)",
+        "build": {
+          "lwip_flags": "-DLWIP_OPEN_SRC -DTCP_MSS=1460 -DLWIP_FEATURES=0 -DLWIP_IPV6=0",
+          "lwip_include": "lwip2/include",
+          "lwip_lib": "-llwip2-1460"
+        }
+      },
+      "hb6f": {
+        "": "v2 IPv6 Higher Bandwidth",
+        "build": {
+          "lwip_flags": "-DLWIP_OPEN_SRC -DTCP_MSS=1460 -DLWIP_FEATURES=1 -DLWIP_IPV6=1",
+          "lwip_include": "lwip2/include",
+          "lwip_lib": "-llwip6-1460-feat"
+        }
+      },
+      "lm2f": {
+        "": "v2 Lower Memory",
+        "build": {
+          "lwip_flags": "-DLWIP_OPEN_SRC -DTCP_MSS=536 -DLWIP_FEATURES=1 -DLWIP_IPV6=0",
+          "lwip_include": "lwip2/include",
+          "lwip_lib": "-llwip2-536-feat"
+        }
+      },
+      "lm2n": {
+        "": "v2 Lower Memory (no features)",
+        "build": {
+          "lwip_flags": "-DLWIP_OPEN_SRC -DTCP_MSS=536 -DLWIP_FEATURES=0 -DLWIP_IPV6=0",
+          "lwip_include": "lwip2/include",
+          "lwip_lib": "-llwip2-536"
+        }
+      },
+      "lm6f": {
+        "": "v2 IPv6 Lower Memory",
+        "build": {
+          "lwip_flags": "-DLWIP_OPEN_SRC -DTCP_MSS=536 -DLWIP_FEATURES=1 -DLWIP_IPV6=1",
+          "lwip_include": "lwip2/include",
+          "lwip_lib": "-llwip6-536-feat"
+        }
+      }
+    },
+    "iramfloat": {
+      "no": {
+        "": "in IROM",
+        "build": {
+          "iramfloat": "-DFP_IN_IROM"
+        }
+      },
+      "yes": {
+        "": "allowed in ISR",
+        "build": {
+          "iramfloat": "-DFP_IN_IRAM"
+        }
+      }
+    },
+    "lvl": {
+      "CORE": {
+        "": "CORE",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_CORE"
+        }
+      },
+      "COREWIFIHTTP_UPDATEUPDATEROTAOOMMDNS": {
+        "": "CORE+WIFI+HTTP_UPDATE+UPDATER+OTA+OOM+MDNS",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_CORE -DDEBUG_ESP_WIFI -DDEBUG_ESP_HTTP_UPDATE -DDEBUG_ESP_UPDATER -DDEBUG_ESP_OTA -DDEBUG_ESP_OOM -DDEBUG_ESP_MDNS"
+        }
+      },
+      "COREWIFIHTTP_UPDATEUPDATEROTAOOMMDNSHWDT": {
+        "": "CORE+WIFI+HTTP_UPDATE+UPDATER+OTA+OOM+MDNS+HWDT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_CORE -DDEBUG_ESP_WIFI -DDEBUG_ESP_HTTP_UPDATE -DDEBUG_ESP_UPDATER -DDEBUG_ESP_OTA -DDEBUG_ESP_OOM -DDEBUG_ESP_MDNS -DDEBUG_ESP_HWDT"
+        }
+      },
+      "COREWIFIHTTP_UPDATEUPDATEROTAOOMMDNSHWDT_NOEXTRA4K": {
+        "": "CORE+WIFI+HTTP_UPDATE+UPDATER+OTA+OOM+MDNS+HWDT_NOEXTRA4K",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_CORE -DDEBUG_ESP_WIFI -DDEBUG_ESP_HTTP_UPDATE -DDEBUG_ESP_UPDATER -DDEBUG_ESP_OTA -DDEBUG_ESP_OOM -DDEBUG_ESP_MDNS -DDEBUG_ESP_HWDT_NOEXTRA4K"
+        }
+      },
+      "HTTP_CLIENT": {
+        "": "HTTP_CLIENT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_HTTP_CLIENT"
+        }
+      },
+      "HTTP_CLIENTHTTP_SERVER": {
+        "": "HTTP_CLIENT+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "HTTP_SERVER": {
+        "": "HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "HTTP_UPDATE": {
+        "": "HTTP_UPDATE",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_HTTP_UPDATE"
+        }
+      },
+      "HWDT": {
+        "": "HWDT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_HWDT"
+        }
+      },
+      "HWDT_NOEXTRA4K": {
+        "": "HWDT_NOEXTRA4K",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_HWDT_NOEXTRA4K"
+        }
+      },
+      "MDNS": {
+        "": "MDNS",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_MDNS"
+        }
+      },
+      "NoAssert-NDEBUG": {
+        "": "NoAssert-NDEBUG",
+        "build": {
+          "debug_level": "-DNDEBUG"
+        }
+      },
+      "None____": {
+        "": "None",
+        "build": {
+          "debug_level": ""
+        }
+      },
+      "OOM": {
+        "": "OOM",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_OOM"
+        }
+      },
+      "OTA": {
+        "": "OTA",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_OTA"
+        }
+      },
+      "SSL": {
+        "": "SSL",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL"
+        }
+      },
+      "SSLHTTP_CLIENT": {
+        "": "SSL+HTTP_CLIENT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_HTTP_CLIENT"
+        }
+      },
+      "SSLHTTP_CLIENTHTTP_SERVER": {
+        "": "SSL+HTTP_CLIENT+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "SSLHTTP_SERVER": {
+        "": "SSL+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "SSLTLS_MEM": {
+        "": "SSL+TLS_MEM",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM"
+        }
+      },
+      "SSLTLS_MEMHTTP_CLIENT": {
+        "": "SSL+TLS_MEM+HTTP_CLIENT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT"
+        }
+      },
+      "SSLTLS_MEMHTTP_CLIENTHTTP_SERVER": {
+        "": "SSL+TLS_MEM+HTTP_CLIENT+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "SSLTLS_MEMHTTP_CLIENTHTTP_SERVERCOREWIFIHTTP_UPDATEUPDATEROTAOOMMDNS": {
+        "": "SSL+TLS_MEM+HTTP_CLIENT+HTTP_SERVER+CORE+WIFI+HTTP_UPDATE+UPDATER+OTA+OOM+MDNS",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER -DDEBUG_ESP_CORE -DDEBUG_ESP_WIFI -DDEBUG_ESP_HTTP_UPDATE -DDEBUG_ESP_UPDATER -DDEBUG_ESP_OTA -DDEBUG_ESP_OOM -DDEBUG_ESP_MDNS"
+        }
+      },
+      "SSLTLS_MEMHTTP_CLIENTHTTP_SERVERCOREWIFIHTTP_UPDATEUPDATEROTAOOMMDNSHWDT": {
+        "": "SSL+TLS_MEM+HTTP_CLIENT+HTTP_SERVER+CORE+WIFI+HTTP_UPDATE+UPDATER+OTA+OOM+MDNS+HWDT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER -DDEBUG_ESP_CORE -DDEBUG_ESP_WIFI -DDEBUG_ESP_HTTP_UPDATE -DDEBUG_ESP_UPDATER -DDEBUG_ESP_OTA -DDEBUG_ESP_OOM -DDEBUG_ESP_MDNS -DDEBUG_ESP_HWDT"
+        }
+      },
+      "SSLTLS_MEMHTTP_CLIENTHTTP_SERVERCOREWIFIHTTP_UPDATEUPDATEROTAOOMMDNSHWDT_NOEXTRA4K": {
+        "": "SSL+TLS_MEM+HTTP_CLIENT+HTTP_SERVER+CORE+WIFI+HTTP_UPDATE+UPDATER+OTA+OOM+MDNS+HWDT_NOEXTRA4K",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER -DDEBUG_ESP_CORE -DDEBUG_ESP_WIFI -DDEBUG_ESP_HTTP_UPDATE -DDEBUG_ESP_UPDATER -DDEBUG_ESP_OTA -DDEBUG_ESP_OOM -DDEBUG_ESP_MDNS -DDEBUG_ESP_HWDT_NOEXTRA4K"
+        }
+      },
+      "SSLTLS_MEMHTTP_SERVER": {
+        "": "SSL+TLS_MEM+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_SSL -DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "TLS_MEM": {
+        "": "TLS_MEM",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_TLS_MEM"
+        }
+      },
+      "TLS_MEMHTTP_CLIENT": {
+        "": "TLS_MEM+HTTP_CLIENT",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT"
+        }
+      },
+      "TLS_MEMHTTP_CLIENTHTTP_SERVER": {
+        "": "TLS_MEM+HTTP_CLIENT+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "TLS_MEMHTTP_SERVER": {
+        "": "TLS_MEM+HTTP_SERVER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_TLS_MEM -DDEBUG_ESP_HTTP_SERVER"
+        }
+      },
+      "UPDATER": {
+        "": "UPDATER",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_UPDATER"
+        }
+      },
+      "WIFI": {
+        "": "WIFI",
+        "build": {
+          "debug_level": "-DDEBUG_ESP_WIFI"
+        }
+      }
+    },
+    "mmu": {
+      "3216": {
+        "": "16KB cache + 32KB IRAM + 16KB 2nd Heap (not shared)",
+        "build": {
+          "mmuflags": "-DMMU_IRAM_SIZE=0x8000 -DMMU_ICACHE_SIZE=0x4000 -DMMU_SEC_HEAP=0x40108000 -DMMU_SEC_HEAP_SIZE=0x4000"
+        }
+      },
+      "3232": {
+        "": "32KB cache + 32KB IRAM (balanced)",
+        "build": {
+          "mmuflags": "-DMMU_IRAM_SIZE=0x8000 -DMMU_ICACHE_SIZE=0x8000"
+        }
+      },
+      "4816": {
+        "": "16KB cache + 48KB IRAM (IRAM)",
+        "build": {
+          "mmuflags": "-DMMU_IRAM_SIZE=0xC000 -DMMU_ICACHE_SIZE=0x4000"
+        }
+      },
+      "4816H": {
+        "": "16KB cache + 48KB IRAM and 2nd Heap (shared)",
+        "build": {
+          "mmuflags": "-DMMU_IRAM_SIZE=0xC000 -DMMU_ICACHE_SIZE=0x4000 -DMMU_IRAM_HEAP"
+        }
+      },
+      "ext128k": {
+        "": "128K Heap External 23LC1024",
+        "build": {
+          "mmuflags": "-DMMU_EXTERNAL_HEAP=128 -DMMU_IRAM_SIZE=0x8000 -DMMU_ICACHE_SIZE=0x8000"
+        }
+      },
+      "ext8192k": {
+        "": "8M w/256K Heap External 64 MBit PSRAM",
+        "build": {
+          "mmuflags": "-DMMU_EXTERNAL_HEAP=256 -DMMU_IRAM_SIZE=0x8000 -DMMU_ICACHE_SIZE=0x8000"
+        }
+      }
+    },
+    "non32xfer": {
+      "fast": {
+        "": "Use pgm_read macros for IRAM/PROGMEM",
+        "build": {
+          "non32xferflags": ""
+        }
+      },
+      "safe": {
+        "": "Byte/Word access to IRAM/PROGMEM (very slow)",
+        "build": {
+          "non32xferflags": "-DNON32XFER_HANDLER"
+        }
+      }
+    },
+    "optim": {
+      "Full": {
+        "": "Optimum",
+        "build": {
+          "debug_optim": "-Og"
+        }
+      },
+      "Lite": {
+        "": "Lite",
+        "build": {
+          "debug_optim": "-Os -fno-optimize-sibling-calls"
+        }
+      },
+      "Smallest": {
+        "": "None",
+        "build": {
+          "debug_optim": "-Os"
+        }
+      }
+    },
+    "ssl": {
+      "all": {
+        "": "All SSL ciphers (most compatible)",
+        "build": {
+          "sslflags": ""
+        }
+      },
+      "basic": {
+        "": "Basic SSL ciphers (lower ROM use)",
+        "build": {
+          "sslflags": "-DBEARSSL_SSL_BASIC"
+        }
+      }
+    },
+    "stacksmash": {
+      "disabled": {
+        "": "Disabled",
+        "build": {
+          "stacksmash_flags": ""
+        }
+      },
+      "enabled": {
+        "": "Enabled",
+        "build": {
+          "stacksmash_flags": "-fstack-protector"
+        }
+      }
+    },
+    "vt": {
+      "flash": {
+        "": "Flash",
+        "build": {
+          "vtable_flags": "-DVTABLES_IN_FLASH"
+        }
+      },
+      "heap": {
+        "": "Heap",
+        "build": {
+          "vtable_flags": "-DVTABLES_IN_DRAM"
+        }
+      },
+      "iram": {
+        "": "IRAM",
+        "build": {
+          "vtable_flags": "-DVTABLES_IN_IRAM"
+        }
+      }
+    },
+    "wipe": {
+      "all": {
+        "": "All Flash Contents",
+        "upload": {
+          "erase_cmd": "erase_flash"
+        }
+      },
+      "none": {
+        "": "Only Sketch",
+        "upload": {
+          "erase_cmd": ""
+        }
+      },
+      "sdk": {
+        "": "Sketch + WiFi Settings",
+        "upload": {
+          "erase_cmd": "erase_region \"{build.rfcal_addr}\" 0x4000"
+        }
+      }
+    },
+    "xtal": {
+      "160": {
+        "": "160 MHz",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "80": {
+        "": "80 MHz",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    }
+  },
+  "name": "ITEAD Sonoff",
+  "serial": {
+    "disableDTR": "true",
+    "disableRTS": "true"
+  },
+  "upload": {
+    "erase_cmd": "",
+    "maximum_data_size": "81920",
+    "resetmethod": "--before no_reset --after soft_reset",
+    "tool": "esptool",
+    "wait_for_upload_port": "true"
+  }
+}

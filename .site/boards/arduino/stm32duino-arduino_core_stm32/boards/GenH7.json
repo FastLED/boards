@@ -1,0 +1,1501 @@
+{
+  "build": {
+    "board": "GenH7",
+    "core": "arduino",
+    "flash_offset": "0x0",
+    "float-abi": "-mfloat-abi=hard",
+    "fpu": "-mfpu=fpv5-sp-d16",
+    "mcu": "cortex-m7",
+    "series": "STM32H7xx",
+    "st_extra_flags": "-DCORE_CM7 -D{build.product_line} {build.enable_usb} {build.xSerial}"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "DAISY_PATCH_SM": {
+        "": "Daisy Patch SM",
+        "build": {
+          "board": "DAISY_PATCH_SM",
+          "ldscript": "DAISY_SEED.ld",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)",
+          "variant_h": "variant_{build.board}.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "DAISY_PETAL_SM": {
+        "": "Daisy Petal SM",
+        "build": {
+          "board": "DAISY_PETAL_SM",
+          "ldscript": "DAISY_SEED.ld",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)",
+          "variant_h": "variant_{build.board}.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "DAISY_SEED": {
+        "": "Daisy Seed",
+        "build": {
+          "board": "DAISY_SEED",
+          "ldscript": "DAISY_SEED.ld",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)",
+          "variant_h": "variant_{build.board}.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "DevEBoxH743VITX": {
+        "": "DevEBox H743VITX",
+        "build": {
+          "board": "DevEBoxH743VITX",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)",
+          "variant_h": "variant_DevEBoxH7xx.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "DevEBoxH750VBTX": {
+        "": "DevEBox H750VBTX",
+        "build": {
+          "board": "DevEBoxH750VBTX",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)",
+          "variant_h": "variant_DevEBoxH7xx.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H723VEHX": {
+        "": "Generic H723VEHx",
+        "build": {
+          "board": "GENERIC_H723VEHX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_H723VETX": {
+        "": "Generic H723VETx",
+        "build": {
+          "board": "GENERIC_H723VETX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_H723VGHX": {
+        "": "Generic H723VGHx",
+        "build": {
+          "board": "GENERIC_H723VGHX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H723VGTX": {
+        "": "Generic H723VGTx",
+        "build": {
+          "board": "GENERIC_H723VGTX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H723ZETX": {
+        "": "Generic H723ZETx",
+        "build": {
+          "board": "GENERIC_H723ZETX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723Z(E-G)T_H730ZBT_H733ZGT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_H723ZGTX": {
+        "": "Generic H723ZGTx",
+        "build": {
+          "board": "GENERIC_H723ZGTX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723Z(E-G)T_H730ZBT_H733ZGT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H730VBHX": {
+        "": "Generic H730VBHx",
+        "build": {
+          "board": "GENERIC_H730VBHX",
+          "product_line": "STM32H730xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H730.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H730VBTX": {
+        "": "Generic H730VBTx",
+        "build": {
+          "board": "GENERIC_H730VBTX",
+          "product_line": "STM32H730xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H730.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H730ZBTX": {
+        "": "Generic H730ZBTx",
+        "build": {
+          "board": "GENERIC_H730ZBTX",
+          "product_line": "STM32H730xx",
+          "variant": "STM32H7xx/H723Z(E-G)T_H730ZBT_H733ZGT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H730.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H733VGHX": {
+        "": "Generic H733VGHx",
+        "build": {
+          "board": "GENERIC_H733VGHX",
+          "product_line": "STM32H733xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H733.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H733VGTX": {
+        "": "Generic H733VGTx",
+        "build": {
+          "board": "GENERIC_H733VGTX",
+          "product_line": "STM32H733xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H733.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H733ZGTX": {
+        "": "Generic H733ZGTx",
+        "build": {
+          "board": "GENERIC_H733ZGTX",
+          "product_line": "STM32H733xx",
+          "variant": "STM32H7xx/H723Z(E-G)T_H730ZBT_H733ZGT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H733.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742IGKX": {
+        "": "Generic H742IGKx",
+        "build": {
+          "board": "GENERIC_H742IGKX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742IGTX": {
+        "": "Generic H742IGTx",
+        "build": {
+          "board": "GENERIC_H742IGTX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742IIKX": {
+        "": "Generic H742IIKx",
+        "build": {
+          "board": "GENERIC_H742IIKX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H742IITX": {
+        "": "Generic H742IITx",
+        "build": {
+          "board": "GENERIC_H742IITX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H742VGHX": {
+        "": "Generic H742VGHx",
+        "build": {
+          "board": "GENERIC_H742VGHX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742VGTX": {
+        "": "Generic H742VGTx",
+        "build": {
+          "board": "GENERIC_H742VGTX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742VIHX": {
+        "": "Generic H742VIHx",
+        "build": {
+          "board": "GENERIC_H742VIHX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H742VITX": {
+        "": "Generic H742VITx",
+        "build": {
+          "board": "GENERIC_H742VITX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H742XGHX": {
+        "": "Generic H742XGHx",
+        "build": {
+          "board": "GENERIC_H742XGHX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742XIHX": {
+        "": "Generic H742XIHx",
+        "build": {
+          "board": "GENERIC_H742XIHX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H742ZGTX": {
+        "": "Generic H742ZGTx",
+        "build": {
+          "board": "GENERIC_H742ZGTX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H742ZITX": {
+        "": "Generic H742ZITx",
+        "build": {
+          "board": "GENERIC_H742ZITX",
+          "product_line": "STM32H742xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H742.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H743IGKX": {
+        "": "Generic H743IGKx",
+        "build": {
+          "board": "GENERIC_H743IGKX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H743IGTX": {
+        "": "Generic H743IGTx",
+        "build": {
+          "board": "GENERIC_H743IGTX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H743IIKX": {
+        "": "Generic H743IIKx",
+        "build": {
+          "board": "GENERIC_H743IIKX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H743IITX": {
+        "": "Generic H743IITx",
+        "build": {
+          "board": "GENERIC_H743IITX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H743VGHX": {
+        "": "Generic H743VGHx",
+        "build": {
+          "board": "GENERIC_H743VGHX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H743VGTX": {
+        "": "Generic H743VGTx",
+        "build": {
+          "board": "GENERIC_H743VGTX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H743VIHX": {
+        "": "Generic H743VIHx",
+        "build": {
+          "board": "GENERIC_H743VIHX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H743VITX": {
+        "": "Generic H743VITx",
+        "build": {
+          "board": "GENERIC_H743VITX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H743XGHX": {
+        "": "Generic H743XGHx",
+        "build": {
+          "board": "GENERIC_H743XGHX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H743XIHX": {
+        "": "Generic H743XIHx",
+        "build": {
+          "board": "GENERIC_H743XIHX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H743ZGTX": {
+        "": "Generic H743ZGTx",
+        "build": {
+          "board": "GENERIC_H743ZGTX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H743ZITX": {
+        "": "Generic H743ZITx",
+        "build": {
+          "board": "GENERIC_H743ZITX",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H745XGHX": {
+        "": "Generic H745XGHx",
+        "build": {
+          "board": "GENERIC_H745XGHX",
+          "product_line": "STM32H745xG",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H745_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H745XIHX": {
+        "": "Generic H745XIHx",
+        "build": {
+          "board": "GENERIC_H745XIHX",
+          "product_line": "STM32H745xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H745_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H745ZGTX": {
+        "": "Generic H745ZGTx",
+        "build": {
+          "board": "GENERIC_H745ZGTX",
+          "product_line": "STM32H745xG",
+          "variant": "STM32H7xx/H745Z(G-I)T_H755ZIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H745_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "884736",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H745ZITX": {
+        "": "Generic H745ZITx",
+        "build": {
+          "board": "GENERIC_H745ZITX",
+          "product_line": "STM32H745xx",
+          "variant": "STM32H7xx/H745Z(G-I)T_H755ZIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H745_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "884736",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H747AGIX": {
+        "": "Generic H747AGIx",
+        "build": {
+          "board": "GENERIC_H747AGIX",
+          "product_line": "STM32H747xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H747AIIX": {
+        "": "Generic H747AIIx",
+        "build": {
+          "board": "GENERIC_H747AIIX",
+          "product_line": "STM32H747xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H747IGTX": {
+        "": "Generic H747IGTx",
+        "build": {
+          "board": "GENERIC_H747IGTX",
+          "product_line": "STM32H747xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H747IITX": {
+        "": "Generic H747IITx",
+        "build": {
+          "board": "GENERIC_H747IITX",
+          "product_line": "STM32H747xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H747XGHX": {
+        "": "Generic H747XGHx",
+        "build": {
+          "board": "GENERIC_H747XGHX",
+          "product_line": "STM32H747xG",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H747XIHX": {
+        "": "Generic H747XIHx",
+        "build": {
+          "board": "GENERIC_H747XIHX",
+          "product_line": "STM32H747xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H750IBKX": {
+        "": "Generic H750IBKx",
+        "build": {
+          "board": "GENERIC_H750IBKX",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H750IBTX": {
+        "": "Generic H750IBTx",
+        "build": {
+          "board": "GENERIC_H750IBTX",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H750VBTX": {
+        "": "Generic H750VBTx",
+        "build": {
+          "board": "GENERIC_H750VBTX",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H750XBHX": {
+        "": "Generic H750XBHx",
+        "build": {
+          "board": "GENERIC_H750XBHX",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H750ZBTX": {
+        "": "Generic H750ZBTx",
+        "build": {
+          "board": "GENERIC_H750ZBTX",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H753IIKX": {
+        "": "Generic H753IIKx",
+        "build": {
+          "board": "GENERIC_H753IIKX",
+          "product_line": "STM32H753xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H753.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H753IITX": {
+        "": "Generic H753IITx",
+        "build": {
+          "board": "GENERIC_H753IITX",
+          "product_line": "STM32H753xx",
+          "variant": "STM32H7xx/H742I(G-I)(K-T)_H743I(G-I)(K-T)_H750IB(K-T)_H753II(K-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H753.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H753VIHX": {
+        "": "Generic H753VIHx",
+        "build": {
+          "board": "GENERIC_H753VIHX",
+          "product_line": "STM32H753xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H753.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H753VITX": {
+        "": "Generic H753VITx",
+        "build": {
+          "board": "GENERIC_H753VITX",
+          "product_line": "STM32H753xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H753.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H753XIHX": {
+        "": "Generic H753XIHx",
+        "build": {
+          "board": "GENERIC_H753XIHX",
+          "product_line": "STM32H753xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H753.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H753ZITX": {
+        "": "Generic H753ZITx",
+        "build": {
+          "board": "GENERIC_H753ZITX",
+          "product_line": "STM32H753xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H753.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H755XIHX": {
+        "": "Generic H755XIHx",
+        "build": {
+          "board": "GENERIC_H755XIHX",
+          "product_line": "STM32H755xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H755_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H755ZITX": {
+        "": "Generic H755ZITx",
+        "build": {
+          "board": "GENERIC_H755ZITX",
+          "product_line": "STM32H755xx",
+          "variant": "STM32H7xx/H745Z(G-I)T_H755ZIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H755_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "884736",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H757AIIX": {
+        "": "Generic H757AIIx",
+        "build": {
+          "board": "GENERIC_H757AIIX",
+          "product_line": "STM32H757xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H757_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H757IITX": {
+        "": "Generic H757IITx",
+        "build": {
+          "board": "GENERIC_H757IITX",
+          "product_line": "STM32H757xx",
+          "variant": "STM32H7xx/H742Z(G-I)T_H743Z(G-I)T_H747A(G-I)I_H747I(G-I)T_H750ZBT_H753ZIT_H757AII_H757IIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H757_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H757XIHX": {
+        "": "Generic H757XIHx",
+        "build": {
+          "board": "GENERIC_H757XIHX",
+          "product_line": "STM32H757xx",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H757_CM7.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H7A3VGHX": {
+        "": "Generic H7A3VGHx",
+        "build": {
+          "board": "GENERIC_H7A3VGHX",
+          "product_line": "STM32H7A3xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7A3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H7A3VGTX": {
+        "": "Generic H7A3VGTx",
+        "build": {
+          "board": "GENERIC_H7A3VGTX",
+          "product_line": "STM32H7A3xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7A3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H7A3VIHX": {
+        "": "Generic H7A3VIHx",
+        "build": {
+          "board": "GENERIC_H7A3VIHX",
+          "product_line": "STM32H7A3xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7A3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H7A3VITX": {
+        "": "Generic H7A3VITx",
+        "build": {
+          "board": "GENERIC_H7A3VITX",
+          "product_line": "STM32H7A3xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7A3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H7A3ZGTXQ": {
+        "": "Generic H7A3ZGTxQ",
+        "build": {
+          "board": "GENERIC_H7A3ZGTXQ",
+          "product_line": "STM32H7A3xxQ",
+          "variant": "STM32H7xx/H7A3Z(G-I)TxQ_H7B3ZITxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7A3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_H7A3ZITXQ": {
+        "": "Generic H7A3ZITxQ",
+        "build": {
+          "board": "GENERIC_H7A3ZITXQ",
+          "product_line": "STM32H7A3xxQ",
+          "variant": "STM32H7xx/H7A3Z(G-I)TxQ_H7B3ZITxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7A3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H7B0VBTX": {
+        "": "Generic H7B0VBTx",
+        "build": {
+          "board": "GENERIC_H7B0VBTX",
+          "product_line": "STM32H7B0xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7B0.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_H7B3VIHX": {
+        "": "Generic H7B3VIHx",
+        "build": {
+          "board": "GENERIC_H7B3VIHX",
+          "product_line": "STM32H7B3xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7B3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H7B3VITX": {
+        "": "Generic H7B3VITx",
+        "build": {
+          "board": "GENERIC_H7B3VITX",
+          "product_line": "STM32H7B3xx",
+          "variant": "STM32H7xx/H7A3V(G-I)(H-T)_H7B0VBT_H7B3VI(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7B3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "2097152"
+        }
+      },
+      "GENERIC_H7B3ZITXQ": {
+        "": "Generic H7B3ZITxQ",
+        "build": {
+          "board": "GENERIC_H7B3ZITXQ",
+          "product_line": "STM32H7B3xxQ",
+          "variant": "STM32H7xx/H7A3Z(G-I)TxQ_H7B3ZITxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H7B3.svd"
+        },
+        "upload": {
+          "maximum_data_size": "1048576",
+          "maximum_size": "2097152"
+        }
+      },
+      "WeActMiniH723VGTX": {
+        "": "WeAct MiniSTM32H723VGTX",
+        "build": {
+          "board": "WeActMiniH723VGTX",
+          "product_line": "STM32H723xx",
+          "variant": "STM32H7xx/H723V(E-G)(H-T)_H730VB(H-T)_H733VG(H-T)",
+          "variant_h": "variant_WeActMiniH723VGTX.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H723.svd"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "WeActMiniH743VITX": {
+        "": "WeAct MiniSTM32H743VITX",
+        "build": {
+          "board": "WeActMiniH743VITX",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H743xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)",
+          "variant_h": "variant_WeActMiniH7xx.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H743.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "WeActMiniH750VBTX": {
+        "": "WeAct MiniSTM32H750VBTX",
+        "build": {
+          "board": "WeActMiniH750VBTX",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H750xx",
+          "variant": "STM32H7xx/H742V(G-I)(H-T)_H743V(G-I)(H-T)_H750VBT_H753VI(H-T)",
+          "variant_h": "variant_WeActMiniH7xx.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H750.svd"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "131072"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (No Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    },
+    "xusb": {
+      "FS": "Low/Full Speed",
+      "HS": {
+        "": "High Speed",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS"
+        }
+      },
+      "HSFS": {
+        "": "High Speed in Full Speed mode",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS -DUSE_USB_HS_IN_FS"
+        }
+      }
+    }
+  },
+  "name": "Generic STM32H7 Series",
+  "openocd": {
+    "target": "stm32h7x"
+  },
+  "pid": {
+    "0": "0x5740"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483"
+  }
+}
