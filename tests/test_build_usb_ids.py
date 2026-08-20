@@ -95,6 +95,64 @@ def test_dump_usb_ids_is_compact_download_shape() -> None:
     assert ": " not in encoded
 
 
+def test_dump_usb_ids_collapses_shared_vidpid_to_one_generic_identity() -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.executescript(
+        """
+        CREATE TABLE vid_vendor (
+          vid TEXT PRIMARY KEY,
+          vendor TEXT NOT NULL,
+          source TEXT NOT NULL
+        );
+        CREATE TABLE vidpid (
+          vidpid TEXT NOT NULL,
+          vid TEXT NOT NULL,
+          pid TEXT NOT NULL,
+          product TEXT NOT NULL,
+          source TEXT NOT NULL,
+          is_primary INTEGER NOT NULL DEFAULT 1
+        );
+        """
+    )
+    conn.execute(
+        "INSERT INTO vid_vendor (vid, vendor, source) VALUES (?, ?, ?)",
+        ("303a", "Espressif Systems", "test"),
+    )
+    conn.executemany(
+        "INSERT INTO vidpid (vidpid, vid, pid, product, source, is_primary) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        [
+            ("303a1001", "303a", "1001", "WEMOS LOLIN S3", "platformio", 0),
+            ("303a1001", "303a", "1001", "cezerio mini dev ESP32C6", "arduino", 0),
+            ("303a1001", "303a", "1001", "4D Systems GEN4-ESP32", "arduino", 1),
+        ],
+    )
+
+    result = dump_usb_ids(conn)
+    conn.close()
+
+    assert result == {
+        "303a": {
+            "Vendor name": "Espressif Systems",
+            "PIDs": [{"1001": "Shared USB identity (3 products)"}],
+        },
+    }
+
+    encoded = encode_usb_vids_proto(result)
+    vendor_payload = next(
+        payload
+        for field, wire_type, payload in _read_fields(encoded)
+        if field == 1 and wire_type == 2
+    )
+    assert isinstance(vendor_payload, bytes)
+    product_payloads = [
+        payload
+        for field, wire_type, payload in _read_fields(vendor_payload)
+        if field == 3 and wire_type == 2
+    ]
+    assert len(product_payloads) == 1
+
+
 def test_encode_usb_vids_proto_wire_shape() -> None:
     data = {
         "16c0": {
