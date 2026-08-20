@@ -19,7 +19,10 @@ JSON output shape:
 
 The file is intentionally minimized because it is a direct-download helper.
 It is generated after boards.db is constructed, so it reflects the final
-ingested vid_vendor + vidpid tables.
+ingested vid_vendor + vidpid tables. The searchable database retains every
+alternate product name for a shared VID:PID, but this compact lookup has a
+single product slot per pair. Shared pairs are therefore exported as one
+generic identity instead of an arbitrary board name.
 
 The protobuf sidecar is written as `usb-vids.proto.zstd`. Its wire schema is:
 
@@ -48,16 +51,23 @@ import sys
 
 def dump_usb_ids(conn: sqlite3.Connection) -> dict[str, dict[str, object]]:
     out: dict[str, dict[str, object]] = {}
+    seen_pairs: set[tuple[str, str]] = set()
 
     rows = conn.execute(
         """
-        SELECT p.vid, COALESCE(v.vendor, ''), p.pid, p.product
+        SELECT p.vid, COALESCE(v.vendor, ''), p.pid, p.product,
+               COUNT(*) OVER (PARTITION BY p.vid, p.pid) AS product_count
         FROM vidpid p
         LEFT JOIN vid_vendor v ON v.vid = p.vid
         ORDER BY p.vid, p.pid, p.is_primary DESC, p.product COLLATE NOCASE
         """
     )
-    for vid, vendor_name, pid, product in rows:
+    for vid, vendor_name, pid, product, product_count in rows:
+        pair = (vid, pid)
+        if pair in seen_pairs:
+            continue
+        seen_pairs.add(pair)
+
         bucket = out.setdefault(
             vid,
             {
@@ -67,7 +77,12 @@ def dump_usb_ids(conn: sqlite3.Connection) -> dict[str, dict[str, object]]:
         )
         pids = bucket["PIDs"]
         if isinstance(pids, list):
-            pids.append({pid: product})
+            display_name = (
+                product
+                if product_count == 1
+                else f"Shared USB identity ({product_count} products)"
+            )
+            pids.append({pid: display_name})
 
     return out
 
