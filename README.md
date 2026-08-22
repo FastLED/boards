@@ -88,14 +88,18 @@ README.md                    # this file
 design.md                    # full architectural design — read this before changing anything
 ```
 
-### Data branches (orphan, bot-pushed only)
+### Data branches (orphan)
+
+Mirrored branches are bot-pushed; `other` is human-curated and pushed
+directly. See design.md → "Carve-out: curated USB identity records are pushed
+directly".
 
 | Branch | What it carries | Refresh trigger |
 |---|---|---|
 | `platformio` | Slim mirror of `boards/*.json` + `platform.json` from the 37 PlatformIO `platform-*` repos (Apache-2.0). | `workflow_dispatch` (manual for v1; nightly cron later) |
 | `arduino` | Parsed JSON form of `boards.txt` from upstream Arduino cores (Arduino AVR, SAMD, Espressif Arduino, Adafruit nRF52, STM32duino, Silicon Labs, …). | `workflow_dispatch` |
 | `vendors` | Authoritative PID allocation registries: `raspberrypi/usb-pid`, `espressif/usb-pids`, our curated `vendor_names_inlined` overlay. | `workflow_dispatch` |
-| `other` | Heterogeneous: udev rules, esptool VID tables, gowdy.us scrapes, anything that doesn't fit a clean upstream category. | `workflow_dispatch` |
+| `other` | Heterogeneous: udev rules, esptool VID tables, gowdy.us scrapes, plus **hand-curated** identity records and overrides (`overrides.json`, `*_pids.json`) — anything that doesn't fit a clean upstream category. | direct push (curated) + `workflow_dispatch` |
 
 Each carries a top-level `_meta.json` recording every source URL, upstream
 commit SHA, sync timestamp, and license — provenance is part of the data.

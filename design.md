@@ -162,8 +162,12 @@ the per-source debuggability).
    (`raspberrypi/usb-pid`, `espressif/usb-pids`) + our curated
    `vendor_names_inlined` overlay. Authoritative but small.
 4. **`other`** — the eclectic catch-all: udev rules, esptool tables,
-   gowdy.us scrapes, anything that doesn't fit. Lives separately so the
-   noise from this branch doesh't muddy the cleaner three.
+   gowdy.us scrapes, plus our **hand-curated** identity records and
+   overrides (`overrides.json`, `*_pids.json`) — anything that doesn't fit
+   the mirrored three. Lives separately so the noise from this branch
+   doesn't muddy the cleaner three, and so curation has an unambiguous
+   home. See "Carve-out: curated USB identity records are pushed directly"
+   under Anti-goals.
 
 Adding a 5th class (e.g. `zephyr` for the Zephyr `board.yml` corpus) is
 a single follow-up: new sync workflow, new branch, add the branch name
@@ -376,10 +380,13 @@ Each phase is a PR-reviewable change, gated by tests on `main`.
 
 - **Per-board issue tracker** — issues live on `FastLED/fbuild` for now.
   When this repo goes public, it gets its own.
-- **PR-based board contributions** — data branches are bot-pushed; if a
-  human needs to add a board manually, the right place is the upstream
-  source (PlatformIO platform-*, Arduino core, vendor registry). We
-  mirror, we don't curate-by-PR.
+- **Forking upstream *board definitions*** — if a board's JSON is wrong or
+  missing, the right place to fix it is the upstream source (PlatformIO
+  `platform-*`, Arduino core, vendor registry), not a local edit here. We
+  mirror those corpora; a local fork of a mirrored record silently diverges
+  on the next sync. This is about the mirrored layers (`platformio`,
+  `arduino`, and the registry half of `vendors`) — it is **not** a blanket
+  ban on human-authored data. See the curation carve-out below.
 - **Real-time push notifications to fbuild clients** — the existing
   pull / cache model is fine; push would add infrastructure
   (websockets, durable subscriptions) that doesn't fit this repo's
@@ -392,6 +399,45 @@ Each phase is a PR-reviewable change, gated by tests on `main`.
   force-pushable by design (history prune); consumers MUST be tolerant
   of `force-with-lease` rewrites. The `last-good-*` tags are the
   stable references.
+
+### Carve-out: curated USB identity records are pushed directly
+
+The anti-goal above is about mirrored board definitions. **Curated USB
+identity records are the opposite: we own them, and they are pushed straight
+to the data branch.** Nothing about them is mirrored, so there is no upstream
+to defer to and nothing to diverge from.
+
+This is already the established shape of the `other` branch — `overrides.json`
+(`vid_overrides` / `vidpid_overrides` / `vidpid_board_links`),
+`nxp_debug_probe_pids.json`, `teensy_pids.json`, `ftdi_bridge_pids.json` — plus
+the `vendor_names_inlined` overlay on `vendors`. These exist precisely because
+some identities have no upstream registry that carries them, or carry them
+under a name that is wrong for an embedded-board context (the Teensy /
+VOTI 0x16C0 re-attribution being the canonical case).
+
+The procedure for a missing identity is therefore **push, not file**:
+
+1. Add a flat `{vid, pid, product}` record to a topic file on `other`
+   (`_comment` / `_skip` header record for provenance; see
+   `nxp_debug_probe_pids.json`).
+2. Verify ingestion locally *before* pushing:
+   `uv run --no-project python builders/extract_other.py --in <worktree> --out <tmp>`
+3. Push to the data branch; `build-site.yml` rebuilds on push, with the
+   nightly backstop and `workflow_dispatch` as override.
+
+Downstream consumers need no coordinated release: fbuild fetches the published
+catalogue at runtime and picks new identities up on its next cache refresh. A
+version bump downstream is warranted only when ingestion or resolution *logic*
+changes, not when data does.
+
+Worked example: FTDI FT232H `0403:6014` was absent registry-wide, reported by a
+downstream audit as the last unresolved literal in FastLED's `ci/` tree. It went
+from absent to resolving downstream in minutes via exactly the three steps above
+— one commit, one site rebuild, no fbuild release (#60).
+
+Filing an issue and waiting is the wrong reflex for a repo we control. Issues
+are for questions about *which* identity is correct, not for requesting that a
+known-correct one be added.
 
 ## Open questions
 
