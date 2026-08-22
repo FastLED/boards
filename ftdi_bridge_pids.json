@@ -1,0 +1,12 @@
+[
+  {
+    "_comment": "FTDI USB-UART bridge PIDs under VID 0x0403, manually curated 2026-08-22 for FastLED/boards#60.",
+    "_skip": "ignored by extract_other.py (only records with vid+pid+product are ingested)"
+  },
+  {
+    "vid": "0403",
+    "pid": "6014",
+    "product": "FTDI FT232H (single-channel Hi-Speed USB to UART/FIFO)",
+    "_source": "FTDI FT232H datasheet default VID:PID. Generic USB-UART bridge used on Adafruit FT232H breakout, Digilent JTAG-HS2/HS3 and numerous ESP32/JTAG adapters. Companion to FT232R (0403:6001) and FT2232 (0403:6010), both already published."
+  }
+]
