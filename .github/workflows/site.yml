@@ -1,0 +1,138 @@
+name: Build site
+
+on:
+  # Fast path: rebuild within minutes of any data-branch push.
+  push:
+    branches: [platformio, arduino, vendors, other]
+  # 24-hour backstop: catches missed push triggers, GH outages, etc.
+  schedule:
+    - cron: "30 4 * * *"
+  # Human override.
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # for the site-branch force-push
+  pages: write      # for actions/deploy-pages
+  id-token: write   # for actions/deploy-pages (OIDC to GH Pages)
+
+concurrency:
+  group: build-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Standard GH Pages environment binding — exposes the deployed URL as
+    # an output and links it from the workflow run summary.
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy_pages.outputs.page_url }}
+    steps:
+      - name: Checkout main (tools live here)
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Set up Node.js (for the Vite frontend build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: site-src/package-lock.json
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "fbuild-bot[site]"
+          git config user.email "fbuild-bot+site@users.noreply.github.com"
+
+      - name: Worktree each data branch + the site branch
+        id: worktrees
+        run: |
+          set -euo pipefail
+          mkdir -p .branches /tmp/source-shas
+          : > /tmp/source-shas.json
+          echo "{" > /tmp/source-shas.json
+          first=1
+          for b in platformio arduino vendors other; do
+            if git ls-remote --heads origin "$b" | grep -q .; then
+              git fetch origin "$b:$b"
+              git worktree add ".branches/$b" "$b"
+              sha=$(git -C ".branches/$b" rev-parse HEAD)
+              [ $first -eq 0 ] && echo "," >> /tmp/source-shas.json
+              echo "  \"$b\": \"$sha\"" >> /tmp/source-shas.json
+              first=0
+            else
+              echo "::warning::data branch '$b' does not yet exist on remote; skipping"
+            fi
+          done
+          echo "}" >> /tmp/source-shas.json
+          cat /tmp/source-shas.json
+
+          if git ls-remote --heads origin site | grep -q .; then
+            git fetch origin site:site
+            git worktree add .site site
+          else
+            git worktree add --detach .site
+            (cd .site && git checkout --orphan site && git rm -rf . 2>/dev/null || true)
+          fi
+
+      - name: Run site builder (extractors -> merge -> sqlite -> bundle)
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # The new orchestrator chains: extract_{vendors,arduino,platformio,
+          # other}.py -> merge.py -> build_sqlite.py -> templates/index.html
+          # + sql.js download. Errors logged under .site/errors/.
+          uv run --no-project --script builders/site.py \
+            --data-root .branches \
+            --out .site \
+            --workdir /tmp/site-work
+
+      - name: Force-push site as a fresh orphan commit
+        id: push_site
+        working-directory: .site
+        # Same orphan-commit pattern as the data branches: single commit,
+        # no history accumulation, GH UI stays at "1 commit" instead of
+        # growing N-behind-main forever.
+        run: |
+          set -euo pipefail
+          git add -A
+          TREE=$(git write-tree)
+          REMOTE_TREE=""
+          if git ls-remote --exit-code --heads origin site >/dev/null 2>&1; then
+            REMOTE_TREE=$(git rev-parse "origin/site^{tree}" 2>/dev/null || true)
+          fi
+          if [ -n "$REMOTE_TREE" ] && [ "$TREE" = "$REMOTE_TREE" ]; then
+            echo "tree unchanged ($TREE); skipping push"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          trig="${{ github.event_name }}"
+          NEW=$(git commit-tree "$TREE" -m "site: rebuild ($trig) ${ts}")
+          echo "new orphan: $NEW (tree $TREE)"
+          if git ls-remote --exit-code --heads origin site >/dev/null 2>&1; then
+            git push --force origin "$NEW:refs/heads/site"
+          else
+            git push origin "$NEW:refs/heads/site"
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # ────────────────────────────────────────────────────────────────────
+      # Deploy the same site/ contents to GitHub Pages. The site branch is
+      # kept as the auditable snapshot ("git checkout site" → exact bytes
+      # that are live); Pages is the public publication path. Both views
+      # come from the same .site/ directory the builder just wrote.
+      # ────────────────────────────────────────────────────────────────────
+
+      - name: Upload Pages artifact
+        if: steps.push_site.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .site
+
+      - name: Deploy to GitHub Pages
+        id: deploy_pages
+        if: steps.push_site.outputs.changed == 'true'
+        uses: actions/deploy-pages@v4

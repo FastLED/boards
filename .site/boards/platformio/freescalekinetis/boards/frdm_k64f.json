@@ -1,0 +1,32 @@
+{
+  "build": {
+    "cpu": "cortex-m4",
+    "f_cpu": "120000000L",
+    "mcu": "mk64fn1m0vll12"
+  },
+  "connectivity": [
+    "ethernet"
+  ],
+  "debug": {
+    "jlink_device": "MK64FN1M0xxx12",
+    "pyocd_target": "k64f",
+    "svd_path": "MK64F12.svd"
+  },
+  "frameworks": [
+    "mbed",
+    "zephyr"
+  ],
+  "name": "Freescale Kinetis FRDM-K64F",
+  "upload": {
+    "maximum_ram_size": 262144,
+    "maximum_size": 1048576,
+    "protocol": "mbed",
+    "protocols": [
+      "cmsis-dap",
+      "jlink",
+      "mbed"
+    ]
+  },
+  "url": "https://developer.mbed.org/platforms/FRDM-K64F/",
+  "vendor": "Freescale"
+}

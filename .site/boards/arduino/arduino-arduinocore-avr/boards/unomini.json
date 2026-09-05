@@ -1,0 +1,48 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xFD",
+    "file": "optiboot/optiboot_atmega328.hex",
+    "high_fuses": "0xDE",
+    "lock_bits": "0x0F",
+    "low_fuses": "0xFF",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_UNO",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "mcu": "atmega328p",
+    "variant": "standard"
+  },
+  "name": "Arduino UNO Mini",
+  "pid": {
+    "0": "0x0062"
+  },
+  "upload": {
+    "maximum_data_size": "2048",
+    "maximum_size": "32256",
+    "protocol": "arduino",
+    "speed": "115200",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0062",
+      "vid": "0x2341"
+    },
+    "4": {
+      "board": "unomini"
+    }
+  },
+  "vid": {
+    "0": "0x2341"
+  }
+}

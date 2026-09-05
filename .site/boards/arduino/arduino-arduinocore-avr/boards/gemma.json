@@ -1,0 +1,45 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xFE",
+    "file": "gemma/gemma_v1.hex",
+    "high_fuses": "0xD5",
+    "lock_bits": "",
+    "low_fuses": "0xF1",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": ""
+  },
+  "build": {
+    "board": "AVR_GEMMA",
+    "core": "arduino",
+    "f_cpu": "8000000L",
+    "mcu": "attiny85",
+    "variant": "gemma"
+  },
+  "name": "Arduino Gemma",
+  "pid": {
+    "0": "0x0c9f"
+  },
+  "upload": {
+    "maximum_size": "5310",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0c9f",
+      "vid": "0x2341"
+    },
+    "1": {
+      "board": "gemma"
+    }
+  },
+  "vid": {
+    "0": "0x2341"
+  }
+}

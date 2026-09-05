@@ -1,0 +1,32 @@
+{
+  "build": {
+    "arduino": {
+      "ldscript": "mkl26z64.ld"
+    },
+    "core": "teensy3",
+    "cpu": "cortex-m0plus",
+    "extra_flags": "-D__MKL26Z64__ -DARDUINO_TEENSYLC",
+    "f_cpu": "48000000L",
+    "mcu": "mkl26z64"
+  },
+  "debug": {
+    "jlink_device": "MKL26Z64xxx4",
+    "svd_path": "MKL26Z4.svd"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "Teensy LC",
+  "upload": {
+    "maximum_ram_size": 8192,
+    "maximum_size": 63488,
+    "protocol": "teensy-gui",
+    "protocols": [
+      "teensy-cli",
+      "teensy-gui",
+      "jlink"
+    ]
+  },
+  "url": "http://www.pjrc.com/teensy/teensyLC.html",
+  "vendor": "Teensy"
+}

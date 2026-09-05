@@ -1,0 +1,618 @@
+{
+  "build": {
+    "board": "WAVESHARE_RP2040_LCD_1_28",
+    "boot2": "boot2_w25q16jvxq_4_padded_checksum",
+    "chip": "rp2040",
+    "core": "rp2040",
+    "f_cpu": "125000000",
+    "ldscript": "memmap_default.ld",
+    "led": "",
+    "mcu": "cortex-m0plus",
+    "toolchain": "arm-none-eabi",
+    "toolchainopts": "-march=armv6-m -mcpu=cortex-m0plus -mthumb",
+    "toolchainpkg": "pqt-gcc",
+    "uf2family": "--family rp2040",
+    "usb_manufacturer": "\"Waveshare\"",
+    "usb_product": "\"RP2040 LCD 1.28\"",
+    "usbpid": "-DUSBD_PID=0x1039",
+    "usbpwr": "-DUSBD_MAX_POWER_MA=500",
+    "usbvid": "-DUSBD_VID=0x2e8a",
+    "variant": "waveshare_rp2040_lcd_1_28"
+  },
+  "menu": {
+    "dbglvl": {
+      "All": {
+        "": "All",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_WIRE -DDEBUG_RP2040_SPI -DDEBUG_RP2040_CORE -DDEBUG_RP2040_BLUETOOTH -DDEBUG_RP2040_BLE -DLWIP_DEBUG=1"
+        }
+      },
+      "BLE": {
+        "": "BLE",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_BLE"
+        }
+      },
+      "Bluetooth": {
+        "": "Bluetooth",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_BLUETOOTH"
+        }
+      },
+      "Core": {
+        "": "Core",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_CORE"
+        }
+      },
+      "LWIP": {
+        "": "LWIP",
+        "build": {
+          "debug_level": "-DLWIP_DEBUG=1"
+        }
+      },
+      "NDEBUG": {
+        "": "NDEBUG",
+        "build": {
+          "debug_level": "-DNDEBUG"
+        }
+      },
+      "None": {
+        "": "None",
+        "build": {
+          "debug_level": ""
+        }
+      },
+      "SPI": {
+        "": "SPI",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_SPI"
+        }
+      },
+      "Wire": {
+        "": "Wire",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_WIRE"
+        }
+      }
+    },
+    "dbgport": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "debug_port": ""
+        }
+      },
+      "Serial": {
+        "": "Serial",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=Serial"
+        }
+      },
+      "Serial1": {
+        "": "Serial1",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=Serial1"
+        }
+      },
+      "Serial2": {
+        "": "Serial2",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=Serial2"
+        }
+      },
+      "SerialSemi": {
+        "": "SerialSemi",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=SerialSemi"
+        }
+      }
+    },
+    "exceptions": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "exceptions": "-fno-exceptions",
+            "libstdcpp": "-lstdc++"
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "exceptions": "-fexceptions",
+            "libstdcpp": "-lstdc++-exc"
+          }
+        }
+      }
+    },
+    "flash": {
+      "2097152_0": {
+        "": "2MB (no FS)",
+        "build": {
+          "eeprom_start": "270528512",
+          "flash_length": "2093056",
+          "flash_total": "2097152",
+          "fs_end": "270528512",
+          "fs_start": "270528512"
+        },
+        "upload": {
+          "maximum_size": "2093056"
+        }
+      },
+      "2097152_1048576": {
+        "": "2MB (Sketch: 1MB, FS: 1MB)",
+        "build": {
+          "eeprom_start": "270528512",
+          "flash_length": "1044480",
+          "flash_total": "2097152",
+          "fs_end": "270528512",
+          "fs_start": "269479936"
+        },
+        "upload": {
+          "maximum_size": "1044480"
+        }
+      },
+      "2097152_131072": {
+        "": "2MB (Sketch: 1920KB, FS: 128KB)",
+        "build": {
+          "eeprom_start": "270528512",
+          "flash_length": "1961984",
+          "flash_total": "2097152",
+          "fs_end": "270528512",
+          "fs_start": "270397440"
+        },
+        "upload": {
+          "maximum_size": "1961984"
+        }
+      },
+      "2097152_262144": {
+        "": "2MB (Sketch: 1792KB, FS: 256KB)",
+        "build": {
+          "eeprom_start": "270528512",
+          "flash_length": "1830912",
+          "flash_total": "2097152",
+          "fs_end": "270528512",
+          "fs_start": "270266368"
+        },
+        "upload": {
+          "maximum_size": "1830912"
+        }
+      },
+      "2097152_524288": {
+        "": "2MB (Sketch: 1536KB, FS: 512KB)",
+        "build": {
+          "eeprom_start": "270528512",
+          "flash_length": "1568768",
+          "flash_total": "2097152",
+          "fs_end": "270528512",
+          "fs_start": "270004224"
+        },
+        "upload": {
+          "maximum_size": "1568768"
+        }
+      },
+      "2097152_65536": {
+        "": "2MB (Sketch: 1984KB, FS: 64KB)",
+        "build": {
+          "eeprom_start": "270528512",
+          "flash_length": "2027520",
+          "flash_total": "2097152",
+          "fs_end": "270528512",
+          "fs_start": "270462976"
+        },
+        "upload": {
+          "maximum_size": "2027520"
+        }
+      }
+    },
+    "freq": {
+      "100": {
+        "": "100 MHz",
+        "build": {
+          "f_cpu": "100000000L"
+        }
+      },
+      "120": {
+        "": "120 MHz",
+        "build": {
+          "f_cpu": "120000000L"
+        }
+      },
+      "125": {
+        "": "125 MHz",
+        "build": {
+          "f_cpu": "125000000L"
+        }
+      },
+      "128": {
+        "": "128 MHz",
+        "build": {
+          "f_cpu": "128000000L"
+        }
+      },
+      "133": {
+        "": "133 MHz",
+        "build": {
+          "f_cpu": "133000000L"
+        }
+      },
+      "150": {
+        "": "150 MHz",
+        "build": {
+          "f_cpu": "150000000L"
+        }
+      },
+      "176": {
+        "": "176 MHz",
+        "build": {
+          "f_cpu": "176000000L"
+        }
+      },
+      "200": {
+        "": "200 MHz",
+        "build": {
+          "f_cpu": "200000000L"
+        }
+      },
+      "225": {
+        "": "225 MHz (Overclock)",
+        "build": {
+          "f_cpu": "225000000L"
+        }
+      },
+      "240": {
+        "": "240 MHz (Overclock)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "250": {
+        "": "250 MHz (Overclock)",
+        "build": {
+          "f_cpu": "250000000L"
+        }
+      },
+      "276": {
+        "": "276 MHz (Overclock)",
+        "build": {
+          "f_cpu": "276000000L"
+        }
+      },
+      "300": {
+        "": "300 MHz (Overclock)",
+        "build": {
+          "f_cpu": "300000000L"
+        }
+      },
+      "50": {
+        "": "50 MHz",
+        "build": {
+          "f_cpu": "50000000L"
+        }
+      }
+    },
+    "ipbtstack": {
+      "ipv4btcble": {
+        "": "IPv4 + Bluetooth",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1"
+        }
+      },
+      "ipv4btcblebig": {
+        "": "IPv4 + Bluetooth - 32K",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1 -D__LWIP_MEMMULT=2"
+        }
+      },
+      "ipv4ipv6": {
+        "": "IPv4 + IPv6",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1"
+        }
+      },
+      "ipv4ipv6big": {
+        "": "IPv4 + IPv6 - 32K",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1 -D__LWIP_MEMMULT=2"
+        }
+      },
+      "ipv4ipv6btcble": {
+        "": "IPv4 + IPv6 + Bluetooth",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1"
+        }
+      },
+      "ipv4ipv6btcblebig": {
+        "": "IPv4 + IPv6 + Bluetooth - 32K",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1 -D__LWIP_MEMMULT=2"
+        }
+      },
+      "ipv4only": {
+        "": "IPv4 Only",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1"
+        }
+      },
+      "ipv4onlybig": {
+        "": "IPv4 Only - 32K",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1 -D__LWIP_MEMMULT=2"
+        }
+      }
+    },
+    "opt": {
+      "Debug": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "Disabled": {
+        "": "Disabled (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "Fast": {
+        "": "Fast (-Ofast) (maybe slower)",
+        "build": {
+          "flags": {
+            "optimize": "-Ofast"
+          }
+        }
+      },
+      "Optimize": {
+        "": "Optimize (-O)",
+        "build": {
+          "flags": {
+            "optimize": "-O"
+          }
+        }
+      },
+      "Optimize2": {
+        "": "Optimize More (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "Optimize3": {
+        "": "Optimize Even More (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "Small": {
+        "": "Small (-Os) (standard)",
+        "build": {
+          "flags": {
+            "optimize": "-Os"
+          }
+        }
+      }
+    },
+    "os": {
+      "freertos": {
+        "": "FreeRTOS SMP",
+        "build": {
+          "os": "-D__FREERTOS"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "os": ""
+        }
+      }
+    },
+    "profile": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "profile": ""
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "profile": "-pg -D__PROFILE"
+          }
+        }
+      }
+    },
+    "rtti": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "rtti": "-fno-rtti"
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "rtti": ""
+          }
+        }
+      }
+    },
+    "stackprotect": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "stackprotect": ""
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "stackprotect": "-fstack-protector-all"
+          }
+        }
+      }
+    },
+    "uploadmethod": {
+      "default": {
+        "": "Default (UF2)",
+        "build": {
+          "debugscript": "picoprobe_cmsis_dap.tcl",
+          "ram_length": "256k"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "tool": {
+            "": "uf2conv",
+            "default": "uf2conv",
+            "network": "uf2conv-network"
+          }
+        }
+      },
+      "picoprobe_cmsis_dap": {
+        "": "Picoprobe/Debugprobe (CMSIS-DAP)",
+        "build": {
+          "debugscript": "picoprobe_cmsis_dap.tcl",
+          "ram_length": "256k"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "tool": {
+            "": "picoprobe_cmsis_dap",
+            "default": "picoprobe_cmsis_dap"
+          }
+        }
+      },
+      "picotool": {
+        "": "Picotool",
+        "build": {
+          "debugscript": "picoprobe.tcl",
+          "picodebugflags": "-DENABLE_PICOTOOL_USB",
+          "ram_length": "256k"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "tool": {
+            "": "picotool",
+            "default": "picotool"
+          }
+        }
+      }
+    },
+    "usbstack": {
+      "nousb": {
+        "": "No USB",
+        "build": {
+          "usbstack_flags": "\"-DNO_USB -DDISABLE_USB_SERIAL -I{runtime.platform.path}/tools/libpico\""
+        }
+      },
+      "picosdk": {
+        "": "Pico SDK",
+        "build": {
+          "usbstack_flags": ""
+        }
+      },
+      "tinyusb": {
+        "": "Adafruit TinyUSB",
+        "build": {
+          "usbstack_flags": "-DUSE_TINYUSB \"-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino\""
+        }
+      },
+      "tinyusb_host": {
+        "": "Adafruit TinyUSB Host (native)",
+        "build": {
+          "usbstack_flags": "-DUSE_TINYUSB -DUSE_TINYUSB_HOST \"-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino\""
+        }
+      }
+    }
+  },
+  "name": "Waveshare RP2040 LCD 1.28",
+  "pid": {
+    "0": "0x1039",
+    "1": "0x1139",
+    "2": "0x5039",
+    "3": "0x5139",
+    "4": "0x9039",
+    "5": "0x9139",
+    "6": "0xd039",
+    "7": "0xd139"
+  },
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "erase_cmd": "",
+    "maximum_size": "2097152",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x1039",
+      "vid": "0x2e8a"
+    },
+    "1": {
+      "pid": "0x1139",
+      "vid": "0x2e8a"
+    },
+    "2": {
+      "pid": "0x5039",
+      "vid": "0x2e8a"
+    },
+    "3": {
+      "pid": "0x5139",
+      "vid": "0x2e8a"
+    },
+    "4": {
+      "pid": "0x9039",
+      "vid": "0x2e8a"
+    },
+    "5": {
+      "pid": "0x9139",
+      "vid": "0x2e8a"
+    },
+    "6": {
+      "pid": "0xd039",
+      "vid": "0x2e8a"
+    },
+    "7": {
+      "pid": "0xd139",
+      "vid": "0x2e8a"
+    }
+  },
+  "vid": {
+    "0": "0x2e8a",
+    "1": "0x2e8a",
+    "2": "0x2e8a",
+    "3": "0x2e8a",
+    "4": "0x2e8a",
+    "5": "0x2e8a",
+    "6": "0x2e8a",
+    "7": "0x2e8a"
+  }
+}

@@ -1,0 +1,476 @@
+{
+  "build": {
+    "board": "Nucleo_32",
+    "core": "arduino",
+    "family": "NUCLEO_32",
+    "flash_offset": "0x0",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}",
+    "variant_h": "variant_{build.board}.h"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "NUCLEO_F031K6": {
+        "": "Nucleo F031K6",
+        "build": {
+          "board": "NUCLEO_F031K6",
+          "mcu": "cortex-m0",
+          "product_line": "STM32F031x6",
+          "series": "STM32F0xx",
+          "variant": "STM32F0xx/F031K6T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F0xx/STM32F0x1.svd"
+        },
+        "node": "NODE_F031K6",
+        "openocd": {
+          "target": "stm32f0x"
+        },
+        "upload": {
+          "maximum_data_size": "4096",
+          "maximum_size": "32768"
+        }
+      },
+      "NUCLEO_F042K6": {
+        "": "Nucleo F042K6",
+        "build": {
+          "board": "NUCLEO_F042K6",
+          "mcu": "cortex-m0",
+          "product_line": "STM32F042x6",
+          "series": "STM32F0xx",
+          "variant": "STM32F0xx/F042K(4-6)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F0xx/STM32F0x2.svd"
+        },
+        "node": "NODE_F042K6",
+        "openocd": {
+          "target": "stm32f0x"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "32768"
+        }
+      },
+      "NUCLEO_F303K8": {
+        "": "Nucleo F303K8",
+        "build": {
+          "board": "NUCLEO_F303K8",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32F303x8",
+          "series": "STM32F3xx",
+          "variant": "STM32F3xx/F303K(6-8)T_F334K(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "node": "NODE_F303K8",
+        "openocd": {
+          "target": "stm32f3x"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "NUCLEO_G031K8": {
+        "": "Nucleo G031K8",
+        "build": {
+          "board": "NUCLEO_G031K8",
+          "mcu": "cortex-m0plus",
+          "product_line": "STM32G031xx",
+          "series": "STM32G0xx",
+          "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32G0xx/G031K(4-6-8)(T-U)_G041K(6-8)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32G0xx/STM32G031.svd"
+        },
+        "node": "\"NODE_G031K8,NOD_G031K8\"",
+        "openocd": {
+          "target": "stm32g0x"
+        },
+        "upload": {
+          "maximum_data_size": "8192",
+          "maximum_size": "65536"
+        }
+      },
+      "NUCLEO_G431KB": {
+        "": "Nucleo G431KB",
+        "build": {
+          "board": "NUCLEO_G431KB",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32G431xx",
+          "series": "STM32G4xx",
+          "variant": "STM32G4xx/G431K(6-8-B)(T-U)_G441KB(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32G4xx/STM32G431.svd"
+        },
+        "node": "\"NODE_G431KB,NOD_G431KB\"",
+        "openocd": {
+          "target": "stm32g4x"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "NUCLEO_L031K6": {
+        "": "Nucleo L031K6",
+        "build": {
+          "board": "NUCLEO_L031K6",
+          "mcu": "cortex-m0plus",
+          "product_line": "STM32L031xx",
+          "series": "STM32L0xx",
+          "variant": "STM32L0xx/L031K(4-6)T_L041K6T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L0xx/STM32L0x1.svd"
+        },
+        "node": "NODE_L031K6",
+        "openocd": {
+          "target": "stm32l0"
+        },
+        "upload": {
+          "maximum_data_size": "8192",
+          "maximum_size": "32768"
+        }
+      },
+      "NUCLEO_L412KB": {
+        "": "Nucleo L412KB",
+        "build": {
+          "board": "NUCLEO_L412KB",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32L412xx",
+          "series": "STM32L4xx",
+          "variant": "STM32L4xx/L412K(8-B)(T-U)_L422KB(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L4xx/STM32L412.svd"
+        },
+        "node": "NODE_L412KB",
+        "openocd": {
+          "target": "stm32l4x"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "131072"
+        }
+      },
+      "NUCLEO_L432KC": {
+        "": "Nucleo L432KC",
+        "build": {
+          "board": "NUCLEO_L432KC",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32L432xx",
+          "series": "STM32L4xx",
+          "variant": "STM32L4xx/L432K(B-C)U_L442KCU"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L4xx/STM32L432.svd"
+        },
+        "node": "NODE_L432KC",
+        "openocd": {
+          "target": "stm32l4x"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "MassStorage": {
+        "": "Mass Storage",
+        "upload": {
+          "protocol": "",
+          "tool": "massStorageCopy"
+        }
+      },
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (No Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    },
+    "xusb": {
+      "FS": "Low/Full Speed",
+      "HS": {
+        "": "High Speed",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS"
+        }
+      },
+      "HSFS": {
+        "": "High Speed in Full Speed mode",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS -DUSE_USB_HS_IN_FS"
+        }
+      }
+    }
+  },
+  "name": "Nucleo-32",
+  "pid": {
+    "0": "0x5740",
+    "1": "0x3744",
+    "2": "0x3748",
+    "3": "0x374b",
+    "4": "0x374e",
+    "5": "0x374f",
+    "6": "0x3752",
+    "7": "0x3753"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483",
+    "1": "0x0483",
+    "2": "0x0483",
+    "3": "0x0483",
+    "4": "0x0483",
+    "5": "0x0483",
+    "6": "0x0483",
+    "7": "0x0483"
+  }
+}

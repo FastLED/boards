@@ -1,0 +1,59 @@
+{
+  "bootloader": {
+    "file": "circuitplay/circuitplay_m0_samd21g18_sam_ba.bin",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    }
+  },
+  "build": {
+    "board": "SAMD_CIRCUITPLAYGROUND_EXPRESS",
+    "core": "arduino",
+    "extra_flags": "-DCRYSTALLESS -DARDUINO_SAMD_ZERO -D__SAMD21G18A__ {build.usb_flags}",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x8018",
+    "usb_manufacturer": "\"Adafruit\"",
+    "usb_product": "\"Circuit Playground Express\"",
+    "variant": "circuitplay",
+    "variant_system_lib": "",
+    "vid": "0x239A"
+  },
+  "name": "Adafruit Circuit Playground Express",
+  "pid": {
+    "0": "0x8018",
+    "1": "0x0018"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "true",
+    "protocol": "sam-ba",
+    "tool": {
+      "": "bossac",
+      "default": "bossac",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x8018",
+      "vid": "0x239A"
+    },
+    "1": {
+      "pid": "0x0018",
+      "vid": "0x239A"
+    },
+    "2": {
+      "board": "adafruit_circuitplayground_m0"
+    }
+  },
+  "vid": {
+    "0": "0x239A",
+    "1": "0x239A"
+  }
+}
