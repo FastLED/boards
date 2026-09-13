@@ -1,0 +1,106 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "KODE_DOT",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "1",
+    "core": "esp32",
+    "custom_partitions": "kodedot_partitions",
+    "defines": "",
+    "dfu_on_boot": "0",
+    "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_offset": "0x400000",
+    "flash_size": "32MB",
+    "loop_core": "-DARDUINO_RUNNING_CORE=1",
+    "mcu": "esp32s3",
+    "msc_on_boot": "0",
+    "psram_type": "opi",
+    "tarch": "xtensa",
+    "target": "esp32s3",
+    "usb_mode": "1",
+    "variant": "kodedot"
+  },
+  "menu": {
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    }
+  },
+  "name": "kode dot",
+  "recipe": {
+    "hooks": {
+      "objcopy": {
+        "postobjcopy": {
+          "3": {
+            "pattern": "",
+            "pattern_args": ""
+          }
+        }
+      }
+    },
+    "output": {
+      "save_file": "{build.project_name}.ino.bin"
+    }
+  },
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "erase_cmd": "",
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "8388608",
+    "speed": "921600",
+    "tool": {
+      "": "esptool_py_app_only",
+      "default": "esptool_py_app_only",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

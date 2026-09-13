@@ -1,0 +1,22 @@
+{
+  "build": {
+    "board": "SAMD_TIAN"
+  },
+  "descriptor": {
+    "0": "Standard Com Port"
+  },
+  "hide": "true",
+  "name": "Arduino Tian (MIPS Console port)",
+  "pid": {
+    "0": "0xEA70"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0xEA70",
+      "vid": "0x10C4"
+    }
+  },
+  "vid": {
+    "0": "0x10C4"
+  }
+}

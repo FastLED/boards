@@ -1,0 +1,61 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xcb",
+    "file": "caterina/Caterina-LeonardoEthernet.hex",
+    "high_fuses": "0xd8",
+    "lock_bits": "0x2F",
+    "low_fuses": "0xff",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_LEONARDO_ETH",
+    "core": "arduino",
+    "extra_flags": "{build.usb_flags}",
+    "f_cpu": "16000000L",
+    "mcu": "atmega32u4",
+    "pid": "0x8040",
+    "usb_product": "\"Arduino Leonardo ETH\"",
+    "variant": "leonardo",
+    "vid": "0x2a03"
+  },
+  "name": "Arduino Leonardo ETH",
+  "pid": {
+    "0": "0x0040",
+    "1": "0x8040"
+  },
+  "upload": {
+    "disable_flushing": "true",
+    "maximum_data_size": "2560",
+    "maximum_size": "28672",
+    "protocol": "avr109",
+    "speed": "57600",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0040",
+      "vid": "0x2a03"
+    },
+    "1": {
+      "pid": "0x8040",
+      "vid": "0x2a03"
+    },
+    "2": {
+      "board": "leonardoeth"
+    }
+  },
+  "vid": {
+    "0": "0x2a03",
+    "1": "0x2a03"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "bootloader": {
+    "lock_bits": "0x0F",
+    "low_fuses": "0xff",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_MINI",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "variant": "eightanaloginputs"
+  },
+  "menu": {
+    "cpu": {
+      "atmega168": {
+        "": "ATmega168",
+        "bootloader": {
+          "extended_fuses": "0xF8",
+          "file": "atmega/ATmegaBOOT_168_ng.hex",
+          "high_fuses": "0xdd"
+        },
+        "build": {
+          "mcu": "atmega168"
+        },
+        "upload": {
+          "maximum_data_size": "1024",
+          "maximum_size": "14336",
+          "speed": "19200"
+        }
+      },
+      "atmega328": {
+        "": "ATmega328P",
+        "bootloader": {
+          "extended_fuses": "0xFD",
+          "file": "optiboot/optiboot_atmega328-Mini.hex",
+          "high_fuses": "0xd8"
+        },
+        "build": {
+          "mcu": "atmega328p"
+        },
+        "upload": {
+          "maximum_data_size": "2048",
+          "maximum_size": "28672",
+          "speed": "115200"
+        }
+      }
+    }
+  },
+  "name": "Arduino Mini",
+  "upload": {
+    "protocol": "arduino",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "board": "mini"
+    }
+  }
+}

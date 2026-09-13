@@ -1,0 +1,68 @@
+{
+  "bootloader": {
+    "file": "bgm220-explorer-kit-bootloader-storage-internal-single-512k.hex",
+    "tool": {
+      "": "simplicitycommander",
+      "default": "simplicitycommander"
+    }
+  },
+  "build": {
+    "board": "SILABS_BGM220EXPLORERKIT",
+    "board_specific_macros": "'-DNUM_LEDS=1' '-DNUM_BTN=1' '-DNUM_HW_SERIAL=2' '-DNUM_HW_SPI=1' '-DNUM_HW_I2C=1' '-DARDUINO_MAIN_TASK_STACK_SIZE=256'",
+    "c_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=c18 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g",
+    "core": "gecko",
+    "cpp_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++17 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g",
+    "f_cpu": "78000000",
+    "float_flags": "",
+    "gsdk_path": "",
+    "ld_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard --specs=nano.specs -Xlinker -Map {compiler.mapfile_path} -Wl,--gc-sections -Wl,--wrap=_free_r -Wl,--wrap=_malloc_r -Wl,--wrap=_calloc_r -Wl,--wrap=_realloc_r -flto=auto",
+    "ld_libs": "-lstdc++ -lgcc -lc -lm -lnosys -lsupc++",
+    "mcu": "cortex-m33",
+    "platform": "GECKO",
+    "s_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -imacros sl_gcc_preinclude.h -x assembler-with-cpp -c -g",
+    "variant": "bgm220explorerkit",
+    "variant_system_lib": ""
+  },
+  "debug": {
+    "server": "jlink"
+  },
+  "menu": {
+    "protocol_stack": {
+      "ble_silabs": {
+        "": "BLE (Silabs)",
+        "build": {
+          "extra_flags": "{build.board_specific_macros} '-DARDUINO_SILABS_STACK_BLE_SILABS' '-DBGM220PC22HNA=1' '-DSL_APP_PROPERTIES=1' '-DHARDWARE_BOARD_DEFAULT_RF_BAND_2400=1' '-DHARDWARE_BOARD_SUPPORTS_1_RF_BAND=1' '-DHARDWARE_BOARD_SUPPORTS_RF_BAND_2400=1' '-DSL_BOARD_NAME=\"BRD4314A\"' '-DSL_BOARD_REV=\"A02\"' '-DconfigNUM_SDK_THREAD_LOCAL_STORAGE_POINTERS=2' '-DSL_COMPONENT_CATALOG_PRESENT=1' '-DMBEDTLS_CONFIG_FILE=<sl_mbedtls_config.h>' '-DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=<psa_crypto_config.h>' '-DSL_RAIL_LIB_MULTIPROTOCOL_SUPPORT=0' '-DSL_RAIL_UTIL_PA_CONFIG_HEADER=<sl_rail_util_pa_config.h>' '-DSLI_RADIOAES_REQUIRES_MASKING=1'",
+          "include_list": "\"-I{build.variant.path}\" \"-I{build.variant.path}/ble_silabs/include\"",
+          "ldscript": "{build.variant.path}/ble_silabs/linkerfile.ld",
+          "precompiled_gsdk": "\"{build.variant.path}/ble_silabs/gsdk.a\"",
+          "precompiled_libs": "\"{build.variant.path}/ble_silabs/libbgapi_core.a\" \"{build.variant.path}/ble_silabs/libbgcommon.a\" \"{build.variant.path}/ble_silabs/libble_bgapi_gatt_client.a\" \"{build.variant.path}/ble_silabs/libble_bgapi_gatt_server.a\" \"{build.variant.path}/ble_silabs/libble_bgapi.a\" \"{build.variant.path}/ble_silabs/libble_host_accept_list_stub.a\" \"{build.variant.path}/ble_silabs/libble_host_hal_series2.a\" \"{build.variant.path}/ble_silabs/libble_host_hci.a\" \"{build.variant.path}/ble_silabs/libble_host.a\" \"{build.variant.path}/ble_silabs/libble_system.a\" \"{build.variant.path}/ble_silabs/libbondingdb.a\" \"{build.variant.path}/ble_silabs/liblinklayer.a\" \"{build.variant.path}/ble_silabs/librail_config_bgm220pc22hna_gcc.a\" \"{build.variant.path}/ble_silabs/librail_module_efr32xg22_gcc_release.a\""
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "extra_flags": "{build.board_specific_macros} '-DARDUINO_SILABS_STACK_NONE' '-DBGM220PC22HNA=1' '-DSL_APP_PROPERTIES=1' '-DHARDWARE_BOARD_DEFAULT_RF_BAND_2400=1' '-DHARDWARE_BOARD_SUPPORTS_1_RF_BAND=1' '-DHARDWARE_BOARD_SUPPORTS_RF_BAND_2400=1' '-DSL_BOARD_NAME=\"BRD4314A\"' '-DSL_BOARD_REV=\"A02\"' '-DconfigNUM_SDK_THREAD_LOCAL_STORAGE_POINTERS=2' '-DSL_COMPONENT_CATALOG_PRESENT=1' '-DMBEDTLS_CONFIG_FILE=<sl_mbedtls_config.h>' '-DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=<psa_crypto_config.h>'",
+          "include_list": "\"-I{build.variant.path}\" \"-I{build.variant.path}/noradio/include\"",
+          "ldscript": "{build.variant.path}/noradio/linkerfile.ld",
+          "precompiled_gsdk": "\"{build.variant.path}/noradio/gsdk.a\"",
+          "precompiled_libs": ""
+        }
+      }
+    }
+  },
+  "name": "Silicon Labs BGM220 Explorer Kit",
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "524288",
+    "native_usb": "false",
+    "protocol": "jlink",
+    "setup_command": "",
+    "target": "bgm220explorerkit",
+    "tool": {
+      "": "simplicitycommander",
+      "default": "simplicitycommander"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

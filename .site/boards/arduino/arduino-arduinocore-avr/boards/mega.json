@@ -1,0 +1,109 @@
+{
+  "bootloader": {
+    "lock_bits": "0x0F",
+    "low_fuses": "0xFF",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_MEGA2560",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "variant": "mega"
+  },
+  "menu": {
+    "cpu": {
+      "atmega1280": {
+        "": "ATmega1280",
+        "bootloader": {
+          "extended_fuses": "0xF5",
+          "file": "atmega/ATmegaBOOT_168_atmega1280.hex",
+          "high_fuses": "0xDA"
+        },
+        "build": {
+          "board": "AVR_MEGA",
+          "mcu": "atmega1280"
+        },
+        "upload": {
+          "maximum_size": "126976",
+          "protocol": "arduino",
+          "speed": "57600"
+        }
+      },
+      "atmega2560": {
+        "": "ATmega2560 (Mega 2560)",
+        "bootloader": {
+          "extended_fuses": "0xFD",
+          "file": "stk500v2/stk500boot_v2_mega2560.hex",
+          "high_fuses": "0xD8"
+        },
+        "build": {
+          "board": "AVR_MEGA2560",
+          "mcu": "atmega2560"
+        },
+        "upload": {
+          "maximum_size": "253952",
+          "protocol": "wiring",
+          "speed": "115200"
+        }
+      }
+    }
+  },
+  "name": "Arduino Mega or Mega 2560",
+  "pid": {
+    "0": "0x0010",
+    "1": "0x0042",
+    "2": "0x0010",
+    "3": "0x0042",
+    "4": "0x0210",
+    "5": "0x0242"
+  },
+  "upload": {
+    "maximum_data_size": "8192",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0010",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x0042",
+      "vid": "0x2341"
+    },
+    "2": {
+      "pid": "0x0010",
+      "vid": "0x2A03"
+    },
+    "3": {
+      "pid": "0x0042",
+      "vid": "0x2A03"
+    },
+    "4": {
+      "pid": "0x0210",
+      "vid": "0x2341"
+    },
+    "5": {
+      "pid": "0x0242",
+      "vid": "0x2341"
+    },
+    "6": {
+      "board": "mega"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341",
+    "2": "0x2A03",
+    "3": "0x2A03",
+    "4": "0x2341",
+    "5": "0x2341"
+  }
+}

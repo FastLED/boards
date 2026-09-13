@@ -1,0 +1,364 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "PCBCUPID_GLYPHH2",
+    "boot": "qio",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "1",
+    "core": "esp32",
+    "defines": "",
+    "f_cpu": "96000000L",
+    "flash_freq": "64m",
+    "flash_mode": "qio",
+    "flash_size": "4MB",
+    "img_freq": "48m",
+    "mcu": "esp32h2",
+    "partitions": "default",
+    "tarch": "riscv32",
+    "target": "esp",
+    "variant": "Pcbcupid_GLYPH_H2"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Disabled",
+        "build": {
+          "cdc_on_boot": "0"
+        }
+      },
+      "default": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "FlashFreq": {
+      "16": {
+        "": "16MHz",
+        "build": {
+          "flash_freq": "16m",
+          "img_freq": "12m"
+        }
+      },
+      "64": {
+        "": "64MHz",
+        "build": {
+          "flash_freq": "64m",
+          "img_freq": "48m"
+        }
+      }
+    },
+    "FlashMode": {
+      "dio": {
+        "": "DIO",
+        "build": {
+          "boot": "dio",
+          "flash_mode": "dio"
+        }
+      },
+      "qio": {
+        "": "QIO",
+        "build": {
+          "boot": "qio",
+          "flash_mode": "dio"
+        }
+      }
+    },
+    "FlashSize": {
+      "2M": {
+        "": "2MB (16Mb)",
+        "build": {
+          "flash_size": "2MB"
+        }
+      },
+      "4M": {
+        "": "4MB (32Mb)",
+        "build": {
+          "flash_size": "4MB"
+        }
+      }
+    },
+    "JTAGAdapter": {
+      "bridge": {
+        "": "ESP USB Bridge",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32h2-bridge.cfg"
+        }
+      },
+      "builtin": {
+        "": "Integrated USB JTAG",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32h2-builtin.cfg"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "copy_jtag_files": "0"
+        }
+      },
+      "external": {
+        "": "FTDI Adapter",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32h2-ftdi.cfg"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "custom": {
+        "": "Custom",
+        "build": {
+          "partitions": ""
+        },
+        "upload": {
+          "maximum_size": "4194304"
+        }
+      },
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "min_spiffs": {
+        "": "Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS)",
+        "build": {
+          "partitions": "min_spiffs"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "minimal": {
+        "": "Minimal (1.3MB APP/700KB SPIFFS)",
+        "build": {
+          "partitions": "minimal"
+        }
+      },
+      "no_fs": {
+        "": "No FS 4MB (2MB APP x2)",
+        "build": {
+          "partitions": "no_fs"
+        },
+        "upload": {
+          "maximum_size": "2031616"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "zigbee": {
+        "": "Zigbee 4MB with spiffs",
+        "build": {
+          "partitions": "zigbee"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "zigbee_zczr": {
+        "": "Zigbee ZCZR 4MB with spiffs",
+        "build": {
+          "partitions": "zigbee_zczr"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    },
+    "ZigbeeMode": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "zigbee_libs": "",
+          "zigbee_mode": ""
+        }
+      },
+      "ed": {
+        "": "Zigbee ED (end device)",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.ed -lzboss_stack.ed -lzboss_port.native",
+          "zigbee_mode": "-DZIGBEE_MODE_ED"
+        }
+      },
+      "zczr": {
+        "": "Zigbee ZCZR (coordinator/router)",
+        "build": {
+          "zigbee_libs": "-lesp_zb_api.zczr -lzboss_stack.zczr -lzboss_port.native",
+          "zigbee_mode": "-DZIGBEE_MODE_ZCZR"
+        }
+      }
+    }
+  },
+  "name": "Pcbcupid GLYPH H2",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

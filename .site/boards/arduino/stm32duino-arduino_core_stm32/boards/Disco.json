@@ -1,0 +1,808 @@
+{
+  "build": {
+    "board": "Disco",
+    "core": "arduino",
+    "family": "DISCO",
+    "flash_offset": "0x0",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}",
+    "variant_h": "variant_{build.board}.h"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "B_G431B_ESC1": {
+        "": "B-G431B-ESC1",
+        "build": {
+          "board": "B_G431B_ESC1",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32G431xx",
+          "series": "STM32G4xx",
+          "variant": "STM32G4xx/G431C(6-8-B)U_G441CBU"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32G4xx/STM32G431.svd"
+        },
+        "node": "\"NODE_G431CB,NOD_G431CB,DIS_G431CB\"",
+        "openocd": {
+          "target": "stm32g4x"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "B_L072Z_LRWAN1": {
+        "": "B-L072Z-LRWAN1",
+        "build": {
+          "board": "B_L072Z_LRWAN1",
+          "mcu": "cortex-m0plus",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L072xx",
+          "series": "STM32L0xx",
+          "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32L0xx/L072CBY_L072CZ(E-Y)_L073CZY_L082CZY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L0xx/STM32L0x2.svd"
+        },
+        "node": "\"DIS_L072Z,NODE_L072CZ\"",
+        "openocd": {
+          "target": "stm32l0"
+        },
+        "upload": {
+          "maximum_data_size": "20480",
+          "maximum_size": "196608"
+        }
+      },
+      "B_L475E_IOT01A": {
+        "": "B-L475E-IOT01A",
+        "build": {
+          "board": "B_L475E_IOT01A",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L475xx",
+          "series": "STM32L4xx",
+          "variant": "STM32L4xx/L475V(C-E-G)T_L476V(C-E-G)T_L486VGT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L4xx/STM32L475.svd"
+        },
+        "node": "DIS_L4IOT",
+        "openocd": {
+          "target": "stm32l4x"
+        },
+        "upload": {
+          "maximum_data_size": "98304",
+          "maximum_size": "1048576"
+        }
+      },
+      "B_L4S5I_IOT01A": {
+        "": "B-L4S5I-IOT01A",
+        "build": {
+          "board": "B_L4S5I_IOT01A",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L4S5xx",
+          "series": "STM32L4xx",
+          "variant": "STM32L4xx/L4R5V(G-I)T_L4R7VIT_L4S5VIT_L4S7VIT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L4xx/STM32L4S5.svd"
+        },
+        "node": "\"DIS_L4IOT,DIS_L4S5VI\"",
+        "openocd": {
+          "target": "stm32l4x"
+        },
+        "upload": {
+          "maximum_data_size": "655360",
+          "maximum_size": "2097152"
+        }
+      },
+      "B_U585I_IOT02A": {
+        "": "B-U585I-IOT02A",
+        "build": {
+          "board": "B_U585I_IOT02A",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m33",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32U585xx",
+          "series": "STM32U5xx",
+          "variant": "STM32U5xx/U575A(G-I)IxQ_U585AIIxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U5xx/STM32U585.svd"
+        },
+        "node": "\"NOD_U585AI,DIS_U585AI\"",
+        "openocd": {
+          "target": "stm32u5x"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "2097152"
+        }
+      },
+      "DISCO_F030R8": {
+        "": "STM32F030R8-DISCVL",
+        "build": {
+          "board": "DISCO_F030R8",
+          "mcu": "cortex-m0",
+          "product_line": "STM32F030x8",
+          "series": "STM32F0xx",
+          "variant": "STM32F0xx/F030R8T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F0xx/STM32F0x0.svd"
+        },
+        "node": "\"No_mass_storage_for_this_board_Use_STLink_upload_method\"",
+        "openocd": {
+          "target": "stm32f0x"
+        },
+        "upload": {
+          "maximum_data_size": "8192",
+          "maximum_size": "65536"
+        }
+      },
+      "DISCO_F072RB": {
+        "": "STM32F072B-DISCOVERY",
+        "build": {
+          "board": "DISCO_F072RB",
+          "mcu": "cortex-m0",
+          "product_line": "STM32F072xB",
+          "series": "STM32F0xx",
+          "variant": "STM32F0xx/F072R8T_F072RB(H-I-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F0xx/STM32F0x2.svd"
+        },
+        "node": "\"No_mass_storage_for_this_board_Use_STLink_upload_method\"",
+        "openocd": {
+          "target": "stm32f0x"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "DISCO_F100RB": {
+        "": "STM32F100RB-DISCVL",
+        "build": {
+          "board": "DISCO_F100RB",
+          "mcu": "cortex-m3",
+          "product_line": "STM32F100xB",
+          "series": "STM32F1xx",
+          "variant": "STM32F1xx/F100R(8-B)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F1xx/STM32F100.svd"
+        },
+        "node": "DIS_F100RB",
+        "openocd": {
+          "target": "stm32f1x"
+        },
+        "upload": {
+          "maximum_data_size": "8192",
+          "maximum_size": "131071"
+        }
+      },
+      "DISCO_F303VC": {
+        "": "STM32F3-DISCOVERY",
+        "build": {
+          "board": "DISCO_F303VC",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32F303xC",
+          "series": "STM32F3xx",
+          "variant": "STM32F3xx/F303V(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "node": "DIS_F303VC",
+        "openocd": {
+          "target": "stm32f3x"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "DISCO_F407VG": {
+        "": "STM32F407G-DISC1",
+        "build": {
+          "board": "DISCO_F407VG",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32F407xx",
+          "series": "STM32F4xx",
+          "variant": "STM32F4xx/F407V(E-G)T_F417V(E-G)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F4xx/STM32F407.svd"
+        },
+        "node": "DIS_F407VG",
+        "openocd": {
+          "target": "stm32f4x"
+        },
+        "upload": {
+          "maximum_data_size": "131072",
+          "maximum_size": "1048576"
+        }
+      },
+      "DISCO_F411VE": {
+        "": "STM32F411E-DISCO",
+        "build": {
+          "board": "DISCO_F411VE",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32F411xE",
+          "series": "STM32F4xx",
+          "variant": "STM32F4xx/F411V(C-E)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F4xx/STM32F411.svd"
+        },
+        "openocd": {
+          "target": "stm32f4x"
+        },
+        "upload": {
+          "maximum_data_size": "131072",
+          "maximum_size": "524288"
+        }
+      },
+      "DISCO_F413ZH": {
+        "": "STM32F413H-DISCO",
+        "build": {
+          "board": "DISCO_F413ZH",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32F413xx",
+          "series": "STM32F4xx",
+          "variant": "STM32F4xx/F413Z(G-H)(J-T)_F423ZH(J-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F4xx/STM32F413.svd"
+        },
+        "node": "DIS_F413ZH",
+        "openocd": {
+          "target": "stm32f4x"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1572864"
+        }
+      },
+      "DISCO_F429ZI": {
+        "": "STM32F429ZI-DISCO",
+        "build": {
+          "board": "DISCO_F429ZI",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "product_line": "STM32F429xx",
+          "series": "STM32F4xx",
+          "variant": "STM32F4xx/F427Z(G-I)T_F429ZET_F429Z(G-I)(T-Y)_F437Z(G-I)T_F439Z(G-I)(T-Y)",
+          "variant_h": "variant_DISCO_F429ZI.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F4xx/STM32F429.svd"
+        },
+        "node": "DIS_F429ZI",
+        "openocd": {
+          "target": "stm32f4x"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "2097152"
+        }
+      },
+      "DISCO_F746NG": {
+        "": "STM32F746G-DISCOVERY",
+        "build": {
+          "board": "DISCO_F746NG",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m7",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32F746xx",
+          "series": "STM32F7xx",
+          "variant": "STM32F7xx/F746B(E-G)T_F746N(E-G)H_F750N8H_F756BGT_F756NGH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F7xx/STM32F746.svd"
+        },
+        "node": "DIS_F746NG",
+        "openocd": {
+          "target": "stm32f7x"
+        },
+        "upload": {
+          "maximum_data_size": "327680",
+          "maximum_size": "1048576"
+        }
+      },
+      "DISCO_G0316": {
+        "": "STM32G0316-DISCO",
+        "build": {
+          "board": "DISCO_G0316",
+          "mcu": "cortex-m0plus",
+          "product_line": "STM32G031xx",
+          "series": "STM32G0xx",
+          "st_extra_flags": "-D{build.product_line} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32G0xx/G031J(4-6)M_G041J6M"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32G0xx/STM32G031.svd"
+        },
+        "node": "NODE_G031J6",
+        "openocd": {
+          "target": "stm32g0x"
+        },
+        "upload": {
+          "maximum_data_size": "8192",
+          "maximum_size": "32768"
+        }
+      },
+      "STDES_MB2095": {
+        "": "STDES-MB2095",
+        "build": {
+          "board": "STDES_MB2095",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m33",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32U385xx",
+          "series": "STM32U3xx",
+          "variant": "STM32U3xx/U375V(E-G)IxQ_U385VGIxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U385.svd"
+        },
+        "node": "\"No_mass_storage_for_this_board_Use_STLink_upload_method\"",
+        "openocd": {
+          "target": "stm32u3x"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      },
+      "STM32C0116_DK": {
+        "": "STM32C0116-DK",
+        "build": {
+          "board": "STM32C0116_DK",
+          "mcu": "cortex-m0plus",
+          "product_line": "STM32C011xx",
+          "series": "STM32C0xx",
+          "st_extra_flags": "-D{build.product_line} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32C0xx/C011D6Y_C011F(4-6)(P-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "node": "\"No_mass_storage_for_this_board_Use_STLink_upload_method\"",
+        "openocd": {
+          "target": "stm32c0x"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "32768"
+        }
+      },
+      "STM32C0316_DK": {
+        "": "STM32C0316-DK",
+        "build": {
+          "board": "STM32C0316_DK",
+          "mcu": "cortex-m0plus",
+          "product_line": "STM32C031xx",
+          "series": "STM32C0xx",
+          "st_extra_flags": "-D{build.product_line} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32C0xx/C031C(4-6)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "node": "\"No_mass_storage_for_this_board_Use_STLink_upload_method\"",
+        "openocd": {
+          "target": "stm32c0x"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "STM32H573I_DK": {
+        "": "STM32H573I-DK",
+        "build": {
+          "board": "STM32H573I_DK",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m33",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H573xx",
+          "series": "STM32H5xx",
+          "variant": "STM32H5xx/H563IIKxQ_H573IIKxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H5xx/STM32H573.svd"
+        },
+        "node": "DIS_H573II",
+        "openocd": {
+          "target": "stm32h5x"
+        },
+        "upload": {
+          "maximum_data_size": "655360",
+          "maximum_size": "2097152"
+        }
+      },
+      "STM32H747I_DISCO": {
+        "": "STM32H747I-DISCO",
+        "build": {
+          "board": "STM32H747I_DISCO",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m7",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32H747xx",
+          "series": "STM32H7xx",
+          "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} -DCORE_CM7",
+          "variant": "STM32H7xx/H742X(G-I)H_H743X(G-I)H_H745X(G-I)H_H747X(G-I)H_H750XBH_H753XIH_H755XIH_H757XIH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32H7xx/STM32H747_CM7.svd"
+        },
+        "node": "DIS_H747XI",
+        "openocd": {
+          "target": "stm32h7x"
+        },
+        "upload": {
+          "maximum_data_size": "524288",
+          "maximum_size": "2097152"
+        }
+      },
+      "STM32L562E_DK": {
+        "": "STM32L562E-DK",
+        "build": {
+          "board": "STM32L562E_DK",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m33",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L562xx",
+          "series": "STM32L5xx",
+          "variant": "STM32L5xx/L552Q(C-E)IxQ_L562QEIxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L5xx/STM32L562.svd"
+        },
+        "node": "DIS_L562QE",
+        "openocd": {
+          "target": "stm32l5x"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "524288"
+        }
+      },
+      "STM32WB5MM_DK": {
+        "": "STM32WB5MM-DK",
+        "build": {
+          "board": "STM32WB5MM_DK",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32WB5Mxx",
+          "series": "STM32WBxx",
+          "variant": "STM32WBxx/WB5MMGH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "node": "\"DIS_WB5MMG\"",
+        "openocd": {
+          "target": "stm32wbx"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "827392"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "MassStorage": {
+        "": "Mass Storage",
+        "upload": {
+          "protocol": "",
+          "tool": "massStorageCopy"
+        }
+      },
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    },
+    "xusb": {
+      "FS": "Low/Full Speed",
+      "HS": {
+        "": "High Speed",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS"
+        }
+      },
+      "HSFS": {
+        "": "High Speed in Full Speed mode",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS -DUSE_USB_HS_IN_FS"
+        }
+      }
+    }
+  },
+  "name": "Discovery",
+  "pid": {
+    "0": "0x5740",
+    "1": "0x3744",
+    "2": "0x3748",
+    "3": "0x374b",
+    "4": "0x374e",
+    "5": "0x374f",
+    "6": "0x3752",
+    "7": "0x3753"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483",
+    "1": "0x0483",
+    "2": "0x0483",
+    "3": "0x0483",
+    "4": "0x0483",
+    "5": "0x0483",
+    "6": "0x0483",
+    "7": "0x0483"
+  }
+}
