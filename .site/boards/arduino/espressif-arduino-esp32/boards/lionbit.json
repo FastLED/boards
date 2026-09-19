@@ -1,0 +1,363 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "Lion:Bit_Dev_Board",
+    "boot": "dio",
+    "bootloader_addr": "0x1000",
+    "core": "esp32",
+    "defines": "",
+    "event_core": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "4MB",
+    "loop_core": "",
+    "mcu": "esp32",
+    "partitions": "default",
+    "tarch": "xtensa",
+    "target": "esp32",
+    "variant": "lionbit"
+  },
+  "menu": {
+    "CPUFreq": {
+      "10": {
+        "": "10MHz (40MHz XTAL)",
+        "build": {
+          "f_cpu": "10000000L"
+        }
+      },
+      "13": {
+        "": "13MHz (26MHz XTAL)",
+        "build": {
+          "f_cpu": "13000000L"
+        }
+      },
+      "160": {
+        "": "160MHz (WiFi/BT)",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "20": {
+        "": "20MHz (40MHz XTAL)",
+        "build": {
+          "f_cpu": "20000000L"
+        }
+      },
+      "240": {
+        "": "240MHz (WiFi/BT)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "26": {
+        "": "26MHz (26MHz XTAL)",
+        "build": {
+          "f_cpu": "26000000L"
+        }
+      },
+      "40": {
+        "": "40MHz (40MHz XTAL)",
+        "build": {
+          "f_cpu": "40000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi/BT)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "EventsCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1"
+        }
+      }
+    },
+    "FlashFreq": {
+      "40": {
+        "": "40MHz",
+        "build": {
+          "flash_freq": "40m"
+        }
+      },
+      "80": {
+        "": "80MHz",
+        "build": {
+          "flash_freq": "80m"
+        }
+      }
+    },
+    "FlashMode": {
+      "dio": {
+        "": "DIO",
+        "build": {
+          "boot": "dio",
+          "flash_mode": "dio"
+        }
+      },
+      "qio": {
+        "": "QIO",
+        "build": {
+          "boot": "qio",
+          "flash_mode": "dio"
+        }
+      }
+    },
+    "FlashSize": {
+      "4M": {
+        "": "4MB (32Mb)",
+        "build": {
+          "flash_size": "4MB"
+        }
+      }
+    },
+    "LoopCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=1"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "app3M_fat9M_16MB": {
+        "": "16M Flash (3MB APP/9.9MB FATFS)",
+        "build": {
+          "partitions": "app3M_fat9M_16MB"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "default_8MB": {
+        "": "8M with spiffs (3MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "fatflash": {
+        "": "16M Flash (2MB APP/12.5MB FATFS)",
+        "build": {
+          "partitions": "ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "min_spiffs": {
+        "": "Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS)",
+        "build": {
+          "partitions": "min_spiffs"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "minimal": {
+        "": "Minimal (1.3MB APP/700KB SPIFFS)",
+        "build": {
+          "partitions": "minimal"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "rainmaker": {
+        "": "RainMaker 4MB",
+        "build": {
+          "partitions": "rainmaker"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "rainmaker_4MB": {
+        "": "RainMaker 4MB No OTA",
+        "build": {
+          "partitions": "rainmaker_4MB_no_ota"
+        },
+        "upload": {
+          "maximum_size": "4038656"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      }
+    }
+  },
+  "name": "Lion:Bit Dev Board",
+  "serial": {
+    "disableDTR": "true",
+    "disableRTS": "true"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    }
+  }
+}

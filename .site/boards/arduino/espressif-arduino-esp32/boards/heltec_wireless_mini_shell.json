@@ -1,0 +1,289 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "HELTEC_WIRELESS_MINI_SHELL",
+    "boot": "qio",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "0",
+    "core": "esp32",
+    "defines": "-D{build.band}  -DMCU_ESP32_C3 -DHELTEC_BOARD=70 -DWIRELESS_MINI_SHELL -DSLOW_CLK_TPYE=0 -DRADIO_CHIP_SX1262  -DLoRaWAN_DEBUG_LEVEL={build.LoRaWanDebugLevel} -DACTIVE_REGION=LORAMAC_{build.band} -DLORAWAN_PREAMBLE_LENGTH={build.LORAWAN_PREAMBLE_LENGTH} -DLORAWAN_DEVEUI_AUTO={build.LORAWAN_DEVEUI_AUTO} -D{build.board}",
+    "f_cpu": "160000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "4MB",
+    "mcu": "esp32c3",
+    "partitions": "default",
+    "tarch": "riscv32",
+    "target": "esp",
+    "variant": "heltec_wireless_mini_shell"
+  },
+  "menu": {
+    "CPUFreq": {
+      "10": {
+        "": "10MHz",
+        "build": {
+          "f_cpu": "10000000L"
+        }
+      },
+      "160": {
+        "": "160MHz (WiFi)",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "20": {
+        "": "20MHz",
+        "build": {
+          "f_cpu": "20000000L"
+        }
+      },
+      "40": {
+        "": "40MHz",
+        "build": {
+          "f_cpu": "40000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "LORAWAN_DEVEUI": {
+      "0": {
+        "": "CUSTOM",
+        "build": {
+          "LORAWAN_DEVEUI_AUTO": "0"
+        }
+      },
+      "1": {
+        "": "Generate By ChipID",
+        "build": {
+          "LORAWAN_DEVEUI_AUTO": "1"
+        }
+      }
+    },
+    "LORAWAN_PREAMBLE_LENGTH": {
+      "0": {
+        "": "8(default)",
+        "build": {
+          "LORAWAN_PREAMBLE_LENGTH": "8"
+        }
+      },
+      "1": {
+        "": "16(For M00 and M00L)",
+        "build": {
+          "LORAWAN_PREAMBLE_LENGTH": "16"
+        }
+      }
+    },
+    "LORAWAN_REGION": {
+      "0": {
+        "": "REGION_EU868",
+        "build": {
+          "band": "REGION_EU868"
+        }
+      },
+      "1": {
+        "": "REGION_EU433",
+        "build": {
+          "band": "REGION_EU433"
+        }
+      },
+      "2": {
+        "": "REGION_CN470",
+        "build": {
+          "band": "REGION_CN470"
+        }
+      },
+      "3": {
+        "": "REGION_US915",
+        "build": {
+          "band": "REGION_US915"
+        }
+      },
+      "4": {
+        "": "REGION_AU915",
+        "build": {
+          "band": "REGION_AU915"
+        }
+      },
+      "5": {
+        "": "REGION_CN779",
+        "build": {
+          "band": "REGION_CN779"
+        }
+      },
+      "6": {
+        "": "REGION_AS923",
+        "build": {
+          "band": "REGION_AS923"
+        }
+      },
+      "7": {
+        "": "REGION_KR920",
+        "build": {
+          "band": "REGION_KR920"
+        }
+      },
+      "8": {
+        "": "REGION_IN865",
+        "build": {
+          "band": "REGION_IN865"
+        }
+      },
+      "9": {
+        "": "REGION_US915_HYBRID",
+        "build": {
+          "band": "REGION_US915_HYBRID"
+        }
+      }
+    },
+    "LoRaWanDebugLevel": {
+      "0": {
+        "": "None",
+        "build": {
+          "LoRaWanDebugLevel": "0"
+        }
+      },
+      "1": {
+        "": "Freq",
+        "build": {
+          "LoRaWanDebugLevel": "1"
+        }
+      },
+      "2": {
+        "": "Freq && DIO",
+        "build": {
+          "LoRaWanDebugLevel": "2"
+        }
+      },
+      "3": {
+        "": "Freq && DIO && PW",
+        "build": {
+          "LoRaWanDebugLevel": "3"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "Heltec Wireless Mini Shell",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

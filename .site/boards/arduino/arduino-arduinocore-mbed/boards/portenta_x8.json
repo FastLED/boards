@@ -1,0 +1,75 @@
+{
+  "bootloader": {
+    "config": "-f target/stm32h7x_dual_bank.cfg",
+    "extra_action": {
+      "preflash": "stm32h7x option_write 0 0x01c 0xb86aaf0"
+    },
+    "file": "PORTENTA_X7/STM32H747AII6_CM7.elf",
+    "programmer": "-f interface/stlink.cfg",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    }
+  },
+  "build": {
+    "architecture": "cortex-m4",
+    "board": "PORTENTA_X8",
+    "compiler_path": "{runtime.tools.arm-none-eabi-gcc-7-2017q4.path}/bin/",
+    "core": "arduino",
+    "crossprefix": "arm-none-eabi-",
+    "extra_flags": "",
+    "extra_ldflags": "-DCM4_BINARY_START=0x08100000 -DCM4_BINARY_END=0x08200000",
+    "float-abi": "-mfloat-abi=softfp",
+    "fpu": "-mfpu=fpv4-sp-d16",
+    "ldscript": "linker_script.ld",
+    "mcu": "cortex-m4",
+    "pid": "0x0061",
+    "variant": "PORTENTA_X8",
+    "vid": "0x2341"
+  },
+  "compiler": {
+    "mbed": {
+      "": "\"{build.variant.path}/libs/libmbed.a\"",
+      "arch": {
+        "define": ""
+      },
+      "cflags": "{build.variant.path}/cflags.txt",
+      "cxxflags": "{build.variant.path}/cxxflags.txt",
+      "defines": "{build.variant.path}/defines.txt",
+      "extra_ldflags": "-lstdc++ -lsupc++ -lm -lc -lgcc -lnosys",
+      "includes": "{build.variant.path}/includes.txt",
+      "ldflags": "{build.variant.path}/ldflags.txt"
+    }
+  },
+  "debug": {
+    "tool": "gdb"
+  },
+  "name": "Arduino Portenta X8",
+  "pid": {
+    "0": "0x0061"
+  },
+  "upload": {
+    "interface": "0",
+    "maximum_data_size": "294248",
+    "native_usb": "true",
+    "pid": "0x0061",
+    "protocol": "",
+    "tool": {
+      "": "adb",
+      "default": "adb"
+    },
+    "transport": "",
+    "use_1200bps_touch": "false",
+    "vid": "0x2341",
+    "wait_for_upload_port": "false"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0061",
+      "vid": "0x2341"
+    }
+  },
+  "vid": {
+    "0": "0x2341"
+  }
+}
