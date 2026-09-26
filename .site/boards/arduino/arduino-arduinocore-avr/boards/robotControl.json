@@ -1,0 +1,73 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xcb",
+    "file": "caterina-Arduino_Robot/Caterina-Robot-Control.hex",
+    "high_fuses": "0xd8",
+    "lock_bits": "0x2F",
+    "low_fuses": "0xff",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_ROBOT_CONTROL",
+    "core": "arduino",
+    "extra_flags": "{build.usb_flags}",
+    "f_cpu": "16000000L",
+    "mcu": "atmega32u4",
+    "pid": "0x8038",
+    "usb_product": "\"Robot Control\"",
+    "variant": "robot_control",
+    "vid": "0x2341"
+  },
+  "name": "Arduino Robot Control",
+  "pid": {
+    "0": "0x0038",
+    "1": "0x8038",
+    "2": "0x0038",
+    "3": "0x8038"
+  },
+  "upload": {
+    "disable_flushing": "true",
+    "maximum_data_size": "2560",
+    "maximum_size": "28672",
+    "protocol": "avr109",
+    "speed": "57600",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0038",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x8038",
+      "vid": "0x2341"
+    },
+    "2": {
+      "pid": "0x0038",
+      "vid": "0x2A03"
+    },
+    "3": {
+      "pid": "0x8038",
+      "vid": "0x2A03"
+    },
+    "4": {
+      "board": "robotControl"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341",
+    "2": "0x2A03",
+    "3": "0x2A03"
+  }
+}

@@ -1,0 +1,502 @@
+{
+  "build": {
+    "board": "LoRa",
+    "core": "arduino",
+    "family": "LORA",
+    "flash_offset": "0x0",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}",
+    "variant_h": "variant_{build.board}.h"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "ACSIP_S76S": {
+        "": "ACSIP S76S",
+        "build": {
+          "board": "ACSIP_S76S",
+          "mcu": "cortex-m0plus",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L073xx",
+          "series": "STM32L0xx",
+          "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32L0xx/L072R(B-Z)T_L073R(B-Z)T_L083R(B-Z)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L0xx/STM32L0x3.svd"
+        },
+        "openocd": {
+          "target": "stm32l0"
+        },
+        "upload": {
+          "maximum_data_size": "20480",
+          "maximum_size": "196608"
+        }
+      },
+      "ELEKTOR_F072C8": {
+        "": "Elektor LoRa Node Core F072C8 (64kB)",
+        "build": {
+          "board": "ELEKTOR_F072C8",
+          "mcu": "cortex-m0",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32F072xB",
+          "series": "STM32F0xx",
+          "st_extra_flags": "-D{build.product_line} {build.xSerial}",
+          "variant": "STM32F0xx/F072C8(T-U)_F072CB(T-U-Y)",
+          "variant_h": "variant_ELEKTOR_F072Cx.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F0xx/STM32F0x2.svd"
+        },
+        "openocd": {
+          "target": "stm32f0x"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "ELEKTOR_F072CB": {
+        "": "Elektor LoRa Node Core F072CB (128kB)",
+        "build": {
+          "board": "ELEKTOR_F072CB",
+          "mcu": "cortex-m0",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32F072xB",
+          "series": "STM32F0xx",
+          "st_extra_flags": "-D{build.product_line} {build.xSerial}",
+          "variant": "STM32F0xx/F072C8(T-U)_F072CB(T-U-Y)",
+          "variant_h": "variant_ELEKTOR_F072Cx.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F0xx/STM32F0x2.svd"
+        },
+        "openocd": {
+          "target": "stm32f0x"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_NODE_SE_TTI": {
+        "": "Generic Node SE (TTI)",
+        "build": {
+          "board": "GENERIC_NODE_SE_TTI",
+          "mcu": "cortex-m4",
+          "product_line": "STM32WL55xx",
+          "series": "STM32WLxx",
+          "st_extra_flags": "-D{build.product_line} -DUSE_CM4_STARTUP_FILE {build.xSerial}",
+          "variant": "STM32WLxx/WL54CCU_WL55CCU_WLE4C(8-B-C)U_WLE5C(8-B-C)U",
+          "variant_h": "variant_GENERIC_NODE_SE_TTI.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WLxx/STM32WL5x_CM4.svd"
+        },
+        "openocd": {
+          "target": "stm32wlx"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      },
+      "LORA_E5_MINI": {
+        "": "LoRa-E5 mini",
+        "build": {
+          "board": "LORA_E5_MINI",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32WLE5xx",
+          "series": "STM32WLxx",
+          "variant": "STM32WLxx/WL54JCI_WL55JCI_WLE4J(8-B-C)I_WLE5J(8-B-C)I",
+          "variant_h": "variant_LORA_E5_MINI.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WLxx/STM32WLE5_CM4.svd"
+        },
+        "openocd": {
+          "target": "stm32wlx"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      },
+      "RAK3172T_MODULE": {
+        "": "RAK3172T Module",
+        "build": {
+          "board": "RAK3172T_MODULE",
+          "mcu": "cortex-m4",
+          "product_line": "STM32WLE5xx",
+          "series": "STM32WLxx",
+          "variant": "STM32WLxx/WL54CCU_WL55CCU_WLE4C(8-B-C)U_WLE5C(8-B-C)U",
+          "variant_h": "variant_RAK3172_MODULE.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WLxx/STM32WLE5_CM4.svd"
+        },
+        "openocd": {
+          "target": "stm32wlx"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      },
+      "RAK3172_MODULE": {
+        "": "RAK3172 Module",
+        "build": {
+          "board": "RAK3172_MODULE",
+          "mcu": "cortex-m4",
+          "product_line": "STM32WLE5xx",
+          "series": "STM32WLxx",
+          "variant": "STM32WLxx/WL54CCU_WL55CCU_WLE4C(8-B-C)U_WLE5C(8-B-C)U",
+          "variant_h": "variant_RAK3172_MODULE.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WLxx/STM32WLE5_CM4.svd"
+        },
+        "openocd": {
+          "target": "stm32wlx"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      },
+      "RAK811_TRACKER": {
+        "": "RAK811 LoRa Tracker (16kb RAM)",
+        "build": {
+          "board": "RAK811_TRACKER",
+          "mcu": "cortex-m3",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L151xB",
+          "series": "STM32L1xx",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L1xx/STM32L151.svd"
+        },
+        "openocd": {
+          "target": "stm32l1"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "131072"
+        }
+      },
+      "RAK811_TRACKERA": {
+        "": "RAK811 LoRa Tracker (32kb RAM)",
+        "build": {
+          "board": "RAK811_TRACKERA",
+          "mcu": "cortex-m3",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L151xBA",
+          "series": "STM32L1xx",
+          "variant": "STM32L1xx/L100C6Ux(A)_L151C(6-8-B)(T-U)x(A)_L152C(6-8-B)(T-U)x(A)",
+          "variant_h": "variant_RAK811_TRACKER.h"
+        },
+        "openocd": {
+          "target": "stm32l1"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "RHF76_052": {
+        "": "RHF76 052",
+        "build": {
+          "board": "RHF76_052",
+          "mcu": "cortex-m0plus",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L051xx",
+          "series": "STM32L0xx",
+          "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} -D__CORTEX_SC=0",
+          "variant": "STM32L0xx/L051C(6-8)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L0xx/STM32L0x1.svd"
+        },
+        "openocd": {
+          "target": "stm32l0"
+        },
+        "upload": {
+          "maximum_data_size": "8192",
+          "maximum_size": "65536"
+        }
+      },
+      "WE_OCEANUS1": {
+        "": "Oceanus-I Module",
+        "build": {
+          "board": "WE_OCEANUS1",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32WLE5xx",
+          "series": "STM32WLxx",
+          "variant": "STM32WLxx/WL54CCU_WL55CCU_WLE4C(8-B-C)U_WLE5C(8-B-C)U",
+          "variant_h": "variant_WE_OCEANUS1.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WLxx/STM32WLE5_CM4.svd"
+        },
+        "openocd": {
+          "target": "stm32wlx"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      },
+      "WE_OCEANUS1_EV": {
+        "": "Oceanus-I EV",
+        "build": {
+          "board": "WE_OCEANUS1_EV",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32WLE5xx",
+          "series": "STM32WLxx",
+          "variant": "STM32WLxx/WL54CCU_WL55CCU_WLE4C(8-B-C)U_WLE5C(8-B-C)U",
+          "variant_h": "variant_WE_OCEANUS1_EV.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WLxx/STM32WLE5_CM4.svd"
+        },
+        "openocd": {
+          "target": "stm32wlx"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    }
+  },
+  "name": "LoRa boards",
+  "pid": {
+    "0": "0x5740"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xFD",
+    "file": "stk500v2/stk500boot_v2_mega2560.hex",
+    "high_fuses": "0xD8",
+    "lock_bits": "0x0F",
+    "low_fuses": "0xFF",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_ADK",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "mcu": "atmega2560",
+    "variant": "mega"
+  },
+  "name": "Arduino Mega ADK",
+  "pid": {
+    "0": "0x003f",
+    "1": "0x0044",
+    "2": "0x003f",
+    "3": "0x0044"
+  },
+  "upload": {
+    "maximum_data_size": "8192",
+    "maximum_size": "253952",
+    "protocol": "wiring",
+    "speed": "115200",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x003f",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x0044",
+      "vid": "0x2341"
+    },
+    "2": {
+      "pid": "0x003f",
+      "vid": "0x2A03"
+    },
+    "3": {
+      "pid": "0x0044",
+      "vid": "0x2A03"
+    },
+    "4": {
+      "board": "megaADK"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341",
+    "2": "0x2A03",
+    "3": "0x2A03"
+  }
+}

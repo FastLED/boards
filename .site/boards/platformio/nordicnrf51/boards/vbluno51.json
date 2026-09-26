@@ -1,0 +1,33 @@
+{
+  "build": {
+    "cpu": "cortex-m0",
+    "f_cpu": "16000000L",
+    "mcu": "nrf51822",
+    "zephyr": {
+       "variant": "nrf51_vbluno51"
+    }
+  },
+  "connectivity": [
+    "bluetooth"
+  ],
+  "debug": {
+    "onboard_tools": [
+      "cmsis-dap"
+    ],
+    "svd_path": "nrf51.svd"
+  },
+  "frameworks": [
+    "zephyr"
+  ],
+  "name": "VNG VBLUNO51",
+  "upload": {
+    "maximum_ram_size": 32768,
+    "maximum_size": 131072,
+    "protocol": "cmsis-dap",
+    "protocols": [
+      "cmsis-dap"
+    ]
+  },
+  "url": "https://vngiotlab.github.io/vbluno/mydoc_introduction.html",
+  "vendor": "VNG"
+}

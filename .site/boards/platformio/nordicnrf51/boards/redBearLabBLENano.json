@@ -1,0 +1,45 @@
+{
+  "build": {
+    "arduino":{
+      "ldscript": "nrf51_xxac.ld"
+    },
+    "core": "nRF5",
+    "cpu": "cortex-m0",
+    "extra_flags": "-DARDUINO_BLE_NANO",
+    "f_cpu": "16000000L",
+    "mcu": "nrf51822",
+    "variant": "BLENano",
+    "zephyr": {
+       "variant": "nrf51_blenano"
+    }
+  },
+  "connectivity": [
+    "bluetooth"
+  ],
+  "debug": {
+    "jlink_device": "nRF51822_xxAC",
+    "onboard_tools": [
+      "cmsis-dap"
+    ],
+    "svd_path": "nrf51.svd"
+  },
+  "frameworks": [
+    "arduino",
+    "zephyr"
+  ],
+  "name": "RedBearLab BLE Nano 1.5",
+  "upload": {
+    "maximum_ram_size": 32768,
+    "maximum_size": 262144,
+    "protocol": "cmsis-dap",
+    "protocols": [
+      "cmsis-dap",
+      "blackmagic",
+      "jlink",
+      "stlink",
+      "nrfjprog"
+    ]
+  },
+  "url": "https://www.sparkfun.com/products/retired/13730",
+  "vendor": "RedBearLab"
+}
