@@ -1,0 +1,19 @@
+{
+  "build": {
+    "board": "ESP32_FAMILY"
+  },
+  "hide": "true",
+  "name": "ESP32 Family Device",
+  "pid": {
+    "0": "0x1001"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x1001",
+      "vid": "0x303a"
+    }
+  },
+  "vid": {
+    "0": "0x303a"
+  }
+}

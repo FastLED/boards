@@ -1,0 +1,417 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "HELTEC_VISION_MASTER_E_213",
+    "boot": "qio",
+    "boot_freq": "80m",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "0",
+    "core": "esp32",
+    "defines": "-D{build.band}  -DMCU_ESP32_S3 -DHELTEC_BOARD=36 -DHELTEC_VISION_MASTER_E_213 -DSLOW_CLK_TPYE={build.SLOW_CLK_TPYE} -DRADIO_CHIP_SX1262  -DLoRaWAN_DEBUG_LEVEL={build.LoRaWanDebugLevel} -DACTIVE_REGION=LORAMAC_{build.band} -DLORAWAN_PREAMBLE_LENGTH={build.LORAWAN_PREAMBLE_LENGTH} -DLORAWAN_DEVEUI_AUTO={build.LORAWAN_DEVEUI_AUTO} -D{build.board}",
+    "dfu_on_boot": "0",
+    "event_core": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "8MB",
+    "loop_core": "",
+    "mcu": "esp32s3",
+    "memory_type": "{build.boot}_{build.psram_type}",
+    "msc_on_boot": "0",
+    "partitions": "default_8MB",
+    "psram_type": "qspi",
+    "tarch": "xtensa",
+    "target": "esp32s3",
+    "usb_mode": "1",
+    "variant": "heltec_vision_master_e_213"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Disabled",
+        "build": {
+          "cdc_on_boot": "0"
+        }
+      },
+      "default": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      }
+    },
+    "CPUFreq": {
+      "10": {
+        "": "10MHz",
+        "build": {
+          "f_cpu": "10000000L"
+        }
+      },
+      "160": {
+        "": "160MHz (WiFi)",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "20": {
+        "": "20MHz",
+        "build": {
+          "f_cpu": "20000000L"
+        }
+      },
+      "240": {
+        "": "240MHz (WiFi)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "40": {
+        "": "40MHz",
+        "build": {
+          "f_cpu": "40000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DFUOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "dfu_on_boot": "0"
+        }
+      },
+      "dfu": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "dfu_on_boot": "1"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "EventsCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1"
+        }
+      }
+    },
+    "LORAWAN_DEVEUI": {
+      "0": {
+        "": "CUSTOM",
+        "build": {
+          "LORAWAN_DEVEUI_AUTO": "0"
+        }
+      },
+      "1": {
+        "": "Generate By ChipID",
+        "build": {
+          "LORAWAN_DEVEUI_AUTO": "1"
+        }
+      }
+    },
+    "LORAWAN_PREAMBLE_LENGTH": {
+      "0": {
+        "": "8(default)",
+        "build": {
+          "LORAWAN_PREAMBLE_LENGTH": "8"
+        }
+      },
+      "1": {
+        "": "16(For M00 and M00L)",
+        "build": {
+          "LORAWAN_PREAMBLE_LENGTH": "16"
+        }
+      }
+    },
+    "LORAWAN_REGION": {
+      "0": {
+        "": "REGION_EU868",
+        "build": {
+          "band": "REGION_EU868"
+        }
+      },
+      "1": {
+        "": "REGION_EU433",
+        "build": {
+          "band": "REGION_EU433"
+        }
+      },
+      "2": {
+        "": "REGION_CN470",
+        "build": {
+          "band": "REGION_CN470"
+        }
+      },
+      "3": {
+        "": "REGION_US915",
+        "build": {
+          "band": "REGION_US915"
+        }
+      },
+      "4": {
+        "": "REGION_AU915",
+        "build": {
+          "band": "REGION_AU915"
+        }
+      },
+      "5": {
+        "": "REGION_CN779",
+        "build": {
+          "band": "REGION_CN779"
+        }
+      },
+      "6": {
+        "": "REGION_AS923",
+        "build": {
+          "band": "REGION_AS923"
+        }
+      },
+      "7": {
+        "": "REGION_KR920",
+        "build": {
+          "band": "REGION_KR920"
+        }
+      },
+      "8": {
+        "": "REGION_IN865",
+        "build": {
+          "band": "REGION_IN865"
+        }
+      },
+      "9": {
+        "": "REGION_US915_HYBRID",
+        "build": {
+          "band": "REGION_US915_HYBRID"
+        }
+      }
+    },
+    "LoRaWanDebugLevel": {
+      "0": {
+        "": "None",
+        "build": {
+          "LoRaWanDebugLevel": "0"
+        }
+      },
+      "1": {
+        "": "Freq",
+        "build": {
+          "LoRaWanDebugLevel": "1"
+        }
+      },
+      "2": {
+        "": "Freq && DIO",
+        "build": {
+          "LoRaWanDebugLevel": "2"
+        }
+      },
+      "3": {
+        "": "Freq && DIO && PW",
+        "build": {
+          "LoRaWanDebugLevel": "3"
+        }
+      }
+    },
+    "LoopCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=1"
+        }
+      }
+    },
+    "MSCOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "msc_on_boot": "0"
+        }
+      },
+      "msc": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "msc_on_boot": "1"
+        }
+      }
+    },
+    "SLOW_CLK_TPYE": {
+      "0": {
+        "": "Internal (default)",
+        "build": {
+          "SLOW_CLK_TPYE": "0"
+        }
+      },
+      "1": {
+        "": "External 32K",
+        "build": {
+          "SLOW_CLK_TPYE": "1"
+        }
+      }
+    },
+    "USBMode": {
+      "default": {
+        "": "USB-OTG (TinyUSB)",
+        "build": {
+          "usb_mode": "0"
+        }
+      },
+      "hwcdc": {
+        "": "Hardware CDC and JTAG",
+        "build": {
+          "usb_mode": "1"
+        }
+      }
+    },
+    "UploadMode": {
+      "cdc": {
+        "": "USB-OTG CDC (TinyUSB)",
+        "upload": {
+          "use_1200bps_touch": "true",
+          "wait_for_upload_port": "true"
+        }
+      },
+      "default": {
+        "": "UART0 / Hardware CDC",
+        "upload": {
+          "use_1200bps_touch": "false",
+          "wait_for_upload_port": "false"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "Heltec Vision Master E213",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "3342336",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

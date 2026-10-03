@@ -1,0 +1,378 @@
+{
+  "build": {
+    "board": "GenU3",
+    "core": "arduino",
+    "flash_offset": "0x0",
+    "float-abi": "-mfloat-abi=hard",
+    "fpu": "-mfpu=fpv5-sp-d16",
+    "mcu": "cortex-m33",
+    "series": "STM32U3xx",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": {
+        "": "Smallest (-Os default)",
+        "build": {
+          "flags": {
+            "optimize": "-Os"
+          }
+        }
+      }
+    },
+    "pnum": {
+      "GENERIC_U375RETXQ": {
+        "": "Generic U375RETxQ",
+        "build": {
+          "board": "GENERIC_U375RETXQ",
+          "product_line": "STM32U375xx",
+          "variant": "STM32U3xx/U375R(E-G)TxQ_U385RGTxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U375.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_U375RGTXQ": {
+        "": "Generic U375RGTxQ",
+        "build": {
+          "board": "GENERIC_U375RGTXQ",
+          "product_line": "STM32U375xx",
+          "variant": "STM32U3xx/U375R(E-G)TxQ_U385RGTxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U375.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_U375VEIX": {
+        "": "Generic U375VEIx",
+        "build": {
+          "board": "GENERIC_U375VEIX",
+          "product_line": "STM32U375xx",
+          "variant": "STM32U3xx/U375V(E-G)I_U385VGI"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U375.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_U375VEIXQ": {
+        "": "Generic U375VEIxQ",
+        "build": {
+          "board": "GENERIC_U375VEIXQ",
+          "product_line": "STM32U375xx",
+          "variant": "STM32U3xx/U375V(E-G)IxQ_U385VGIxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U375.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_U375VGIX": {
+        "": "Generic U375VGIx",
+        "build": {
+          "board": "GENERIC_U375VGIX",
+          "product_line": "STM32U375xx",
+          "variant": "STM32U3xx/U375V(E-G)I_U385VGI"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U375.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_U375VGIXQ": {
+        "": "Generic U375VGIxQ",
+        "build": {
+          "board": "GENERIC_U375VGIXQ",
+          "product_line": "STM32U375xx",
+          "variant": "STM32U3xx/U375V(E-G)IxQ_U385VGIxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U375.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_U385RGTXQ": {
+        "": "Generic U385RGTxQ",
+        "build": {
+          "board": "GENERIC_U385RGTXQ",
+          "product_line": "STM32U385xx",
+          "variant": "STM32U3xx/U375R(E-G)TxQ_U385RGTxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U385.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_U385VGIX": {
+        "": "Generic U385VGIx",
+        "build": {
+          "board": "GENERIC_U385VGIX",
+          "product_line": "STM32U385xx",
+          "variant": "STM32U3xx/U375V(E-G)I_U385VGI"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U385.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      },
+      "GENERIC_U385VGIXQ": {
+        "": "Generic U385VGIxQ",
+        "build": {
+          "board": "GENERIC_U385VGIXQ",
+          "product_line": "STM32U385xx",
+          "variant": "STM32U3xx/U375V(E-G)IxQ_U385VGIxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U3xx/STM32U385.svd"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "maximum_size": "1048576"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": "Disabled (no Serial support)",
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    }
+  },
+  "name": "Generic STM32U3 series",
+  "pid": {
+    "0": "0x5740"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483"
+  }
+}

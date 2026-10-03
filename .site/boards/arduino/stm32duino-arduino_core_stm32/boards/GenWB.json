@@ -1,0 +1,508 @@
+{
+  "build": {
+    "board": "GenWB",
+    "core": "arduino",
+    "flash_offset": "0x0",
+    "float-abi": "-mfloat-abi=hard",
+    "fpu": "-mfpu=fpv4-sp-d16",
+    "mcu": "cortex-m4",
+    "series": "STM32WBxx",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "GENERIC_WB15CCUX": {
+        "": "Generic WB15CCUx",
+        "build": {
+          "board": "GENERIC_WB15CCUX",
+          "product_line": "STM32WB15xx",
+          "variant": "STM32WBxx/WB15CCU"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB15_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_WB55CCUX": {
+        "": "Generic WB55CCUx",
+        "build": {
+          "board": "GENERIC_WB55CCUX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB35C(C-E)UxA_WB55C(C-E-G)U"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_WB55CEUX": {
+        "": "Generic WB55CEUx",
+        "build": {
+          "board": "GENERIC_WB55CEUX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB35C(C-E)UxA_WB55C(C-E-G)U"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_WB55CGUX": {
+        "": "Generic WB55CGUx",
+        "build": {
+          "board": "GENERIC_WB55CGUX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB35C(C-E)UxA_WB55C(C-E-G)U"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_WB55RCVX": {
+        "": "Generic WB55RCVx",
+        "build": {
+          "board": "GENERIC_WB55RCVX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55R(C-E-G)V"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_WB55REVX": {
+        "": "Generic WB55REVx",
+        "build": {
+          "board": "GENERIC_WB55REVX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55R(C-E-G)V"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_WB55RGVX": {
+        "": "Generic WB55RGVx",
+        "build": {
+          "board": "GENERIC_WB55RGVX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55R(C-E-G)V"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_WB55VCQX": {
+        "": "Generic WB55VCQx",
+        "build": {
+          "board": "GENERIC_WB55VCQX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_WB55VCYX": {
+        "": "Generic WB55VCYx",
+        "build": {
+          "board": "GENERIC_WB55VCYX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_WB55VEQX": {
+        "": "Generic WB55VEQx",
+        "build": {
+          "board": "GENERIC_WB55VEQX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "131072",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_WB55VEYX": {
+        "": "Generic WB55VEYx",
+        "build": {
+          "board": "GENERIC_WB55VEYX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_WB55VGQX": {
+        "": "Generic WB55VGQx",
+        "build": {
+          "board": "GENERIC_WB55VGQX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "131072",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_WB55VGYX": {
+        "": "Generic WB55VGYx",
+        "build": {
+          "board": "GENERIC_WB55VGYX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_WB55VYYX": {
+        "": "Generic WB55VYYx",
+        "build": {
+          "board": "GENERIC_WB55VYYX",
+          "product_line": "STM32WB55xx",
+          "variant": "STM32WBxx/WB55V(C-E-G)(Q-Y)_WB55VYY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "327680"
+        }
+      },
+      "GENERIC_WB5MMGHX": {
+        "": "Generic WB5MMGHx",
+        "build": {
+          "board": "GENERIC_WB5MMGHX",
+          "product_line": "STM32WB5Mxx",
+          "variant": "STM32WBxx/WB5MMGH"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32WBxx/STM32WB55_CM4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "196608",
+          "maximum_size": "827392"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    },
+    "xusb": {
+      "FS": "Low/Full Speed",
+      "HS": {
+        "": "High Speed",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS"
+        }
+      },
+      "HSFS": {
+        "": "High Speed in Full Speed mode",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS -DUSE_USB_HS_IN_FS"
+        }
+      }
+    }
+  },
+  "name": "Generic STM32WB series",
+  "openocd": {
+    "target": "stm32wbx"
+  },
+  "pid": {
+    "0": "0x5740"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483"
+  }
+}
