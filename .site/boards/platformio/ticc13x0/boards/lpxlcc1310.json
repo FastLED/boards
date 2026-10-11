@@ -1,0 +1,35 @@
+{
+  "build": {
+    "core": "cc13xx",
+    "cpu": "cortex-m3",
+    "extra_flags": "-DENERGIA_ARCH_CC13XX -DENERGIA_CC1310_LAUNCHXL -DBOARD_CC1310_LAUNCHXL",
+    "f_cpu": "48000000L",
+    "mcu": "cc1310f128",
+    "variant": "LAUNCHXL_CC1310"
+  },
+  "debug": {
+    "svd_path": "cc1310f128.svd",
+    "jlink_device": "CC1310F128",
+    "openocd_chipname": "cc1310f128",
+    "openocd_target": "ti_cc13x0",
+    "onboard_tools": [
+      "xds110"
+    ]
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "TI LaunchPadXL (SimpleLink) w/ CC1310 (48MHz)",
+  "upload": {
+    "maximum_ram_size": 20480,
+    "maximum_size": 131072,
+    "protocol": "dslite",
+    "protocols": [
+      "jlink",
+      "xds110",
+      "dslite"
+    ]
+  },
+  "url": "https://www.ti.com/store/ti/en/p/product/?p=LAUNCHXL-CC1310",
+  "vendor": "TI"
+}

@@ -1,0 +1,57 @@
+{
+  "bootloader": {
+    "extended_fuses": "0x05",
+    "file": "optiboot/optiboot_atmega328.hex",
+    "high_fuses": "0xDE",
+    "lock_bits": "0x0F",
+    "low_fuses": "0xFF",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_UNO_WIFI_DEV_ED",
+    "core": "arduino",
+    "esp_ch_uart_br": "19200",
+    "extra_flags": "-DESP_CH_UART -DESP_CH_UART_BR={build.esp_ch_uart_br}",
+    "f_cpu": "16000000L",
+    "mcu": "atmega328p",
+    "variant": "standard"
+  },
+  "name": "Arduino UNO WiFi",
+  "pid": {
+    "0": "0x0057"
+  },
+  "upload": {
+    "maximum_data_size": "2048",
+    "maximum_size": "32256",
+    "network": {
+      "endpoint_reset": "/log/reset",
+      "endpoint_sync": "/pgm/sync",
+      "endpoint_upload": "/pgm/upload",
+      "port": "80",
+      "sync_return": "204:SYNC"
+    },
+    "protocol": "arduino",
+    "speed": "115200",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0057",
+      "vid": "0x2A03"
+    },
+    "1": {
+      "board": "unowifi"
+    }
+  },
+  "vid": {
+    "0": "0x2A03"
+  }
+}
