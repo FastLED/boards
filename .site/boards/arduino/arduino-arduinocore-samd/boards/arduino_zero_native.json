@@ -1,0 +1,71 @@
+{
+  "bootloader": {
+    "file": "zero/samd21_sam_ba.bin",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    }
+  },
+  "build": {
+    "board": "SAMD_ZERO",
+    "core": "arduino",
+    "extra_flags": "-D__SAMD21G18A__ {build.usb_flags}",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x804d",
+    "usb_manufacturer": "\"Arduino LLC\"",
+    "usb_product": "\"Arduino Zero\"",
+    "variant": "arduino_zero",
+    "variant_system_lib": "",
+    "vid": "0x2341"
+  },
+  "name": "Arduino Zero (Native USB Port)",
+  "pid": {
+    "0": "0x804d",
+    "1": "0x004d",
+    "2": "0x824d",
+    "3": "0x024d"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "true",
+    "protocol": "sam-ba",
+    "tool": {
+      "": "bossac",
+      "default": "bossac",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x804d",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x004d",
+      "vid": "0x2341"
+    },
+    "2": {
+      "pid": "0x824d",
+      "vid": "0x2341"
+    },
+    "3": {
+      "pid": "0x024d",
+      "vid": "0x2341"
+    },
+    "4": {
+      "board": "arduino_zero_native"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341",
+    "2": "0x2341",
+    "3": "0x2341"
+  }
+}

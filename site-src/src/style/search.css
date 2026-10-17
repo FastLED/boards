@@ -1,0 +1,376 @@
+/* The single search row: query input + mode dropdown + inline results. */
+
+.uni {
+  flex: 1;
+  min-width: 280px;
+}
+
+.uni input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  box-shadow: var(--shadow-1);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.uni input[type='text']:hover {
+  background: var(--bg);
+}
+
+.uni input[type='text']:focus,
+.uni input[type='text']:focus-visible {
+  background: var(--bg);
+  box-shadow: var(--shadow-focus), var(--shadow-1);
+}
+
+.uni-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.6rem 0 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.uni-hint kbd {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: var(--border);
+  color: var(--fg);
+  font: 0.7rem ui-monospace, monospace;
+  border: 1px solid var(--muted);
+}
+
+.uni-results {
+  margin-top: 0.95rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.uni-results[hidden] {
+  display: none;
+}
+
+.uni-results.empty {
+  color: var(--fg);
+  font-style: normal;
+}
+
+.uni-results.err {
+  color: #c44;
+}
+
+/* Spinner state — fires for any in-flight search. Replaced by
+   renderCombined() or the empty-state message when the query
+   resolves, so the spinner is only visible for the duration of
+   the await. Kept compact so a 5ms cached query flicker is
+   visually quiet, while a multi-hundred-ms FTS5 query shows
+   real motion. */
+.uni-results.loading {
+  color: var(--muted);
+}
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: uni-spin 0.7s linear infinite;
+}
+@keyframes uni-spin {
+  to { transform: rotate(360deg); }
+}
+/* Respect reduced-motion preferences — keep the spinner but stop
+   the rotation so it doesn't trigger vestibular disorders. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: currentColor;
+    opacity: 0.4;
+  }
+}
+
+.search-row {
+  align-items: flex-end;
+}
+
+.mode {
+  min-width: 11ch;
+}
+
+.mode select {
+  font-size: 14px;
+  padding: 0.78rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  color: var(--fg);
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+.mode select:hover {
+  background: var(--bg);
+}
+
+.mode select:focus,
+.mode select:focus-visible {
+  outline: none;
+  border-color: var(--hi);
+  box-shadow: var(--shadow-focus);
+}
+
+.search-intro h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.search-empty h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.search-empty p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.example-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.cat {
+  margin: 1rem 0 0;
+}
+
+.uni-results > .cat:first-child {
+  margin-top: 0;
+}
+
+.cat-head {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.3rem;
+  font-weight: 600;
+}
+
+.cat-detail {
+  margin-left: 0.45rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.more-results {
+  margin-top: 0.35rem;
+}
+
+.more-results summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--hi);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0;
+}
+
+.best .hit {
+  border-color: var(--hi);
+  background: var(--hi-bg);
+}
+
+.best .board-row {
+  border-color: var(--hi);
+  background: var(--hi-bg);
+}
+
+.preview-row {
+  padding: 0.6rem 0.7rem;
+  margin: 0.25rem 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.preview-main {
+  min-width: 0;
+}
+
+.preview-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.preview-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.preview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+  color: var(--fg);
+}
+
+.preview-stats span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.16rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 34%, transparent);
+  font-size: 0.78rem;
+}
+
+.preview-sample {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.preview-board-list {
+  margin-top: 0.6rem;
+}
+
+.preview-board-list > summary {
+  cursor: pointer;
+  width: fit-content;
+  color: var(--hi);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0;
+  list-style: none;
+}
+
+.preview-board-list > summary::-webkit-details-marker { display: none; }
+
+.preview-board-list > summary::before {
+  content: '\25B8';
+  display: inline-block;
+  margin-right: 0.35rem;
+  transition: transform 0.15s ease;
+}
+
+.preview-board-list[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.preview-board-grid {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.35rem;
+}
+
+.preview-board-chip {
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--fg);
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.preview-board-chip:hover {
+  background: var(--hi-bg);
+  border-color: var(--hi);
+  color: var(--hi);
+}
+
+.preview-board-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-color: var(--hi);
+}
+
+.search-hit.exact-hit {
+  border-color: var(--hi);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hi) 18%, transparent), transparent 32%),
+    var(--bg);
+  box-shadow: inset 3px 0 0 var(--hi);
+}
+
+.field-hit {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--hi) 18%, transparent);
+  border-radius: 3px;
+  padding: 0 0.12rem;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: var(--border);
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.4rem;
+  vertical-align: 1px;
+}
+
+.tag.vendor { background: #3a6ea5; color: #fff; }
+.tag.product { background: #5a8f3a; color: #fff; }
+.tag.board { background: #885aa5; color: #fff; }
+
+.why {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-left: 0.4rem;
+}
+
+.match-reason,
+.linked-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  margin-left: 0.45rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.match-reason {
+  padding: 0.04rem 0.32rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 42%, transparent);
+}
+
+.match-reason.exact {
+  color: var(--fg);
+  border-color: var(--hi);
+  background: color-mix(in srgb, var(--hi) 22%, transparent);
+}
