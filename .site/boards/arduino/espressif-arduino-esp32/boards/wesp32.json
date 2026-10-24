@@ -1,0 +1,200 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "WESP32",
+    "boot": "dio",
+    "bootloader_addr": "0x1000",
+    "core": "esp32",
+    "defines": "",
+    "f_cpu": "240000000L",
+    "flash_mode": "dio",
+    "flash_size": "16MB",
+    "mcu": "esp32",
+    "partitions": "default",
+    "tarch": "xtensa",
+    "target": "esp32",
+    "variant": "wesp32"
+  },
+  "menu": {
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "FlashFreq": {
+      "40": {
+        "": "40MHz",
+        "build": {
+          "flash_freq": "40m"
+        }
+      },
+      "80": {
+        "": "80MHz",
+        "build": {
+          "flash_freq": "80m"
+        }
+      }
+    },
+    "FlashSize": {
+      "default": {
+        "": "16MB (128Mb) rev 7+",
+        "build": {
+          "flash_size": "16MB"
+        }
+      },
+      "default_4m_flash": {
+        "": "4MB (32Mb) rev 5 and below",
+        "build": {
+          "flash_size": "4MB"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default": {
+        "": "16M OTA with large SPIFFS (4.5MB APP/6.8MB SPIFFS)",
+        "build": {
+          "partitions": "large_spiffs_16MB"
+        },
+        "upload": {
+          "maximum_size": "4718592"
+        }
+      },
+      "default_4m_flash": {
+        "": "4M OTA app with SPIFFS (1.25MB APP/1.3MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "default_fatfs": {
+        "": "16M OTA with large FATFS (3MB APP/9.8MB FATFS)",
+        "build": {
+          "partitions": "app3M_fat9M_16MB"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "default_large_app": {
+        "": "16M large OTA app with SPIFFS (6.2MB APP/3.3MB SPIFFS)",
+        "build": {
+          "partitions": "default_16MB"
+        },
+        "upload": {
+          "maximum_size": "6553600"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "Silicognition wESP32",
+  "serial": {
+    "disableDTR": "true",
+    "disableRTS": "true"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    }
+  }
+}

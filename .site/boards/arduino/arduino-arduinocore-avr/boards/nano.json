@@ -1,0 +1,85 @@
+{
+  "bootloader": {
+    "lock_bits": "0x0F",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_NANO",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "variant": "eightanaloginputs"
+  },
+  "menu": {
+    "cpu": {
+      "atmega168": {
+        "": "ATmega168",
+        "bootloader": {
+          "extended_fuses": "0xF8",
+          "file": "atmega/ATmegaBOOT_168_diecimila.hex",
+          "high_fuses": "0xdd",
+          "low_fuses": "0xff"
+        },
+        "build": {
+          "mcu": "atmega168"
+        },
+        "upload": {
+          "maximum_data_size": "1024",
+          "maximum_size": "14336",
+          "speed": "19200"
+        }
+      },
+      "atmega328": {
+        "": "ATmega328P",
+        "bootloader": {
+          "extended_fuses": "0xFD",
+          "file": "optiboot/optiboot_atmega328.hex",
+          "high_fuses": "0xDA",
+          "low_fuses": "0xFF"
+        },
+        "build": {
+          "mcu": "atmega328p"
+        },
+        "upload": {
+          "maximum_data_size": "2048",
+          "maximum_size": "30720",
+          "speed": "115200"
+        }
+      },
+      "atmega328old": {
+        "": "ATmega328P (Old Bootloader)",
+        "bootloader": {
+          "extended_fuses": "0xFD",
+          "file": "atmega/ATmegaBOOT_168_atmega328.hex",
+          "high_fuses": "0xDA",
+          "low_fuses": "0xFF"
+        },
+        "build": {
+          "mcu": "atmega328p"
+        },
+        "upload": {
+          "maximum_data_size": "2048",
+          "maximum_size": "30720",
+          "speed": "57600"
+        }
+      }
+    }
+  },
+  "name": "Arduino Nano",
+  "upload": {
+    "protocol": "arduino",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "board": "nano"
+    }
+  }
+}

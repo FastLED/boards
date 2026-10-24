@@ -1,0 +1,25 @@
+{
+  "build": {
+    "arduino": {
+      "ldscript": "chipKIT-application-32MX150F128.ld"
+    },
+    "core": "pic32",
+    "extra_flags": "-D_BOARD_DSMINI_",
+    "f_cpu": "40000000L",
+    "mcu": "32MX150F128C",
+    "variant": "DSMini"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "DataStation Mini",
+  "upload": {
+    "maximum_ram_size": 32768,
+    "maximum_size": 122880,
+    "protocol": "stk500v2",
+    "require_upload_port": true,
+    "speed": 115200
+  },
+  "url": "http://www.makerologist.com/",
+  "vendor": "Makerology"
+}

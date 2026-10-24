@@ -1,0 +1,51 @@
+{
+  "build": {
+    "cpu": "cortex-m4",
+    "f_cpu": "120000000L",
+    "mcu": "mk64fn1m0vdc12",
+    "zephyr": {
+       "variant": "hexiwear_k64"
+    }
+  },
+  "connectivity": [
+    "bluetooth",
+    "can",
+    "wifi"
+  ],
+  "debug": {
+    "jlink_device": "MK64FN1M0xxx12",
+    "svd_path": "MK64F12.svd",
+    "tools": {
+      "cmsis-dap": {
+        "load_cmd": "preload",
+        "server": {
+          "arguments": [
+            "pyocd-gdbserver.py",
+            "-t",
+            "k64f"
+          ],
+          "executable": "$PYTHONEXE",
+          "package": "tool-pyocd",
+          "ready_pattern": "GDB server started on port"
+        }
+      }
+    }
+  },
+  "frameworks": [
+    "mbed",
+    "zephyr"
+  ],
+  "name": "Hexiwear",
+  "upload": {
+    "maximum_ram_size": 262144,
+    "maximum_size": 1048576,
+    "protocol": "mbed",
+    "protocols": [
+      "cmsis-dap",
+      "jlink",
+      "mbed"
+    ]
+  },
+  "url": "https://developer.mbed.org/platforms/Hexiwear/",
+  "vendor": "MikroElektronika"
+}
