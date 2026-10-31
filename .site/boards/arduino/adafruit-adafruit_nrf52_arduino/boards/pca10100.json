@@ -1,0 +1,96 @@
+{
+  "bootloader": {
+    "tool": "bootburn"
+  },
+  "build": {
+    "board": "NRF52833_PCA10100",
+    "core": "nRF5",
+    "extra_flags": "-DNRF52833_XXAA {build.flags.usb}",
+    "f_cpu": "64000000",
+    "ldscript": "nrf52833_s140_v7.ld",
+    "mcu": "cortex-m4",
+    "openocdscript": "scripts/openocd/daplink_nrf52.cfg",
+    "pid": "0x80D8",
+    "uf2_family": "0x621E937A",
+    "usb_manufacturer": "\"Nordic\"",
+    "usb_product": "\"nRF52833 DK\"",
+    "variant": "pca10100",
+    "vid": "0x239A"
+  },
+  "menu": {
+    "debug": {
+      "l0": {
+        "": "Level 0 (Release)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=0"
+        }
+      },
+      "l1": {
+        "": "Level 1 (Error Message)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=1"
+        }
+      },
+      "l2": {
+        "": "Level 2 (Full Debug)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=2"
+        }
+      },
+      "l3": {
+        "": "Level 3 (Segger SystemView)",
+        "build": {
+          "debug_flags": "-DCFG_DEBUG=3",
+          "sysview_flags": "-DCFG_SYSVIEW=1"
+        }
+      }
+    },
+    "debug_output": {
+      "rtt": {
+        "": "Segger RTT",
+        "build": {
+          "logger_flags": "-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL"
+        }
+      },
+      "serial": {
+        "": "Serial",
+        "build": {
+          "logger_flags": "-DCFG_LOGGER=0"
+        }
+      },
+      "serial1": {
+        "": "Serial1",
+        "build": {
+          "logger_flags": "-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG"
+        }
+      }
+    },
+    "softdevice": {
+      "s140v7": {
+        "": "S140 7.3.0",
+        "build": {
+          "sd_fwid": "0x0123",
+          "sd_name": "s140",
+          "sd_version": "7.3.0"
+        }
+      }
+    }
+  },
+  "name": "Nordic nRF52833 DK",
+  "pid": {
+    "0": "0x80D8",
+    "1": "0x00D8"
+  },
+  "upload": {
+    "maximum_data_size": "106496",
+    "maximum_size": "286720",
+    "protocol": "nrfutil",
+    "tool": "nrfutil",
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "vid": {
+    "0": "0x239A",
+    "1": "0x239A"
+  }
+}

@@ -1,0 +1,120 @@
+name: Sync arduino
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-arduino
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (tools live here)
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "fbuild-bot[sync]"
+          git config user.email "fbuild-bot+sync@users.noreply.github.com"
+
+      - name: Worktree the arduino branch
+        run: |
+          set -euo pipefail
+          if git ls-remote --heads origin arduino | grep -q .; then
+            git fetch origin arduino:arduino
+            git worktree add .data arduino
+          else
+            git worktree add --detach .data
+            (cd .data && git checkout --orphan arduino && git rm -rf . 2>/dev/null || true)
+          fi
+          mkdir -p .data/data
+
+      - name: Dump upstream JSON to /tmp/arduino-dump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/arduino-dump
+          uv run --no-project --script builders/arduino.py --out /tmp/arduino-dump
+
+      - name: Copy-merge (NEVER replace existing JSON; log conflicts)
+        id: merge
+        run: |
+          LOG=/tmp/conflicts.log
+          : > "$LOG"
+          uv run --no-project --script - <<'PY' "$LOG" "/tmp/arduino-dump" "$(pwd)/.data/data"
+          # /// script
+          # requires-python = ">=3.10"
+          # ///
+          import shutil, sys, pathlib
+          log_path = pathlib.Path(sys.argv[1])
+          src = pathlib.Path(sys.argv[2])
+          dst = pathlib.Path(sys.argv[3])
+          copied = skipped = 0
+          with log_path.open("a", encoding="utf-8") as logf:
+              for p in src.rglob("*"):
+                  if not p.is_file(): continue
+                  rel = p.relative_to(src)
+                  target = dst / rel
+                  if target.exists():
+                      logf.write(f"SKIP existing: {rel}\n")
+                      skipped += 1
+                      continue
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(p, target)
+                  copied += 1
+          print(f"copied={copied} skipped={skipped} log={log_path}", file=sys.stderr)
+          PY
+          echo "log_path=$LOG" >> "$GITHUB_OUTPUT"
+
+      - name: Show conflict log in workflow output
+        if: always()
+        run: |
+          echo "=== conflict log (skipped pre-existing files) ==="
+          cat /tmp/conflicts.log || echo "(no log)"
+          echo "=== end of conflict log ==="
+
+      - name: Upload conflict log as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arduino-conflicts-log
+          path: /tmp/conflicts.log
+          if-no-files-found: ignore
+
+      - name: Force-push as a fresh orphan commit
+        working-directory: .data
+        # Each sync replaces the arduino branch with a SINGLE orphan
+        # commit whose tree contains the cumulative (skip-on-exists)
+        # working state. No history retained — GH UI no longer reports
+        # "N commits behind main" growing over time. Cumulative data is
+        # preserved because the copy-merge step above kept any existing
+        # files from the prior tip.
+        run: |
+          set -euo pipefail
+          git add -A
+          TREE=$(git write-tree)
+          REMOTE_TREE=""
+          if git ls-remote --exit-code --heads origin arduino >/dev/null 2>&1; then
+            REMOTE_TREE=$(git rev-parse "origin/arduino^{tree}" 2>/dev/null || true)
+          fi
+          if [ -n "$REMOTE_TREE" ] && [ "$TREE" = "$REMOTE_TREE" ]; then
+            echo "tree unchanged ($TREE); skipping push"
+            exit 0
+          fi
+          ts="$(date -u +%Y-%m-%d)"
+          NEW=$(git commit-tree "$TREE" -m "sync(arduino): ${ts}" \
+                                         -m "from builders/arduino.py via workflow_dispatch")
+          echo "new orphan: $NEW (tree $TREE)"
+          if git ls-remote --exit-code --heads origin arduino >/dev/null 2>&1; then
+            git push --force origin "$NEW:refs/heads/arduino"
+          else
+            git push origin "$NEW:refs/heads/arduino"
+          fi

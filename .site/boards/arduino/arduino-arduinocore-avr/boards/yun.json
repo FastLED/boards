@@ -1,0 +1,75 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xfb",
+    "file": "caterina/Caterina-Yun.hex",
+    "high_fuses": "0xd8",
+    "lock_bits": "0x2F",
+    "low_fuses": "0xff",
+    "noblink": "caterina/Caterina-Yun-noblink.hex",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_YUN",
+    "core": "arduino",
+    "extra_flags": "{build.usb_flags}",
+    "f_cpu": "16000000L",
+    "mcu": "atmega32u4",
+    "pid": "0x8041",
+    "usb_product": "\"Arduino Yun\"",
+    "variant": "yun",
+    "vid": "0x2341"
+  },
+  "name": "Arduino Yún",
+  "pid": {
+    "0": "0x0041",
+    "1": "0x8041",
+    "2": "0x0041",
+    "3": "0x8041"
+  },
+  "upload": {
+    "disable_flushing": "true",
+    "maximum_data_size": "2560",
+    "maximum_size": "28672",
+    "protocol": "avr109",
+    "speed": "57600",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "via_ssh": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0041",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x8041",
+      "vid": "0x2341"
+    },
+    "2": {
+      "pid": "0x0041",
+      "vid": "0x2A03"
+    },
+    "3": {
+      "pid": "0x8041",
+      "vid": "0x2A03"
+    },
+    "4": {
+      "board": "yun"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341",
+    "2": "0x2A03",
+    "3": "0x2A03"
+  }
+}

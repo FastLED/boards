@@ -1,0 +1,967 @@
+{
+  "build": {
+    "board": "AMKEN_REVELOP_PLUS",
+    "boot2": "boot2_W25Q32JVxQ_4_padded_checksum",
+    "chip": "rp2040",
+    "core": "rp2040",
+    "extra_flags": "",
+    "f_cpu": "125000000",
+    "ldscript": "memmap_default.ld",
+    "led": "",
+    "mcu": "cortex-m0plus",
+    "toolchain": "arm-none-eabi",
+    "toolchainopts": "-march=armv6-m -mcpu=cortex-m0plus -mthumb",
+    "toolchainpkg": "pqt-gcc",
+    "uf2family": "--family rp2040",
+    "usb_manufacturer": "\"Amken\"",
+    "usb_product": "\"Revelop Plus\"",
+    "usbpid": "-DUSBD_PID=0x7305",
+    "usbpwr": "-DUSBD_MAX_POWER_MA=250",
+    "usbvid": "-DUSBD_VID=0x2770",
+    "variant": "amken_revelop_plus"
+  },
+  "menu": {
+    "dbglvl": {
+      "All": {
+        "": "All",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_WIRE -DDEBUG_RP2040_SPI -DDEBUG_RP2040_CORE -DDEBUG_RP2040_BLUETOOTH -DDEBUG_RP2040_BLE -DLWIP_DEBUG=1"
+        }
+      },
+      "BLE": {
+        "": "BLE",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_BLE"
+        }
+      },
+      "Bluetooth": {
+        "": "Bluetooth",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_BLUETOOTH"
+        }
+      },
+      "Core": {
+        "": "Core",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_CORE"
+        }
+      },
+      "LWIP": {
+        "": "LWIP",
+        "build": {
+          "debug_level": "-DLWIP_DEBUG=1"
+        }
+      },
+      "NDEBUG": {
+        "": "NDEBUG",
+        "build": {
+          "debug_level": "-DNDEBUG"
+        }
+      },
+      "None": {
+        "": "None",
+        "build": {
+          "debug_level": ""
+        }
+      },
+      "SPI": {
+        "": "SPI",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_SPI"
+        }
+      },
+      "Wire": {
+        "": "Wire",
+        "build": {
+          "debug_level": "-DDEBUG_RP2040_WIRE"
+        }
+      }
+    },
+    "dbgport": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "debug_port": ""
+        }
+      },
+      "Serial": {
+        "": "Serial",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=Serial"
+        }
+      },
+      "Serial1": {
+        "": "Serial1",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=Serial1"
+        }
+      },
+      "Serial2": {
+        "": "Serial2",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=Serial2"
+        }
+      },
+      "SerialSemi": {
+        "": "SerialSemi",
+        "build": {
+          "debug_port": "-DDEBUG_RP2040_PORT=SerialSemi"
+        }
+      }
+    },
+    "exceptions": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "exceptions": "-fno-exceptions",
+            "libstdcpp": "-lstdc++"
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "exceptions": "-fexceptions",
+            "libstdcpp": "-lstdc++-exc"
+          }
+        }
+      }
+    },
+    "flash": {
+      "33554432_0": {
+        "": "32MB (no FS)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "33550336",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "301985792"
+        },
+        "upload": {
+          "maximum_size": "33550336"
+        }
+      },
+      "33554432_1048576": {
+        "": "32MB (Sketch: 31MB, FS: 1MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "32501760",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "300937216"
+        },
+        "upload": {
+          "maximum_size": "32501760"
+        }
+      },
+      "33554432_10485760": {
+        "": "32MB (Sketch: 22MB, FS: 10MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "23064576",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "291500032"
+        },
+        "upload": {
+          "maximum_size": "23064576"
+        }
+      },
+      "33554432_11534336": {
+        "": "32MB (Sketch: 21MB, FS: 11MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "22016000",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "290451456"
+        },
+        "upload": {
+          "maximum_size": "22016000"
+        }
+      },
+      "33554432_12582912": {
+        "": "32MB (Sketch: 20MB, FS: 12MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "20967424",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "289402880"
+        },
+        "upload": {
+          "maximum_size": "20967424"
+        }
+      },
+      "33554432_131072": {
+        "": "32MB (Sketch: 32640KB, FS: 128KB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "33419264",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "301854720"
+        },
+        "upload": {
+          "maximum_size": "33419264"
+        }
+      },
+      "33554432_13631488": {
+        "": "32MB (Sketch: 19MB, FS: 13MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "19918848",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "288354304"
+        },
+        "upload": {
+          "maximum_size": "19918848"
+        }
+      },
+      "33554432_14680064": {
+        "": "32MB (Sketch: 18MB, FS: 14MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "18870272",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "287305728"
+        },
+        "upload": {
+          "maximum_size": "18870272"
+        }
+      },
+      "33554432_15728640": {
+        "": "32MB (Sketch: 17MB, FS: 15MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "17821696",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "286257152"
+        },
+        "upload": {
+          "maximum_size": "17821696"
+        }
+      },
+      "33554432_16777216": {
+        "": "32MB (Sketch: 16MB, FS: 16MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "16773120",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "285208576"
+        },
+        "upload": {
+          "maximum_size": "16773120"
+        }
+      },
+      "33554432_17825792": {
+        "": "32MB (Sketch: 15MB, FS: 17MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "15724544",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "284160000"
+        },
+        "upload": {
+          "maximum_size": "15724544"
+        }
+      },
+      "33554432_18874368": {
+        "": "32MB (Sketch: 14MB, FS: 18MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "14675968",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "283111424"
+        },
+        "upload": {
+          "maximum_size": "14675968"
+        }
+      },
+      "33554432_19922944": {
+        "": "32MB (Sketch: 13MB, FS: 19MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "13627392",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "282062848"
+        },
+        "upload": {
+          "maximum_size": "13627392"
+        }
+      },
+      "33554432_2097152": {
+        "": "32MB (Sketch: 30MB, FS: 2MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "31453184",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "299888640"
+        },
+        "upload": {
+          "maximum_size": "31453184"
+        }
+      },
+      "33554432_20971520": {
+        "": "32MB (Sketch: 12MB, FS: 20MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "12578816",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "281014272"
+        },
+        "upload": {
+          "maximum_size": "12578816"
+        }
+      },
+      "33554432_22020096": {
+        "": "32MB (Sketch: 11MB, FS: 21MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "11530240",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "279965696"
+        },
+        "upload": {
+          "maximum_size": "11530240"
+        }
+      },
+      "33554432_23068672": {
+        "": "32MB (Sketch: 10MB, FS: 22MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "10481664",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "278917120"
+        },
+        "upload": {
+          "maximum_size": "10481664"
+        }
+      },
+      "33554432_24117248": {
+        "": "32MB (Sketch: 9MB, FS: 23MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "9433088",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "277868544"
+        },
+        "upload": {
+          "maximum_size": "9433088"
+        }
+      },
+      "33554432_25165824": {
+        "": "32MB (Sketch: 8MB, FS: 24MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "8384512",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "276819968"
+        },
+        "upload": {
+          "maximum_size": "8384512"
+        }
+      },
+      "33554432_262144": {
+        "": "32MB (Sketch: 32512KB, FS: 256KB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "33288192",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "301723648"
+        },
+        "upload": {
+          "maximum_size": "33288192"
+        }
+      },
+      "33554432_26214400": {
+        "": "32MB (Sketch: 7MB, FS: 25MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "7335936",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "275771392"
+        },
+        "upload": {
+          "maximum_size": "7335936"
+        }
+      },
+      "33554432_27262976": {
+        "": "32MB (Sketch: 6MB, FS: 26MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "6287360",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "274722816"
+        },
+        "upload": {
+          "maximum_size": "6287360"
+        }
+      },
+      "33554432_28311552": {
+        "": "32MB (Sketch: 5MB, FS: 27MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "5238784",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "273674240"
+        },
+        "upload": {
+          "maximum_size": "5238784"
+        }
+      },
+      "33554432_29360128": {
+        "": "32MB (Sketch: 4MB, FS: 28MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "4190208",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "272625664"
+        },
+        "upload": {
+          "maximum_size": "4190208"
+        }
+      },
+      "33554432_30408704": {
+        "": "32MB (Sketch: 3MB, FS: 29MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "3141632",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "271577088"
+        },
+        "upload": {
+          "maximum_size": "3141632"
+        }
+      },
+      "33554432_3145728": {
+        "": "32MB (Sketch: 29MB, FS: 3MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "30404608",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "298840064"
+        },
+        "upload": {
+          "maximum_size": "30404608"
+        }
+      },
+      "33554432_31457280": {
+        "": "32MB (Sketch: 2MB, FS: 30MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "2093056",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "270528512"
+        },
+        "upload": {
+          "maximum_size": "2093056"
+        }
+      },
+      "33554432_32505856": {
+        "": "32MB (Sketch: 1MB, FS: 31MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "1044480",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "269479936"
+        },
+        "upload": {
+          "maximum_size": "1044480"
+        }
+      },
+      "33554432_4194304": {
+        "": "32MB (Sketch: 28MB, FS: 4MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "29356032",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "297791488"
+        },
+        "upload": {
+          "maximum_size": "29356032"
+        }
+      },
+      "33554432_524288": {
+        "": "32MB (Sketch: 32256KB, FS: 512KB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "33026048",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "301461504"
+        },
+        "upload": {
+          "maximum_size": "33026048"
+        }
+      },
+      "33554432_5242880": {
+        "": "32MB (Sketch: 27MB, FS: 5MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "28307456",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "296742912"
+        },
+        "upload": {
+          "maximum_size": "28307456"
+        }
+      },
+      "33554432_6291456": {
+        "": "32MB (Sketch: 26MB, FS: 6MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "27258880",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "295694336"
+        },
+        "upload": {
+          "maximum_size": "27258880"
+        }
+      },
+      "33554432_65536": {
+        "": "32MB (Sketch: 32704KB, FS: 64KB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "33484800",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "301920256"
+        },
+        "upload": {
+          "maximum_size": "33484800"
+        }
+      },
+      "33554432_7340032": {
+        "": "32MB (Sketch: 25MB, FS: 7MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "26210304",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "294645760"
+        },
+        "upload": {
+          "maximum_size": "26210304"
+        }
+      },
+      "33554432_8388608": {
+        "": "32MB (Sketch: 24MB, FS: 8MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "25161728",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "293597184"
+        },
+        "upload": {
+          "maximum_size": "25161728"
+        }
+      },
+      "33554432_9437184": {
+        "": "32MB (Sketch: 23MB, FS: 9MB)",
+        "build": {
+          "eeprom_start": "301985792",
+          "flash_length": "24113152",
+          "flash_total": "33554432",
+          "fs_end": "301985792",
+          "fs_start": "292548608"
+        },
+        "upload": {
+          "maximum_size": "24113152"
+        }
+      }
+    },
+    "freq": {
+      "100": {
+        "": "100 MHz",
+        "build": {
+          "f_cpu": "100000000L"
+        }
+      },
+      "120": {
+        "": "120 MHz",
+        "build": {
+          "f_cpu": "120000000L"
+        }
+      },
+      "125": {
+        "": "125 MHz",
+        "build": {
+          "f_cpu": "125000000L"
+        }
+      },
+      "128": {
+        "": "128 MHz",
+        "build": {
+          "f_cpu": "128000000L"
+        }
+      },
+      "133": {
+        "": "133 MHz",
+        "build": {
+          "f_cpu": "133000000L"
+        }
+      },
+      "150": {
+        "": "150 MHz",
+        "build": {
+          "f_cpu": "150000000L"
+        }
+      },
+      "176": {
+        "": "176 MHz",
+        "build": {
+          "f_cpu": "176000000L"
+        }
+      },
+      "200": {
+        "": "200 MHz",
+        "build": {
+          "f_cpu": "200000000L"
+        }
+      },
+      "225": {
+        "": "225 MHz (Overclock)",
+        "build": {
+          "f_cpu": "225000000L"
+        }
+      },
+      "240": {
+        "": "240 MHz (Overclock)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "250": {
+        "": "250 MHz (Overclock)",
+        "build": {
+          "f_cpu": "250000000L"
+        }
+      },
+      "276": {
+        "": "276 MHz (Overclock)",
+        "build": {
+          "f_cpu": "276000000L"
+        }
+      },
+      "300": {
+        "": "300 MHz (Overclock)",
+        "build": {
+          "f_cpu": "300000000L"
+        }
+      },
+      "50": {
+        "": "50 MHz",
+        "build": {
+          "f_cpu": "50000000L"
+        }
+      }
+    },
+    "ipbtstack": {
+      "ipv4btcble": {
+        "": "IPv4 + Bluetooth",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1"
+        }
+      },
+      "ipv4btcblebig": {
+        "": "IPv4 + Bluetooth - 32K",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1 -D__LWIP_MEMMULT=2"
+        }
+      },
+      "ipv4ipv6": {
+        "": "IPv4 + IPv6",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1"
+        }
+      },
+      "ipv4ipv6big": {
+        "": "IPv4 + IPv6 - 32K",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1 -D__LWIP_MEMMULT=2"
+        }
+      },
+      "ipv4ipv6btcble": {
+        "": "IPv4 + IPv6 + Bluetooth",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1"
+        }
+      },
+      "ipv4ipv6btcblebig": {
+        "": "IPv4 + IPv6 + Bluetooth - 32K",
+        "build": {
+          "libpicow": "liblwip-bt.a",
+          "libpicowdefs": "-DLWIP_IPV6=1 -DLWIP_IPV4=1 -DENABLE_CLASSIC=1 -DENABLE_BLE=1 -DCYW43_ENABLE_BLUETOOTH=1 -D__LWIP_MEMMULT=2"
+        }
+      },
+      "ipv4only": {
+        "": "IPv4 Only",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1"
+        }
+      },
+      "ipv4onlybig": {
+        "": "IPv4 Only - 32K",
+        "build": {
+          "libpicow": "liblwip.a",
+          "libpicowdefs": "-DLWIP_IPV6=0 -DLWIP_IPV4=1 -D__LWIP_MEMMULT=2"
+        }
+      }
+    },
+    "opt": {
+      "Debug": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "Disabled": {
+        "": "Disabled (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "Fast": {
+        "": "Fast (-Ofast) (maybe slower)",
+        "build": {
+          "flags": {
+            "optimize": "-Ofast"
+          }
+        }
+      },
+      "Optimize": {
+        "": "Optimize (-O)",
+        "build": {
+          "flags": {
+            "optimize": "-O"
+          }
+        }
+      },
+      "Optimize2": {
+        "": "Optimize More (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "Optimize3": {
+        "": "Optimize Even More (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "Small": {
+        "": "Small (-Os) (standard)",
+        "build": {
+          "flags": {
+            "optimize": "-Os"
+          }
+        }
+      }
+    },
+    "os": {
+      "freertos": {
+        "": "FreeRTOS SMP",
+        "build": {
+          "os": "-D__FREERTOS"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "os": ""
+        }
+      }
+    },
+    "profile": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "profile": ""
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "profile": "-pg -D__PROFILE"
+          }
+        }
+      }
+    },
+    "rtti": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "rtti": "-fno-rtti"
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "rtti": ""
+          }
+        }
+      }
+    },
+    "stackprotect": {
+      "Disabled": {
+        "": "Disabled",
+        "build": {
+          "flags": {
+            "stackprotect": ""
+          }
+        }
+      },
+      "Enabled": {
+        "": "Enabled",
+        "build": {
+          "flags": {
+            "stackprotect": "-fstack-protector-all"
+          }
+        }
+      }
+    },
+    "uploadmethod": {
+      "default": {
+        "": "Default (UF2)",
+        "build": {
+          "debugscript": "picoprobe_cmsis_dap.tcl",
+          "ram_length": "256k"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "tool": {
+            "": "uf2conv",
+            "default": "uf2conv",
+            "network": "uf2conv-network"
+          }
+        }
+      },
+      "picoprobe_cmsis_dap": {
+        "": "Picoprobe/Debugprobe (CMSIS-DAP)",
+        "build": {
+          "debugscript": "picoprobe_cmsis_dap.tcl",
+          "ram_length": "256k"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "tool": {
+            "": "picoprobe_cmsis_dap",
+            "default": "picoprobe_cmsis_dap"
+          }
+        }
+      },
+      "picotool": {
+        "": "Picotool",
+        "build": {
+          "debugscript": "picoprobe.tcl",
+          "picodebugflags": "-DENABLE_PICOTOOL_USB",
+          "ram_length": "256k"
+        },
+        "upload": {
+          "maximum_data_size": "262144",
+          "tool": {
+            "": "picotool",
+            "default": "picotool"
+          }
+        }
+      }
+    },
+    "usbstack": {
+      "nousb": {
+        "": "No USB",
+        "build": {
+          "usbstack_flags": "\"-DNO_USB -DDISABLE_USB_SERIAL -I{runtime.platform.path}/tools/libpico\""
+        }
+      },
+      "picosdk": {
+        "": "Pico SDK",
+        "build": {
+          "usbstack_flags": ""
+        }
+      },
+      "tinyusb": {
+        "": "Adafruit TinyUSB",
+        "build": {
+          "usbstack_flags": "-DUSE_TINYUSB \"-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino\""
+        }
+      },
+      "tinyusb_host": {
+        "": "Adafruit TinyUSB Host (native)",
+        "build": {
+          "usbstack_flags": "-DUSE_TINYUSB -DUSE_TINYUSB_HOST \"-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino\""
+        }
+      }
+    }
+  },
+  "name": "Amken Revelop Plus",
+  "pid": {
+    "0": "0x7305"
+  },
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "erase_cmd": "",
+    "maximum_size": "33554432",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x7305",
+      "vid": "0x2770"
+    }
+  },
+  "vid": {
+    "0": "0x2770"
+  }
+}
