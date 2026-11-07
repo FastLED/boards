@@ -1,0 +1,656 @@
+{
+  "build": {
+    "board": "GenC0",
+    "core": "arduino",
+    "flash_offset": "0x0",
+    "mcu": "cortex-m0plus",
+    "series": "STM32C0xx",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} -D__CORTEX_SC=0"
+  },
+  "menu": {
+    "dbg": {
+      "enable": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "GENERIC_C011D6YX": {
+        "": "Generic C011D6Yx",
+        "build": {
+          "board": "GENERIC_C011D6YX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011D6Y_C011F(4-6)(P-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C011F4PX": {
+        "": "Generic C011F4Px",
+        "build": {
+          "board": "GENERIC_C011F4PX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011D6Y_C011F(4-6)(P-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_C011F4UX": {
+        "": "Generic C011F4Ux",
+        "build": {
+          "board": "GENERIC_C011F4UX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011D6Y_C011F(4-6)(P-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_C011F6PX": {
+        "": "Generic C011F6Px",
+        "build": {
+          "board": "GENERIC_C011F6PX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011D6Y_C011F(4-6)(P-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C011F6UX": {
+        "": "Generic C011F6Ux",
+        "build": {
+          "board": "GENERIC_C011F6UX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011D6Y_C011F(4-6)(P-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C011J4MX": {
+        "": "Generic C011J4Mx",
+        "build": {
+          "board": "GENERIC_C011J4MX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011J(4-6)M"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_C011J6MX": {
+        "": "Generic C011J6Mx",
+        "build": {
+          "board": "GENERIC_C011J6MX",
+          "product_line": "STM32C011xx",
+          "variant": "STM32C0xx/C011J(4-6)M"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C011.svd"
+        },
+        "upload": {
+          "maximum_data_size": "6144",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C031C4TX": {
+        "": "Generic C031C4Tx",
+        "build": {
+          "board": "GENERIC_C031C4TX",
+          "product_line": "STM32C031xx",
+          "variant": "STM32C0xx/C031C(4-6)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_C031C4UX": {
+        "": "Generic C031C4Ux",
+        "build": {
+          "board": "GENERIC_C031C4UX",
+          "product_line": "STM32C031xx",
+          "variant": "STM32C0xx/C031C(4-6)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_C031C6TX": {
+        "": "Generic C031C6Tx",
+        "build": {
+          "board": "GENERIC_C031C6TX",
+          "product_line": "STM32C031xx",
+          "variant": "STM32C0xx/C031C(4-6)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C031C6UX": {
+        "": "Generic C031C6Ux",
+        "build": {
+          "board": "GENERIC_C031C6UX",
+          "product_line": "STM32C031xx",
+          "variant": "STM32C0xx/C031C(4-6)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C031F4PX": {
+        "": "Generic C031F4Px",
+        "build": {
+          "board": "GENERIC_C031F4PX",
+          "product_line": "STM32C031xx",
+          "variant": "STM32C0xx/C031F(4-6)P"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_C031F6PX": {
+        "": "Generic C031F6Px",
+        "build": {
+          "board": "GENERIC_C031F6PX",
+          "product_line": "STM32C031xx",
+          "variant": "STM32C0xx/C031F(4-6)P"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C031.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C051C6TX": {
+        "": "Generic C051C6Tx",
+        "build": {
+          "board": "GENERIC_C051C6TX",
+          "product_line": "STM32C051xx",
+          "variant": "STM32C0xx/C051C(6-8)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C051.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C051C6UX": {
+        "": "Generic C051C6Ux",
+        "build": {
+          "board": "GENERIC_C051C6UX",
+          "product_line": "STM32C051xx",
+          "variant": "STM32C0xx/C051C(6-8)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C051.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_C051C8TX": {
+        "": "Generic C051C8Tx",
+        "build": {
+          "board": "GENERIC_C051C8TX",
+          "product_line": "STM32C051xx",
+          "variant": "STM32C0xx/C051C(6-8)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C051.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_C051C8UX": {
+        "": "Generic C051C8Ux",
+        "build": {
+          "board": "GENERIC_C051C8UX",
+          "product_line": "STM32C051xx",
+          "variant": "STM32C0xx/C051C(6-8)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C051.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_C071G8UX": {
+        "": "Generic C071G8Ux",
+        "build": {
+          "board": "GENERIC_C071G8UX",
+          "product_line": "STM32C071xx",
+          "variant": "STM32C0xx/C071G(8-B)U"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C071.svd"
+        },
+        "upload": {
+          "maximum_data_size": "24576",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_C071GBUX": {
+        "": "Generic C071GBUx",
+        "build": {
+          "board": "GENERIC_C071GBUX",
+          "product_line": "STM32C071xx",
+          "variant": "STM32C0xx/C071G(8-B)U"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C071.svd"
+        },
+        "upload": {
+          "maximum_data_size": "24576",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_C071R8TX": {
+        "": "Generic C071R8Tx",
+        "build": {
+          "board": "GENERIC_C071R8TX",
+          "product_line": "STM32C071xx",
+          "variant": "STM32C0xx/C071R(8-B)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C071.svd"
+        },
+        "upload": {
+          "maximum_data_size": "24576",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_C071RBTX": {
+        "": "Generic C071RBTx",
+        "build": {
+          "board": "GENERIC_C071RBTX",
+          "product_line": "STM32C071xx",
+          "variant": "STM32C0xx/C071R(8-B)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C071.svd"
+        },
+        "upload": {
+          "maximum_data_size": "24576",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_C092CBTX": {
+        "": "Generic C092CBTx",
+        "build": {
+          "board": "GENERIC_C092CBTX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092C(B-C)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_C092CBUX": {
+        "": "Generic C092CBUx",
+        "build": {
+          "board": "GENERIC_C092CBUX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092C(B-C)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_C092CCTX": {
+        "": "Generic C092CCTx",
+        "build": {
+          "board": "GENERIC_C092CCTX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092C(B-C)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_C092CCUX": {
+        "": "Generic C092CCUx",
+        "build": {
+          "board": "GENERIC_C092CCUX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092C(B-C)(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_C092RBTX": {
+        "": "Generic C092RBTx",
+        "build": {
+          "board": "GENERIC_C092RBTX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092RBT_C092RC(I-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_C092RCIX": {
+        "": "Generic C092RCIx",
+        "build": {
+          "board": "GENERIC_C092RCIX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092RBT_C092RC(I-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_C092RCTX": {
+        "": "Generic C092RCTx",
+        "build": {
+          "board": "GENERIC_C092RCTX",
+          "product_line": "STM32C092xx",
+          "variant": "STM32C0xx/C092RBT_C092RC(I-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32C0xx/STM32C092.svd"
+        },
+        "upload": {
+          "maximum_data_size": "30720",
+          "maximum_size": "262144"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    }
+  },
+  "name": "Generic STM32C0 series",
+  "openocd": {
+    "target": "stm32c0x"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  }
+}

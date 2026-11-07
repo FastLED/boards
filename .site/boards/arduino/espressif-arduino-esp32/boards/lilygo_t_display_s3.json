@@ -1,0 +1,259 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "LILYGO_T_DISPLAY_S3",
+    "boot": "qio",
+    "boot_freq": "80m",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "1",
+    "core": "esp32",
+    "defines": "",
+    "dfu_on_boot": "0",
+    "event_core": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "16MB",
+    "loop_core": "",
+    "mcu": "esp32s3",
+    "memory_type": "{build.boot}_{build.psram_type}",
+    "msc_on_boot": "0",
+    "partitions": "app3M_fat9M_16MB",
+    "psram_type": "opi",
+    "tarch": "xtensa",
+    "target": "esp32s3",
+    "usb_mode": "1",
+    "variant": "lilygo_t_display_s3"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "cdc_on_boot": "0"
+        }
+      }
+    },
+    "DFUOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "dfu_on_boot": "0"
+        }
+      },
+      "dfu": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "dfu_on_boot": "1"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "EventsCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1"
+        }
+      }
+    },
+    "JTAGAdapter": {
+      "builtin": {
+        "": "Integrated USB JTAG",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32s3-builtin.cfg"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "copy_jtag_files": "0"
+        }
+      }
+    },
+    "LoopCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=1"
+        }
+      }
+    },
+    "MSCOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "msc_on_boot": "0"
+        }
+      },
+      "msc": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "msc_on_boot": "1"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "app3M_fat9M_16MB": {
+        "": "16M Flash (3MB APP/9.9MB FATFS)",
+        "build": {
+          "partitions": "app3M_fat9M_16MB"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "rainmaker": {
+        "": "RainMaker 4MB",
+        "build": {
+          "partitions": "rainmaker"
+        },
+        "upload": {
+          "maximum_size": "1966080"
+        }
+      },
+      "rainmaker_4MB": {
+        "": "RainMaker 4MB No OTA",
+        "build": {
+          "partitions": "rainmaker_4MB_no_ota"
+        },
+        "upload": {
+          "maximum_size": "4038656"
+        }
+      },
+      "rainmaker_8MB": {
+        "": "RainMaker 8MB",
+        "build": {
+          "partitions": "rainmaker_8MB"
+        },
+        "upload": {
+          "maximum_size": "4096000"
+        }
+      }
+    },
+    "USBMode": {
+      "default": {
+        "": "USB-OTG (TinyUSB)",
+        "build": {
+          "usb_mode": "0"
+        }
+      },
+      "hwcdc": {
+        "": "Hardware CDC and JTAG",
+        "build": {
+          "usb_mode": "1"
+        }
+      }
+    },
+    "UploadMode": {
+      "cdc": {
+        "": "USB-OTG CDC (TinyUSB)",
+        "upload": {
+          "use_1200bps_touch": "true",
+          "wait_for_upload_port": "true"
+        }
+      },
+      "default": {
+        "": "UART0 / Hardware CDC",
+        "upload": {
+          "use_1200bps_touch": "false",
+          "wait_for_upload_port": "false"
+        }
+      }
+    }
+  },
+  "name": "LilyGo T-Display-S3",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "3145728",
+    "speed": "921600",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

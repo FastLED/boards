@@ -1,0 +1,236 @@
+{
+  "build": {
+    "board": "STM32MP1",
+    "core": "arduino",
+    "family": "STM32MP1",
+    "flash_offset": "0x0",
+    "float-abi": "-mfloat-abi=hard",
+    "fpu": "-mfpu=fpv4-sp-d16",
+    "mcu": "cortex-m4",
+    "series": "STM32MP1xx",
+    "st_extra_flags": "-DCORE_CM4 -D{build.product_line} {build.enable_virtio} {build.xSerial}"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "STM32MP157A_DK1": {
+        "": "STM32MP157A-DK1",
+        "build": {
+          "board": "STM32MP157A_DK1",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32MP157Axx",
+          "variant": "STM32MP1xx/MP153AAC_MP153CAC_MP153DAC_MP153FAC_MP157AAC_MP157CAC_MP157DAC_MP157FAC",
+          "variant_h": "variant_STM32MP157_DK.h"
+        },
+        "upload": {
+          "maximum_data_size": "131072",
+          "maximum_size": "131072"
+        }
+      },
+      "STM32MP157C_DK2": {
+        "": "STM32MP157C-DK2",
+        "build": {
+          "board": "STM32MP157C_DK2",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32MP157Cxx",
+          "variant": "STM32MP1xx/MP153AAC_MP153CAC_MP153DAC_MP153FAC_MP157AAC_MP157CAC_MP157DAC_MP157FAC",
+          "variant_h": "variant_STM32MP157_DK.h"
+        },
+        "upload": {
+          "maximum_data_size": "131072",
+          "maximum_size": "131072"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "MassStorage": {
+        "": "Generate run_arduino.sh (You need to copy this manually)",
+        "upload": {
+          "protocol": "",
+          "tool": "remoteproc_gen"
+        }
+      }
+    },
+    "virtio": {
+      "disable": {
+        "": "Disabled (no SerialVirtIO nor /dev/ttyRPMSG0 available)",
+        "build": {
+          "enable_virtio": ""
+        }
+      },
+      "enabled": {
+        "": "SerialVirtIO <=> /dev/ttyRPMSG0",
+        "build": {
+          "enable_virtio": "{build.virtio_flags} -DDISABLE_GENERIC_SERIALVIRTIO"
+        }
+      },
+      "generic": {
+        "": "SerialVirtIO (= generic 'Serial') <=> /dev/ttyRPMSG0",
+        "build": {
+          "enable_virtio": "{build.virtio_flags}"
+        }
+      }
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": {
+        "": "UART only (generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED"
+        }
+      },
+      "none": {
+        "": "UART only (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    }
+  },
+  "name": "STM32MP1 series coprocessor",
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  }
+}

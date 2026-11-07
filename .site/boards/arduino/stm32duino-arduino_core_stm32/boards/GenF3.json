@@ -1,0 +1,975 @@
+{
+  "build": {
+    "board": "GenF3",
+    "core": "arduino",
+    "flash_offset": "0x0",
+    "float-abi": "-mfloat-abi=hard",
+    "fpu": "-mfpu=fpv4-sp-d16",
+    "mcu": "cortex-m4",
+    "series": "STM32F3xx",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial} {build.bootloader_flags}"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "BLACKPILL_F303CC": {
+        "": "RobotDyn BlackPill F303CC",
+        "build": {
+          "board": "BLACKPILL_F303CC",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303C(B-C)T",
+          "variant_h": "variant_{build.board}.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F301C6TX": {
+        "": "Generic F301C6Tx",
+        "build": {
+          "board": "GENERIC_F301C6TX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301C6T_F301C8(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F301C8TX": {
+        "": "Generic F301C8Tx",
+        "build": {
+          "board": "GENERIC_F301C8TX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301C6T_F301C8(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F301C8YX": {
+        "": "Generic F301C8Yx",
+        "build": {
+          "board": "GENERIC_F301C8YX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301C6T_F301C8(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F301K6TX": {
+        "": "Generic F301K6Tx",
+        "build": {
+          "board": "GENERIC_F301K6TX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301K(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F301K8TX": {
+        "": "Generic F301K8Tx",
+        "build": {
+          "board": "GENERIC_F301K8TX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301K(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F301R6TX": {
+        "": "Generic F301R6Tx",
+        "build": {
+          "board": "GENERIC_F301R6TX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F301R8TX": {
+        "": "Generic F301R8Tx",
+        "build": {
+          "board": "GENERIC_F301R8TX",
+          "product_line": "STM32F301x8",
+          "variant": "STM32F3xx/F301R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F301.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F302R6TX": {
+        "": "Generic F302R6Tx",
+        "build": {
+          "board": "GENERIC_F302R6TX",
+          "product_line": "STM32F302x8",
+          "variant": "STM32F3xx/F302R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F302.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F302R8TX": {
+        "": "Generic F302R8Tx",
+        "build": {
+          "board": "GENERIC_F302R8TX",
+          "product_line": "STM32F302x8",
+          "variant": "STM32F3xx/F302R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F302.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F303C6TX": {
+        "": "Generic F303C6Tx",
+        "build": {
+          "board": "GENERIC_F303C6TX",
+          "product_line": "STM32F303x8",
+          "variant": "STM32F3xx/F303C(6-8)T_F334C(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F303C8TX": {
+        "": "Generic F303C8Tx",
+        "build": {
+          "board": "GENERIC_F303C8TX",
+          "product_line": "STM32F303x8",
+          "variant": "STM32F3xx/F303C(6-8)T_F334C(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F303CBTX": {
+        "": "Generic F303CBTx",
+        "build": {
+          "board": "GENERIC_F303CBTX",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303C(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_F303CCTX": {
+        "": "Generic F303CCTx",
+        "build": {
+          "board": "GENERIC_F303CCTX",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303C(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F303K6TX": {
+        "": "Generic F303K6Tx",
+        "build": {
+          "board": "GENERIC_F303K6TX",
+          "product_line": "STM32F303x8",
+          "variant": "STM32F3xx/F303K(6-8)T_F334K(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F303K8TX": {
+        "": "Generic F303K8Tx",
+        "build": {
+          "board": "GENERIC_F303K8TX",
+          "product_line": "STM32F303x8",
+          "variant": "STM32F3xx/F303K(6-8)T_F334K(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F303R6TX": {
+        "": "Generic F303R6Tx",
+        "build": {
+          "board": "GENERIC_F303R6TX",
+          "product_line": "STM32F303x8",
+          "variant": "STM32F3xx/F303R(6-8)T_F334R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F303R8TX": {
+        "": "Generic F303R8Tx",
+        "build": {
+          "board": "GENERIC_F303R8TX",
+          "product_line": "STM32F303x8",
+          "variant": "STM32F3xx/F303R(6-8)T_F334R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F303RBTX": {
+        "": "Generic F303RBTx",
+        "build": {
+          "board": "GENERIC_F303RBTX",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303R(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_F303RCTX": {
+        "": "Generic F303RCTx",
+        "build": {
+          "board": "GENERIC_F303RCTX",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303R(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F303RDTX": {
+        "": "Generic F303RDTx",
+        "build": {
+          "board": "GENERIC_F303RDTX",
+          "product_line": "STM32F303xE",
+          "variant": "STM32F3xx/F303R(D-E)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "393216"
+        }
+      },
+      "GENERIC_F303RETX": {
+        "": "Generic F303RETx",
+        "build": {
+          "board": "GENERIC_F303RETX",
+          "product_line": "STM32F303xE",
+          "variant": "STM32F3xx/F303R(D-E)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "524288"
+        }
+      },
+      "GENERIC_F303VBTX": {
+        "": "Generic F303VBTx",
+        "build": {
+          "board": "GENERIC_F303VBTX",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303V(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "131072"
+        }
+      },
+      "GENERIC_F303VCTX": {
+        "": "Generic F303VCTx",
+        "build": {
+          "board": "GENERIC_F303VCTX",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303V(B-C)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F318C8TX": {
+        "": "Generic F318C8Tx",
+        "build": {
+          "board": "GENERIC_F318C8TX",
+          "product_line": "STM32F318xx",
+          "variant": "STM32F3xx/F318C8(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F318C8YX": {
+        "": "Generic F318C8Yx",
+        "build": {
+          "board": "GENERIC_F318C8YX",
+          "product_line": "STM32F318xx",
+          "variant": "STM32F3xx/F318C8(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F318K8UX": {
+        "": "Generic F318K8Ux",
+        "build": {
+          "board": "GENERIC_F318K8UX",
+          "product_line": "STM32F318xx",
+          "variant": "STM32F3xx/F318K8U"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "16384",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F328C8TX": {
+        "": "Generic F328C8Tx",
+        "build": {
+          "board": "GENERIC_F328C8TX",
+          "product_line": "STM32F328xx",
+          "variant": "STM32F3xx/F328C8T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F334C4TX": {
+        "": "Generic F334C4Tx",
+        "build": {
+          "board": "GENERIC_F334C4TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303C(6-8)T_F334C(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_F334C6TX": {
+        "": "Generic F334C6Tx",
+        "build": {
+          "board": "GENERIC_F334C6TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303C(6-8)T_F334C(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F334C8TX": {
+        "": "Generic F334C8Tx",
+        "build": {
+          "board": "GENERIC_F334C8TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303C(6-8)T_F334C(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F334K4TX": {
+        "": "Generic F334K4Tx",
+        "build": {
+          "board": "GENERIC_F334K4TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303K(6-8)T_F334K(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "16384"
+        }
+      },
+      "GENERIC_F334K6TX": {
+        "": "Generic F334K6Tx",
+        "build": {
+          "board": "GENERIC_F334K6TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303K(6-8)T_F334K(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F334K8TX": {
+        "": "Generic F334K8Tx",
+        "build": {
+          "board": "GENERIC_F334K8TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303K(6-8)T_F334K(4-6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F334R6TX": {
+        "": "Generic F334R6Tx",
+        "build": {
+          "board": "GENERIC_F334R6TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303R(6-8)T_F334R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "32768"
+        }
+      },
+      "GENERIC_F334R8TX": {
+        "": "Generic F334R8Tx",
+        "build": {
+          "board": "GENERIC_F334R8TX",
+          "product_line": "STM32F334x8",
+          "variant": "STM32F3xx/F303R(6-8)T_F334R(6-8)T"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x4.svd"
+        },
+        "upload": {
+          "maximum_data_size": "12288",
+          "maximum_size": "65536"
+        }
+      },
+      "GENERIC_F358CCTX": {
+        "": "Generic F358CCTx",
+        "build": {
+          "board": "GENERIC_F358CCTX",
+          "product_line": "STM32F358xx",
+          "variant": "STM32F3xx/F358CCT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F358RCTX": {
+        "": "Generic F358RCTx",
+        "build": {
+          "board": "GENERIC_F358RCTX",
+          "product_line": "STM32F358xx",
+          "variant": "STM32F3xx/F358RCT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F358VCTX": {
+        "": "Generic F358VCTx",
+        "build": {
+          "board": "GENERIC_F358VCTX",
+          "product_line": "STM32F358xx",
+          "variant": "STM32F3xx/F358VCT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F378CCTX": {
+        "": "Generic F378CCTx",
+        "build": {
+          "board": "GENERIC_F378CCTX",
+          "product_line": "STM32F378xx",
+          "variant": "STM32F3xx/F378CCT"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F378RCTX": {
+        "": "Generic F378RCTx",
+        "build": {
+          "board": "GENERIC_F378RCTX",
+          "product_line": "STM32F378xx",
+          "variant": "STM32F3xx/F378RC(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F378RCYX": {
+        "": "Generic F378RCYx",
+        "build": {
+          "board": "GENERIC_F378RCYX",
+          "product_line": "STM32F378xx",
+          "variant": "STM32F3xx/F378RC(T-Y)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F378VCHX": {
+        "": "Generic F378VCHx",
+        "build": {
+          "board": "GENERIC_F378VCHX",
+          "product_line": "STM32F378xx",
+          "variant": "STM32F3xx/F378VC(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F378VCTX": {
+        "": "Generic F378VCTx",
+        "build": {
+          "board": "GENERIC_F378VCTX",
+          "product_line": "STM32F378xx",
+          "variant": "STM32F3xx/F378VC(H-T)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "32768",
+          "maximum_size": "262144"
+        }
+      },
+      "GENERIC_F398VETX": {
+        "": "Generic F398VETx",
+        "build": {
+          "board": "GENERIC_F398VETX",
+          "product_line": "STM32F398xx",
+          "variant": "STM32F3xx/F398VET"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F3x8.svd"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "524288"
+        }
+      },
+      "OLIMEXINO_STM32F3": {
+        "": "OLIMEXINO-STM32F3",
+        "build": {
+          "board": "OLIMEXINO_STM32F3",
+          "product_line": "STM32F303xC",
+          "variant": "STM32F3xx/F303R(B-C)T",
+          "variant_h": "variant_{build.board}.h"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32F3xx/STM32F303.svd"
+        },
+        "upload": {
+          "maximum_data_size": "40960",
+          "maximum_size": "262144"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    },
+    "xusb": {
+      "FS": "Low/Full Speed",
+      "HS": {
+        "": "High Speed",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS"
+        }
+      },
+      "HSFS": {
+        "": "High Speed in Full Speed mode",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS -DUSE_USB_HS_IN_FS"
+        }
+      }
+    }
+  },
+  "name": "Generic STM32F3 series",
+  "openocd": {
+    "target": "stm32f3x"
+  },
+  "pid": {
+    "0": "0x5740"
+  },
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  },
+  "vid": {
+    "0": "0x0483"
+  }
+}

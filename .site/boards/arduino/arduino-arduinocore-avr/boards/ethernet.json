@@ -1,0 +1,38 @@
+{
+  "bootloader": {
+    "extended_fuses": "0xFD",
+    "file": "optiboot/optiboot_atmega328.hex",
+    "high_fuses": "0xde",
+    "lock_bits": "0x0F",
+    "low_fuses": "0xff",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_ETHERNET",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "mcu": "atmega328p",
+    "variant": "ethernet"
+  },
+  "name": "Arduino Ethernet",
+  "upload": {
+    "maximum_data_size": "2048",
+    "maximum_size": "32256",
+    "protocol": "arduino",
+    "speed": "115200",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "board": "ethernet"
+    }
+  }
+}

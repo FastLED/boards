@@ -1,0 +1,70 @@
+{
+  "bootloader": {
+    "file": "mkr1000/samd21_sam_ba_arduino_mkr1000.bin",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    }
+  },
+  "build": {
+    "board": "SAMD_MKR1000",
+    "core": "arduino",
+    "extra_flags": "-DUSE_ARDUINO_MKR_PIN_LAYOUT -D__SAMD21G18A__ {build.usb_flags}",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x804e",
+    "usb_manufacturer": "\"Arduino LLC\"",
+    "usb_product": "\"Arduino MKR1000\"",
+    "variant": "mkr1000",
+    "vid": "0x2341"
+  },
+  "name": "Arduino MKR 1000 WiFi",
+  "pid": {
+    "0": "0x804e",
+    "1": "0x004e",
+    "2": "0x824e",
+    "3": "0x024e"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "true",
+    "protocol": "sam-ba",
+    "tool": {
+      "": "bossac",
+      "default": "bossac",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x804e",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x004e",
+      "vid": "0x2341"
+    },
+    "2": {
+      "pid": "0x824e",
+      "vid": "0x2341"
+    },
+    "3": {
+      "pid": "0x024e",
+      "vid": "0x2341"
+    },
+    "4": {
+      "board": "mkr1000"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341",
+    "2": "0x2341",
+    "3": "0x2341"
+  }
+}

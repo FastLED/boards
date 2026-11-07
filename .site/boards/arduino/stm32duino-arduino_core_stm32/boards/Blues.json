@@ -1,0 +1,359 @@
+{
+  "build": {
+    "board": "Blues",
+    "core": "arduino",
+    "family": "BLUES",
+    "flash_offset": "0x0",
+    "st_extra_flags": "-D{build.product_line} {build.enable_usb} {build.xSerial}",
+    "variant_h": "variant_{build.board}.h"
+  },
+  "menu": {
+    "dbg": {
+      "enable_all": {
+        "": "Core Logs and Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g"
+          }
+        }
+      },
+      "enable_log": {
+        "": "Core logs Enabled",
+        "build": {
+          "flags": {
+            "debug": ""
+          }
+        }
+      },
+      "enable_sym": {
+        "": "Symbols Enabled (-g)",
+        "build": {
+          "flags": {
+            "debug": "-g -DNDEBUG"
+          }
+        }
+      },
+      "none": "None"
+    },
+    "opt": {
+      "o0std": {
+        "": "No Optimization (-O0)",
+        "build": {
+          "flags": {
+            "optimize": "-O0"
+          }
+        }
+      },
+      "o1lto": {
+        "": "Fast (-O1) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O1 -flto"
+          }
+        }
+      },
+      "o1std": {
+        "": "Fast (-O1)",
+        "build": {
+          "flags": {
+            "optimize": "-O1"
+          }
+        }
+      },
+      "o2lto": {
+        "": "Faster (-O2) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O2 -flto"
+          }
+        }
+      },
+      "o2std": {
+        "": "Faster (-O2)",
+        "build": {
+          "flags": {
+            "optimize": "-O2"
+          }
+        }
+      },
+      "o3lto": {
+        "": "Fastest (-O3) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-O3 -flto"
+          }
+        }
+      },
+      "o3std": {
+        "": "Fastest (-O3)",
+        "build": {
+          "flags": {
+            "optimize": "-O3"
+          }
+        }
+      },
+      "ogstd": {
+        "": "Debug (-Og)",
+        "build": {
+          "flags": {
+            "optimize": "-Og"
+          }
+        }
+      },
+      "oslto": {
+        "": "Smallest (-Os) with LTO",
+        "build": {
+          "flags": {
+            "optimize": "-Os -flto"
+          }
+        }
+      },
+      "osstd": "Smallest (-Os default)"
+    },
+    "pnum": {
+      "CYGNET": {
+        "": "Cygnet",
+        "build": {
+          "board": "CYGNET",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L433xx",
+          "series": "STM32L4xx",
+          "variant": "STM32L4xx/L433C(B-C)(T-U)_L443CC(T-U)"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L4xx/STM32L433.svd"
+        },
+        "openocd": {
+          "target": "stm32l4x"
+        },
+        "pid": {
+          "0": "0x0003"
+        },
+        "upload": {
+          "maximum_data_size": "65536",
+          "maximum_size": "262144"
+        },
+        "vid": {
+          "0": "0x30A4"
+        }
+      },
+      "HERON": {
+        "": "Heron",
+        "build": {
+          "board": "HERON",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv5-sp-d16",
+          "mcu": "cortex-m33",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32U575xx",
+          "series": "STM32U5xx",
+          "variant": "STM32U5xx/U575O(G-I)YxQ_U585OIYxQ"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32U5xx/STM32U575.svd"
+        },
+        "openocd": {
+          "target": "stm32u5x"
+        },
+        "pid": {
+          "0": "0x0004"
+        },
+        "upload": {
+          "maximum_data_size": "786432",
+          "maximum_size": "2097152"
+        },
+        "vid": {
+          "0": "0x30A4"
+        }
+      },
+      "SWAN_R5": {
+        "": "Swan R5",
+        "build": {
+          "board": "SWAN_R5",
+          "float-abi": "-mfloat-abi=hard",
+          "fpu": "-mfpu=fpv4-sp-d16",
+          "mcu": "cortex-m4",
+          "peripheral_pins": "-DCUSTOM_PERIPHERAL_PINS",
+          "product_line": "STM32L4R5xx",
+          "series": "STM32L4xx",
+          "variant": "STM32L4xx/L4R5Z(G-I)Y_L4R9Z(G-I)Y_L4S5ZIY_L4S9ZIY"
+        },
+        "debug": {
+          "svd_file": "{runtime.tools.STM32_SVD.path}/svd/STM32L4xx/STM32L4R5.svd"
+        },
+        "openocd": {
+          "target": "stm32l4x"
+        },
+        "pid": {
+          "0": "0x0002"
+        },
+        "upload": {
+          "maximum_data_size": "655360",
+          "maximum_size": "2097152"
+        },
+        "vid": {
+          "0": "0x30A4"
+        }
+      }
+    },
+    "rtlib": {
+      "full": {
+        "": "Newlib Standard",
+        "build": {
+          "flags": {
+            "ldspecs": ""
+          }
+        }
+      },
+      "nano": "Newlib Nano (default)",
+      "nanofp": {
+        "": "Newlib Nano + Float Printf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float"
+          }
+        }
+      },
+      "nanofps": {
+        "": "Newlib Nano + Float Printf/Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _printf_float -u _scanf_float"
+          }
+        }
+      },
+      "nanofs": {
+        "": "Newlib Nano + Float Scanf",
+        "build": {
+          "flags": {
+            "ldspecs": "--specs=nano.specs -u _scanf_float"
+          }
+        }
+      }
+    },
+    "upload_method": {
+      "OpenOCDDapLink": {
+        "": "OpenOCD DapLink (SWD)",
+        "debug": {
+          "server": {
+            "openocd": {
+              "scripts": {
+                "0": "interface/cmsis-dap.cfg",
+                "1": "{runtime.platform.path}/debugger/select_swd.cfg"
+              }
+            }
+          }
+        },
+        "upload": {
+          "protocol": "cmsis-dap",
+          "tool": "openocd_upload"
+        }
+      },
+      "OpenOCDSTLink": {
+        "": "OpenOCD STLink (SWD)",
+        "upload": {
+          "protocol": "stlink",
+          "tool": "openocd_upload"
+        }
+      },
+      "bmpMethod": {
+        "": "BMP (Black Magic Probe)",
+        "upload": {
+          "protocol": "gdb_bmp",
+          "tool": "bmp_upload"
+        }
+      },
+      "dfuMethod": {
+        "": "STM32CubeProgrammer (DFU)",
+        "upload": {
+          "options": "-v {upload.vid} -p {upload.pid} -a {upload.address} -s {upload.start}",
+          "protocol": "dfu",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "jlinkMethod": {
+        "": "STM32CubeProgrammer (J-Link)",
+        "upload": {
+          "options": "-a {upload.address} -s {upload.start}",
+          "protocol": "jlink",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "serialMethod": {
+        "": "STM32CubeProgrammer (Serial)",
+        "upload": {
+          "options": "-c {serial.port.file} -a {upload.address} -s {upload.start} --parity {upload.parity}",
+          "protocol": "serial",
+          "tool": "stm32CubeProg"
+        }
+      },
+      "swdMethod": {
+        "": "STM32CubeProgrammer (SWD)",
+        "upload": {
+          "options": "-a {upload.address} -m {upload.mode} -s {upload.start}",
+          "protocol": "swd",
+          "tool": "stm32CubeProg"
+        }
+      }
+    },
+    "usb": {
+      "CDC": {
+        "": "CDC (no generic 'Serial')",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC -DDISABLE_GENERIC_SERIALUSB"
+        }
+      },
+      "CDCgen": {
+        "": "CDC (generic 'Serial' supersede U(S)ART)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_CDC"
+        }
+      },
+      "HID": {
+        "": "HID (keyboard and mouse)",
+        "build": {
+          "enable_usb": "{build.usb_flags} -DUSBD_USE_HID_COMPOSITE"
+        }
+      },
+      "none": "None"
+    },
+    "xserial": {
+      "disabled": {
+        "": "Disabled (no Serial support)",
+        "build": {
+          "xSerial": ""
+        }
+      },
+      "generic": "Enabled (generic 'Serial')",
+      "none": {
+        "": "Enabled (no generic 'Serial')",
+        "build": {
+          "xSerial": "-DHAL_UART_MODULE_ENABLED -DHWSERIAL_NONE"
+        }
+      }
+    },
+    "xusb": {
+      "FS": "Low/Full Speed",
+      "HS": {
+        "": "High Speed",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS"
+        }
+      },
+      "HSFS": {
+        "": "High Speed in Full Speed mode",
+        "build": {
+          "usb_speed": "-DUSE_USB_HS -DUSE_USB_HS_IN_FS"
+        }
+      }
+    }
+  },
+  "name": "Blues boards",
+  "upload": {
+    "maximum_data_size": "0",
+    "maximum_size": "0"
+  }
+}

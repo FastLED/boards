@@ -1,0 +1,28 @@
+{
+  "build": {
+    "cpu": "cortex-m0plus",
+    "f_cpu": "48000000L",
+    "mcu": "mkl43z256vlh4"
+  },
+  "debug": {
+    "jlink_device": "MKL43Z256xxx4",
+    "pyocd_target": "kl43z4",
+    "svd_path": "MKL43Z4.svd"
+  },
+  "frameworks": [
+    "mbed"
+  ],
+  "name": "Freescale Kinetis FRDM-KL43Z",
+  "upload": {
+    "maximum_ram_size": 32768,
+    "maximum_size": 262144,
+    "protocol": "mbed",
+    "protocols": [
+      "cmsis-dap",
+      "jlink",
+      "mbed"
+    ]
+  },
+  "url": "https://os.mbed.com/platforms/FRDM-KL43Z/",
+  "vendor": "Freescale"
+}

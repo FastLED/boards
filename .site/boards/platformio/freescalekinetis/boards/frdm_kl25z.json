@@ -1,0 +1,30 @@
+{
+  "build": {
+    "cpu": "cortex-m0plus",
+    "f_cpu": "48000000L",
+    "mcu": "mkl25z128vlk4"
+  },
+  "debug": {
+    "jlink_device": "MKL25Z128xxx4",
+    "pyocd_target": "kl25z",
+    "svd_path": "MKL25Z4.svd"
+  },
+  "frameworks": [
+    "mbed",
+    "zephyr"
+  ],
+  "name": "Freescale Kinetis FRDM-KL25Z",
+  "upload": {
+    "maximum_ram_size": 16384,
+    "maximum_size": 131072,
+    "protocol": "mbed",
+    "protocols": [
+      "blackmagic",
+      "cmsis-dap",
+      "jlink",
+      "mbed"
+    ]
+  },
+  "url": "https://developer.mbed.org/platforms/KL25Z/",
+  "vendor": "Freescale"
+}
