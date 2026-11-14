@@ -1,0 +1,53 @@
+{
+  "bootloader": {
+    "cmd_protect": "at91samd bootloader 16384",
+    "cmd_protect_verify": "at91samd bootloader",
+    "cmd_unprotect": "at91samd bootloader 0",
+    "file": "mzero/Bootloader_D21_M0_Pro_150427.hex",
+    "size": "0x4000",
+    "tool": {
+      "": "openocd-withbootsize",
+      "default": "openocd-withbootsize"
+    }
+  },
+  "build": {
+    "board": "SAM_ZERO",
+    "core": "arduino",
+    "extra_flags": "-D__SAMD21G18A__ -mthumb {build.usb_flags}",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x804f",
+    "preferred_out_format": "hex",
+    "usb_product": "\"Arduino M0 Pro\"",
+    "variant": "arduino_mzero",
+    "variant_system_lib": "",
+    "vid": "0x2a03"
+  },
+  "name": "Arduino M0 Pro (Programming Port)",
+  "pid": {
+    "0": "0x2111"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "false",
+    "protocol": "sam-ba",
+    "tool": {
+      "": "openocd-withbootsize",
+      "default": "openocd-withbootsize"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x2111",
+      "vid": "0x03eb"
+    }
+  },
+  "vid": {
+    "0": "0x03eb"
+  }
+}

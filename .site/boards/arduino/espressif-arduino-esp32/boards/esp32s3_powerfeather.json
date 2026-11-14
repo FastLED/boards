@@ -1,0 +1,403 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "ESP32S3_POWERFEATHER",
+    "boot": "qio",
+    "boot_freq": "80m",
+    "bootloader_addr": "0x0",
+    "cdc_on_boot": "1",
+    "core": "esp32",
+    "defines": "{build.rev_defines}",
+    "dfu_on_boot": "0",
+    "event_core": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "8MB",
+    "flash_type": "qio",
+    "loop_core": "",
+    "mcu": "esp32s3",
+    "memory_type": "{build.flash_type}_{build.psram_type}",
+    "msc_on_boot": "0",
+    "partitions": "default_8MB",
+    "psram_type": "qspi",
+    "rev_defines": "",
+    "tarch": "xtensa",
+    "target": "esp32s3",
+    "usb_mode": "1",
+    "variant": "esp32s3_powerfeather"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "cdc_on_boot": "0"
+        }
+      }
+    },
+    "CPUFreq": {
+      "10": {
+        "": "10MHz",
+        "build": {
+          "f_cpu": "10000000L"
+        }
+      },
+      "160": {
+        "": "160MHz (WiFi)",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "20": {
+        "": "20MHz",
+        "build": {
+          "f_cpu": "20000000L"
+        }
+      },
+      "240": {
+        "": "240MHz (WiFi)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "40": {
+        "": "40MHz",
+        "build": {
+          "f_cpu": "40000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DFUOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "dfu_on_boot": "0"
+        }
+      },
+      "dfu": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "dfu_on_boot": "1"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "EventsCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "event_core": "-DARDUINO_EVENT_RUNNING_CORE=1"
+        }
+      }
+    },
+    "FlashMode": {
+      "dio": {
+        "": "DIO 80MHz",
+        "build": {
+          "boot": "dio",
+          "boot_freq": "80m",
+          "flash_freq": "80m",
+          "flash_mode": "dio"
+        }
+      },
+      "qio": {
+        "": "QIO 80MHz",
+        "build": {
+          "boot": "qio",
+          "boot_freq": "80m",
+          "flash_freq": "80m",
+          "flash_mode": "dio"
+        }
+      },
+      "qio120": {
+        "": "QIO 120MHz",
+        "build": {
+          "boot": "qio",
+          "boot_freq": "120m",
+          "flash_freq": "80m",
+          "flash_mode": "dio"
+        }
+      }
+    },
+    "LoopCore": {
+      "0": {
+        "": "Core 0",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=0"
+        }
+      },
+      "1": {
+        "": "Core 1",
+        "build": {
+          "loop_core": "-DARDUINO_RUNNING_CORE=1"
+        }
+      }
+    },
+    "MSCOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "msc_on_boot": "0"
+        }
+      },
+      "msc": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "msc_on_boot": "1"
+        }
+      }
+    },
+    "PSRAM": {
+      "disabled": {
+        "": "Disabled",
+        "build": {
+          "defines": "{build.rev_defines}",
+          "psram_type": "qspi"
+        }
+      },
+      "enabled": {
+        "": "QSPI PSRAM",
+        "build": {
+          "defines": "-DBOARD_HAS_PSRAM {build.rev_defines}",
+          "psram_type": "qspi"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default_8MB": {
+        "": "8M with spiffs (3MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      },
+      "default_ffat_8MB": {
+        "": "8M with ffat (3MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      },
+      "large_ffat_8MB": {
+        "": "Large FFAT (1.2MB APP/5.3MB FATFS)",
+        "build": {
+          "partitions": "large_ffat_8MB"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "large_spiffs_8MB": {
+        "": "Large SPIFFS (1.2MB APP/5.3MB SPIFFS)",
+        "build": {
+          "partitions": "large_spiffs_8MB"
+        },
+        "upload": {
+          "maximum_size": "1310720"
+        }
+      },
+      "max_app_8MB": {
+        "": "Maximum APP (7.9MB APP No OTA/No FS)",
+        "build": {
+          "partitions": "max_app_8MB"
+        },
+        "upload": {
+          "maximum_size": "8257536"
+        }
+      }
+    },
+    "Revision": {
+      "V1": {
+        "": "ESP32-S3 PowerFeather",
+        "build": {
+          "board": "ESP32S3_POWERFEATHER",
+          "rev_defines": ""
+        }
+      },
+      "V2": {
+        "": "ESP32-S3 PowerFeather V2",
+        "build": {
+          "board": "ESP32S3_POWERFEATHER_V2",
+          "rev_defines": "-DPOWERFEATHER_BOARD_V2 -DARDUINO_ESP32S3_POWERFEATHER"
+        }
+      }
+    },
+    "USBMode": {
+      "default": {
+        "": "USB-OTG (TinyUSB)",
+        "build": {
+          "usb_mode": "0"
+        }
+      },
+      "hwcdc": {
+        "": "Hardware CDC and JTAG",
+        "build": {
+          "usb_mode": "1"
+        }
+      }
+    },
+    "UploadMode": {
+      "cdc": {
+        "": "USB-OTG CDC (TinyUSB)",
+        "upload": {
+          "use_1200bps_touch": "true",
+          "wait_for_upload_port": "true"
+        }
+      },
+      "default": {
+        "": "UART0 / Hardware CDC",
+        "upload": {
+          "use_1200bps_touch": "false",
+          "wait_for_upload_port": "false"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "ESP32-S3 PowerFeather",
+  "pid": {
+    "0": "0x81BB"
+  },
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  },
+  "vid": {
+    "0": "0x303a"
+  }
+}

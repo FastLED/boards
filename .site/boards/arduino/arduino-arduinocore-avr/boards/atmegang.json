@@ -1,0 +1,68 @@
+{
+  "bootloader": {
+    "lock_bits": "0x0F",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    },
+    "unlock_bits": "0x3F"
+  },
+  "build": {
+    "board": "AVR_NG",
+    "core": "arduino",
+    "f_cpu": "16000000L",
+    "mcu": "atmegang",
+    "variant": "standard"
+  },
+  "menu": {
+    "cpu": {
+      "atmega168": {
+        "": "ATmega168",
+        "bootloader": {
+          "extended_fuses": "0xF8",
+          "file": "atmega/ATmegaBOOT_168_ng.hex",
+          "high_fuses": "0xdd",
+          "low_fuses": "0xff"
+        },
+        "build": {
+          "mcu": "atmega168"
+        },
+        "upload": {
+          "maximum_data_size": "1024",
+          "maximum_size": "14336"
+        }
+      },
+      "atmega8": {
+        "": "ATmega8",
+        "bootloader": {
+          "extended_fuses": "",
+          "file": "atmega8/ATmegaBOOT-prod-firmware-2009-11-07.hex",
+          "high_fuses": "0xca",
+          "low_fuses": "0xdf"
+        },
+        "build": {
+          "mcu": "atmega8"
+        },
+        "upload": {
+          "maximum_data_size": "1024",
+          "maximum_size": "7168"
+        }
+      }
+    }
+  },
+  "name": "Arduino NG or older",
+  "upload": {
+    "protocol": "arduino",
+    "speed": "19200",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    }
+  },
+  "upload_port": {
+    "0": {
+      "board": "atmegang"
+    }
+  }
+}

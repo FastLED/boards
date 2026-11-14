@@ -1,0 +1,58 @@
+{
+  "bootloader": {
+    "file": "mkrnb1500/samd21_sam_ba_arduino_mkrnb1500.bin",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    }
+  },
+  "build": {
+    "board": "SAMD_MKRNB1500",
+    "core": "arduino",
+    "extra_flags": "-DUSE_ARDUINO_MKR_PIN_LAYOUT -D__SAMD21G18A__ {build.usb_flags} -DUSE_BQ24195L_PMIC",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x8055",
+    "usb_manufacturer": "\"Arduino LLC\"",
+    "usb_product": "\"Arduino MKR NB 1500\"",
+    "variant": "mkrnb1500",
+    "vid": "0x2341"
+  },
+  "name": "Arduino MKR NB 1500",
+  "pid": {
+    "0": "0x8055",
+    "1": "0x0055"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "true",
+    "protocol": "sam-ba",
+    "tool": {
+      "": "bossac",
+      "default": "bossac",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x8055",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x0055",
+      "vid": "0x2341"
+    },
+    "2": {
+      "board": "mkrnb1500"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341"
+  }
+}
