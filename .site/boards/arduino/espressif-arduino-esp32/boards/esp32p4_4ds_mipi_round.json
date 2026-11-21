@@ -1,0 +1,342 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "ESP32P4_4DS_MIPI_ROUND",
+    "boot": "qio",
+    "bootloader_addr": "0x2000",
+    "cdc_on_boot": "0",
+    "chip_variant": "esp32p4_es",
+    "core": "esp32",
+    "defines": "-DBOARD_HAS_PSRAM -D{build.board} -D{build.DisplayModel}",
+    "dfu_on_boot": "0",
+    "f_cpu": "360000000L",
+    "flash_freq": "80m",
+    "flash_mode": "qio",
+    "flash_size": "32MB",
+    "img_freq": "80m",
+    "mcu": "esp32p4",
+    "msc_on_boot": "0",
+    "partitions": "app5M_fat24M_32MB",
+    "tarch": "riscv32",
+    "target": "esp",
+    "usb_mode": "0",
+    "variant": "esp32p4_4ds_mipi_round"
+  },
+  "menu": {
+    "CDCOnBoot": {
+      "cdc": {
+        "": "Enabled",
+        "build": {
+          "cdc_on_boot": "1"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "cdc_on_boot": "0"
+        }
+      }
+    },
+    "DFUOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "dfu_on_boot": "0"
+        }
+      },
+      "dfu": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "dfu_on_boot": "1"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "DisplayModel": {
+      "esp32p4_34r": {
+        "": "ESP32-P4-34R",
+        "build": {
+          "DisplayModel": "ESP32P4_34R"
+        }
+      },
+      "esp32p4_34r_clb": {
+        "": "ESP32-P4-34R-CLB",
+        "build": {
+          "DisplayModel": "ESP32P4_34R"
+        }
+      },
+      "esp32p4_34rct": {
+        "": "ESP32-P4-34RCT",
+        "build": {
+          "DisplayModel": "ESP32P4_34RCT"
+        }
+      },
+      "esp32p4_34rct_clb": {
+        "": "ESP32-P4-34RCT-CLB",
+        "build": {
+          "DisplayModel": "ESP32P4_34RCT"
+        }
+      },
+      "esp32p4_40r": {
+        "": "ESP32-P4-40R",
+        "build": {
+          "DisplayModel": "ESP32P4_40R"
+        }
+      },
+      "esp32p4_40r_clb": {
+        "": "ESP32-P4-40R-CLB",
+        "build": {
+          "DisplayModel": "ESP32P4_40R"
+        }
+      },
+      "esp32p4_40rct": {
+        "": "ESP32-P4-40RCT",
+        "build": {
+          "DisplayModel": "ESP32P4_40RCT"
+        }
+      },
+      "esp32p4_40rct_clb": {
+        "": "ESP32-P4-40RCT-CLB",
+        "build": {
+          "DisplayModel": "ESP32P4_40RCT"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "JTAGAdapter": {
+      "bridge": {
+        "": "ESP USB Bridge",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32p4-bridge.cfg"
+        }
+      },
+      "builtin": {
+        "": "Integrated USB JTAG",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32p4-builtin.cfg"
+        }
+      },
+      "default": {
+        "": "Disabled",
+        "build": {
+          "copy_jtag_files": "0"
+        }
+      },
+      "external": {
+        "": "FTDI Adapter",
+        "build": {
+          "copy_jtag_files": "1",
+          "openocdscript": "esp32p4-ftdi.cfg"
+        }
+      }
+    },
+    "MSCOnBoot": {
+      "default": {
+        "": "Disabled",
+        "build": {
+          "msc_on_boot": "0"
+        }
+      },
+      "msc": {
+        "": "Enabled (Requires USB-OTG Mode)",
+        "build": {
+          "msc_on_boot": "1"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "app13M_data7M_32MB": {
+        "": "32M Flash (13MB APP/6.75MB SPIFFS)",
+        "build": {
+          "partitions": "default_32MB"
+        },
+        "upload": {
+          "maximum_size": "13107200"
+        }
+      },
+      "app5M_fat24M_32MB": {
+        "": "32M Flash (4.8MB APP/22MB FATFS)",
+        "build": {
+          "partitions": "large_fat_32MB"
+        },
+        "upload": {
+          "maximum_size": "4718592"
+        }
+      },
+      "app5M_little24M_32MB": {
+        "": "32M Flash (4.8MB APP/22MB LittleFS)",
+        "build": {
+          "partitions": "large_littlefs_32MB"
+        },
+        "upload": {
+          "maximum_size": "4718592"
+        }
+      }
+    },
+    "Revision": {
+      "postv3": {
+        "": "Hardware Rev 2.x",
+        "build": {
+          "chip_variant": "esp32p4",
+          "f_cpu": "400000000L"
+        }
+      },
+      "prev3": {
+        "": "Hardware Rev 1.x",
+        "build": {
+          "chip_variant": "esp32p4_es",
+          "f_cpu": "360000000L"
+        }
+      }
+    },
+    "USBMode": {
+      "default": {
+        "": "USB-OTG (TinyUSB)",
+        "build": {
+          "usb_mode": "0"
+        }
+      },
+      "hwcdc": {
+        "": "Hardware CDC and JTAG",
+        "build": {
+          "usb_mode": "1"
+        }
+      }
+    },
+    "UploadMode": {
+      "cdc": {
+        "": "USB-OTG CDC (TinyUSB)",
+        "upload": {
+          "use_1200bps_touch": "true",
+          "wait_for_upload_port": "true"
+        }
+      },
+      "default": {
+        "": "UART0 / Hardware CDC",
+        "upload": {
+          "use_1200bps_touch": "false",
+          "wait_for_upload_port": "false"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "4D Systems ESP32-P4 Round MIPI Displays",
+  "serial": {
+    "disableDTR": "false",
+    "disableRTS": "false"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  }
+}

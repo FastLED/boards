@@ -1,0 +1,334 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "HELTEC_WIFI_LORA_32",
+    "boot": "qio",
+    "bootloader_addr": "0x1000",
+    "core": "esp32",
+    "defines": "-D{build.band} -DMCU_ESP32_D0 -DWIFI_LORA_32 -DHELTEC_BOARD=1 -DRADIO_CHIP_SX127X -DSLOW_CLK_TPYE=0 -DLoRaWAN_DEBUG_LEVEL={build.LoRaWanDebugLevel} -DACTIVE_REGION=LORAMAC_{build.band} -DLORAWAN_PREAMBLE_LENGTH={build.LORAWAN_PREAMBLE_LENGTH}  -DLORAWAN_DEVEUI_AUTO={build.LORAWAN_DEVEUI_AUTO}  {build.psram}",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "4MB",
+    "mcu": "esp32",
+    "partitions": "default",
+    "psram": "",
+    "tarch": "xtensa",
+    "target": "esp32",
+    "variant": "heltec_wifi_lora_32"
+  },
+  "menu": {
+    "CPUFreq": {
+      "160": {
+        "": "160MHz (WiFi/BT)",
+        "build": {
+          "f_cpu": "160000000L"
+        }
+      },
+      "240": {
+        "": "240MHz (WiFi/BT)",
+        "build": {
+          "f_cpu": "240000000L"
+        }
+      },
+      "80": {
+        "": "80MHz (WiFi/BT)",
+        "build": {
+          "f_cpu": "80000000L"
+        }
+      }
+    },
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "LORAWAN_DEVEUI": {
+      "0": {
+        "": "CUSTOM",
+        "build": {
+          "LORAWAN_DEVEUI_AUTO": "0"
+        }
+      },
+      "1": {
+        "": "Generate By ChipID",
+        "build": {
+          "LORAWAN_DEVEUI_AUTO": "1"
+        }
+      }
+    },
+    "LORAWAN_PREAMBLE_LENGTH": {
+      "0": {
+        "": "8(default)",
+        "build": {
+          "LORAWAN_PREAMBLE_LENGTH": "8"
+        }
+      },
+      "1": {
+        "": "16(For M00 and M00L)",
+        "build": {
+          "LORAWAN_PREAMBLE_LENGTH": "16"
+        }
+      }
+    },
+    "LORAWAN_REGION": {
+      "0": {
+        "": "REGION_EU868",
+        "build": {
+          "band": "REGION_EU868"
+        }
+      },
+      "1": {
+        "": "REGION_EU433",
+        "build": {
+          "band": "REGION_EU433"
+        }
+      },
+      "2": {
+        "": "REGION_CN470",
+        "build": {
+          "band": "REGION_CN470"
+        }
+      },
+      "3": {
+        "": "REGION_US915",
+        "build": {
+          "band": "REGION_US915"
+        }
+      },
+      "4": {
+        "": "REGION_AU915",
+        "build": {
+          "band": "REGION_AU915"
+        }
+      },
+      "5": {
+        "": "REGION_CN779",
+        "build": {
+          "band": "REGION_CN779"
+        }
+      },
+      "6": {
+        "": "REGION_AS923",
+        "build": {
+          "band": "REGION_AS923"
+        }
+      },
+      "7": {
+        "": "REGION_KR920",
+        "build": {
+          "band": "REGION_KR920"
+        }
+      },
+      "8": {
+        "": "REGION_IN865",
+        "build": {
+          "band": "REGION_IN865"
+        }
+      },
+      "9": {
+        "": "REGION_US915_HYBRID",
+        "build": {
+          "band": "REGION_US915_HYBRID"
+        }
+      }
+    },
+    "LoRaWanDebugLevel": {
+      "0": {
+        "": "None",
+        "build": {
+          "LoRaWanDebugLevel": "0"
+        }
+      },
+      "1": {
+        "": "Freq",
+        "build": {
+          "LoRaWanDebugLevel": "1"
+        }
+      },
+      "2": {
+        "": "Freq && DIO",
+        "build": {
+          "LoRaWanDebugLevel": "2"
+        }
+      },
+      "3": {
+        "": "Freq && DIO && PW",
+        "build": {
+          "LoRaWanDebugLevel": "3"
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default": {
+        "": "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default"
+        }
+      },
+      "defaultffat": {
+        "": "Default 4MB with ffat (1.2MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat"
+        }
+      },
+      "huge_app": {
+        "": "Huge APP (3MB No OTA/1MB SPIFFS)",
+        "build": {
+          "partitions": "huge_app"
+        },
+        "upload": {
+          "maximum_size": "3145728"
+        }
+      },
+      "no_ota": {
+        "": "No OTA (2MB APP/2MB SPIFFS)",
+        "build": {
+          "partitions": "no_ota"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      },
+      "noota_3g": {
+        "": "No OTA (1MB APP/3MB SPIFFS)",
+        "build": {
+          "partitions": "noota_3g"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_3gffat": {
+        "": "No OTA (1MB APP/3MB FATFS)",
+        "build": {
+          "partitions": "noota_3gffat"
+        },
+        "upload": {
+          "maximum_size": "1048576"
+        }
+      },
+      "noota_ffat": {
+        "": "No OTA (2MB APP/2MB FATFS)",
+        "build": {
+          "partitions": "noota_ffat"
+        },
+        "upload": {
+          "maximum_size": "2097152"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "Heltec WiFi LoRa 32",
+  "serial": {
+    "disableDTR": "true",
+    "disableRTS": "true"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "327680",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    }
+  }
+}

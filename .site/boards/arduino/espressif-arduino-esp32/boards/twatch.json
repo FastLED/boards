@@ -1,0 +1,213 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "TWatch",
+    "boot": "dio",
+    "bootloader_addr": "0x1000",
+    "core": "esp32",
+    "defines": "",
+    "f_cpu": "240000000L",
+    "flash_freq": "80m",
+    "flash_mode": "dio",
+    "flash_size": "16MB",
+    "mcu": "esp32",
+    "partitions": "default_16MB",
+    "tarch": "xtensa",
+    "target": "esp32",
+    "variant": "twatch"
+  },
+  "menu": {
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "PSRAM": {
+      "disabled": {
+        "": "Disabled",
+        "build": {
+          "defines": "",
+          "extra_libs": ""
+        }
+      },
+      "enabled": {
+        "": "Enabled",
+        "build": {
+          "defines": "-DBOARD_HAS_PSRAM -mfix-esp32-psram-cache-issue -mfix-esp32-psram-cache-strategy=memw",
+          "extra_libs": ""
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default": {
+        "": "Default (2 x 6.5 MB app, 3.6 MB SPIFFS)",
+        "build": {
+          "partitions": "default_16MB"
+        },
+        "upload": {
+          "maximum_size": "6553600"
+        }
+      },
+      "large_spiffs": {
+        "": "Large SPIFFS (7 MB)",
+        "build": {
+          "partitions": "large_spiffs_16MB"
+        },
+        "upload": {
+          "maximum_size": "4685824"
+        }
+      }
+    },
+    "Revision": {
+      "TWATCH_2020_V1": {
+        "": "T-Watch-2020-V1",
+        "build": {
+          "board": "TWATCH_2020_V1"
+        }
+      },
+      "TWATCH_2020_V2": {
+        "": "T-Watch-2020-V2",
+        "build": {
+          "board": "TWATCH_2020_V2"
+        }
+      },
+      "TWATCH_2020_V3": {
+        "": "T-Watch-2020-V3",
+        "build": {
+          "board": "TWATCH_2020_V3"
+        }
+      },
+      "TWATCH_BASE": {
+        "": "T-Watch Base",
+        "build": {
+          "board": "TWATCH_BASE"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "1152000": {
+        "": "1152000",
+        "upload": {
+          "speed": "1152000"
+        }
+      },
+      "2000000": {
+        "": "2000000",
+        "upload": {
+          "speed": "2000000"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "TTGO T-Watch",
+  "serial": {
+    "disableDTR": "true",
+    "disableRTS": "true"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "4521984",
+    "maximum_size": "6553600",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    },
+    "wait_for_upload_port": "true"
+  }
+}

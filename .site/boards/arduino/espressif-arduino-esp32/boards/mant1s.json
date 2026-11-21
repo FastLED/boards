@@ -1,0 +1,199 @@
+{
+  "bootloader": {
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py"
+    }
+  },
+  "build": {
+    "board": "MANT1S",
+    "boot": "dio",
+    "bootloader_addr": "0x1000",
+    "core": "esp32",
+    "defines": "",
+    "f_cpu": "240000000L",
+    "flash_mode": "dio",
+    "flash_size": "8MB",
+    "mcu": "esp32",
+    "partitions": "default",
+    "tarch": "xtensa",
+    "target": "esp32",
+    "variant": "mant1s"
+  },
+  "menu": {
+    "DebugLevel": {
+      "debug": {
+        "": "Debug",
+        "build": {
+          "code_debug": "4"
+        }
+      },
+      "error": {
+        "": "Error",
+        "build": {
+          "code_debug": "1"
+        }
+      },
+      "info": {
+        "": "Info",
+        "build": {
+          "code_debug": "3"
+        }
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "code_debug": "0"
+        }
+      },
+      "verbose": {
+        "": "Verbose",
+        "build": {
+          "code_debug": "5"
+        }
+      },
+      "warn": {
+        "": "Warn",
+        "build": {
+          "code_debug": "2"
+        }
+      }
+    },
+    "EraseFlash": {
+      "all": {
+        "": "Enabled",
+        "upload": {
+          "erase_cmd": "-e"
+        }
+      },
+      "none": {
+        "": "Disabled",
+        "upload": {
+          "erase_cmd": ""
+        }
+      }
+    },
+    "FlashFreq": {
+      "40": {
+        "": "40MHz",
+        "build": {
+          "flash_freq": "40m"
+        }
+      },
+      "80": {
+        "": "80MHz",
+        "build": {
+          "flash_freq": "80m"
+        }
+      }
+    },
+    "PSRAM": {
+      "disabled": {
+        "": "Disabled",
+        "build": {
+          "defines": "",
+          "extra_libs": ""
+        }
+      },
+      "enabled": {
+        "": "Enabled",
+        "build": {
+          "defines": "-DBOARD_HAS_PSRAM -mfix-esp32-psram-cache-issue -mfix-esp32-psram-cache-strategy=memw",
+          "extra_libs": ""
+        }
+      }
+    },
+    "PartitionScheme": {
+      "default": {
+        "": "8M OTA with large SPIFFS (1.25MB APP/5.3MB SPIFFS)",
+        "build": {
+          "partitions": "large_spiffs_8MB"
+        }
+      },
+      "default_fatfs": {
+        "": "8M OTA with large FATFS (1.25MB APP/5.3MB FATFS)",
+        "build": {
+          "partitions": "large_ffat_8MB"
+        }
+      },
+      "default_large_app": {
+        "": "8M large OTA app with SPIFFS (3MB APP/1.5MB SPIFFS)",
+        "build": {
+          "partitions": "default_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      },
+      "default_large_app_fatfs": {
+        "": "8M large OTA app with FATFS (3MB APP/1.5MB FATFS)",
+        "build": {
+          "partitions": "default_ffat_8MB"
+        },
+        "upload": {
+          "maximum_size": "3342336"
+        }
+      }
+    },
+    "UploadSpeed": {
+      "115200": {
+        "": "115200",
+        "upload": {
+          "speed": "115200"
+        }
+      },
+      "230400": {
+        "": "230400",
+        "upload": {
+          "speed": "230400"
+        },
+        "windows": {
+          "upload": {
+            "speed": "256000"
+          }
+        }
+      },
+      "256000": {
+        "upload": {
+          "speed": "256000"
+        },
+        "windows": "256000"
+      },
+      "460800": {
+        "linux": "460800",
+        "macosx": "460800",
+        "upload": {
+          "speed": "460800"
+        }
+      },
+      "512000": {
+        "upload": {
+          "speed": "512000"
+        },
+        "windows": "512000"
+      },
+      "921600": {
+        "": "921600",
+        "upload": {
+          "speed": "921600"
+        }
+      }
+    }
+  },
+  "name": "Silicognition ManT1S",
+  "serial": {
+    "disableDTR": "true",
+    "disableRTS": "true"
+  },
+  "upload": {
+    "extra_flags": "",
+    "flags": "",
+    "maximum_data_size": "2424832",
+    "maximum_size": "1310720",
+    "tool": {
+      "": "esptool_py",
+      "default": "esptool_py",
+      "network": "esp_ota"
+    }
+  }
+}

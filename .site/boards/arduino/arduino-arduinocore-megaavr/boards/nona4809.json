@@ -1,0 +1,69 @@
+{
+  "bootloader": {
+    "BOOTEND": "0x00",
+    "OSCCFG": "0x01",
+    "SYSCFG0": "0xC9",
+    "file": "atmega4809_uart_bl.hex",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude"
+    }
+  },
+  "build": {
+    "board": "AVR_NANO_EVERY",
+    "core": "arduino",
+    "extra_flags": "{build.328emulation} -DMILLIS_USE_TIMERB3 -DNO_EXTERNAL_I2C_PULLUP",
+    "f_cpu": "16000000L",
+    "mcu": "atmega4809",
+    "text_section_start": ".text=0x0",
+    "variant": "nona4809"
+  },
+  "fuses": {
+    "file": "fuses_4809.bin"
+  },
+  "menu": {
+    "mode": {
+      "off": {
+        "": "None (ATMEGA4809)",
+        "build": {
+          "328emulation": ""
+        }
+      },
+      "on": {
+        "": "ATMEGA328",
+        "build": {
+          "328emulation": "-DAVR_NANO_4809_328MODE"
+        }
+      }
+    }
+  },
+  "name": "Arduino Nano Every",
+  "pid": {
+    "0": "0x0058"
+  },
+  "upload": {
+    "extra_params": "-P{serial.port}",
+    "maximum_data_size": "6144",
+    "maximum_size": "49152",
+    "protocol": "jtag2updi",
+    "speed": "115200",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0058",
+      "vid": "0x2341"
+    },
+    "1": {
+      "board": "nona4809"
+    }
+  },
+  "vid": {
+    "0": "0x2341"
+  }
+}

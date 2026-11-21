@@ -1,0 +1,64 @@
+{
+  "bootloader": {
+    "file": "sofia/Sofia_Tian_151118.hex",
+    "low_fuses": "0xff",
+    "size": "0x4000",
+    "tool": {
+      "": "openocd-withbootsize",
+      "default": "openocd-withbootsize"
+    }
+  },
+  "build": {
+    "board": "SAMD_TIAN",
+    "core": "arduino",
+    "emu": {
+      "mcu": "atmega2560"
+    },
+    "extra_flags": "-D__SAMD21G18A__ -mthumb {build.usb_flags}",
+    "f_cpu": "48000000L",
+    "ldscript": "linker_scripts/gcc/flash_with_bootloader.ld",
+    "mcu": "cortex-m0plus",
+    "openocdscript": "openocd_scripts/arduino_zero.cfg",
+    "pid": "0x8052",
+    "preferred_out_format": "hex",
+    "usb_product": "\"Arduino Tian\"",
+    "variant": "arduino_mzero",
+    "variant_system_lib": "",
+    "vid": "0x2a03"
+  },
+  "descriptor": {
+    "0": "Enhanced Com Port"
+  },
+  "drivers": "SiliconLabs-CP2105/Silicon Labs VCP Driver.pkg",
+  "name": "Arduino Tian",
+  "pid": {
+    "0": "0xEA70"
+  },
+  "upload": {
+    "maximum_data_size": "32768",
+    "maximum_size": "262144",
+    "native_usb": "true",
+    "protocol": "wiring",
+    "speed": "57600",
+    "tool": {
+      "": "avrdude",
+      "default": "avrdude",
+      "network": "arduino_ota"
+    },
+    "use_1200bps_touch": "true",
+    "via_ssh": "true",
+    "wait_for_upload_port": "true"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0xEA70",
+      "vid": "0x10C4"
+    },
+    "1": {
+      "board": "tian"
+    }
+  },
+  "vid": {
+    "0": "0x10C4"
+  }
+}
