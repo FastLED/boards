@@ -1,0 +1,77 @@
+{
+  "build": {
+    "architecture": "cortex-m33",
+    "board": "PORTENTA_C33",
+    "compiler_path": "{runtime.tools.arm-none-eabi-gcc-7-2017q4.path}/bin/",
+    "core": "arduino",
+    "crossprefix": "arm-none-eabi-",
+    "defines": "-DF_CPU=200000000",
+    "float-abi": "-mfloat-abi=hard",
+    "fpu": "-mfpu=fpv5-sp-d16",
+    "mcu": "cortex-m33",
+    "variant": "PORTENTA_C33"
+  },
+  "compiler": {
+    "fsp": {
+      "": "\"{build.variant.path}/libs/libfsp.a\"",
+      "cflags": "-mthumb \"@{compiler.fsp.defines}\" -DLWIP_DNS=1",
+      "cxxflags": "-mthumb \"@{compiler.fsp.defines}\" -DLWIP_DNS=1",
+      "defines": "{build.variant.path}/defines.txt",
+      "extra_ldflags": "-lstdc++ -lsupc++ -lm -lc -lgcc -lnosys",
+      "includes": "{build.variant.path}/includes.txt",
+      "ldflags": "{build.variant.path}/ldflags.txt"
+    },
+    "tinyusb": {
+      "cflags": "-DCFG_TUSB_MCU=OPT_MCU_RAXXX",
+      "cxxflags": "-DCFG_TUSB_MCU=OPT_MCU_RAXXX"
+    }
+  },
+  "debug": {
+    "server": {
+      "openocd": {
+        "scripts": {
+          "0": "interface/{programmer.protocol}.cfg",
+          "1": "{programmer.transport_script}",
+          "2": "{runtime.platform.path}/debugger/R7FA6M5BH.cfg"
+        }
+      }
+    },
+    "svd_file": "{runtime.platform.path}/svd/R7FA6M5BH.svd"
+  },
+  "name": "Arduino Portenta C33",
+  "pid": {
+    "0": "0x0068",
+    "1": "0x0368"
+  },
+  "upload": {
+    "address": "0x00010000",
+    "interface": "0",
+    "maximum_data_size": "523624",
+    "maximum_size": "2097152",
+    "native_usb": "true",
+    "pid": "0x0368",
+    "protocol": "",
+    "tool": {
+      "": "dfu-util",
+      "default": "dfu-util"
+    },
+    "transport": "",
+    "use_1200bps_touch": "false",
+    "vid": "0x2341",
+    "wait_for_upload_port": "false"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0068",
+      "vid": "0x2341"
+    },
+    "1": {
+      "pid": "0x0368",
+      "vid": "0x2341"
+    }
+  },
+  "vid": {
+    "0": "0x2341",
+    "1": "0x2341"
+  }
+}

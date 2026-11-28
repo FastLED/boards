@@ -1,0 +1,162 @@
+/* "View JSON" modal — fetches per-board JSON from the static bundle and
+   pretty-prints it. */
+
+#boardJsonModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+#boardJsonModal.open {
+  display: flex;
+}
+
+#boardJsonModal .modal-body {
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 8px;
+  max-width: 880px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+}
+
+#boardJsonModal header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+#boardJsonModal header .title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--hi);
+}
+
+#boardJsonModal header .btn,
+#boardJsonModal header .close {
+  flex: 0 0 auto;
+}
+
+#boardJsonModal pre {
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  flex: 1;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--bg);
+  color: var(--fg);
+  white-space: pre;
+}
+
+#boardJsonModal .close {
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.3rem;
+}
+
+#boardJsonModal .copy-error {
+  border-color: #c44;
+  color: #c44;
+}
+
+.board-defines-popover {
+  position: fixed;
+  z-index: 120;
+  width: min(680px, calc(100vw - 2rem));
+  max-height: min(420px, calc(100vh - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+}
+
+.board-defines-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.board-defines-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+  font: 0.76rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-defines-close {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font: 0.72rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
+}
+
+.board-defines-body {
+  margin: 0;
+  max-height: calc(min(420px, 100vh - 2rem) - 2.5rem);
+  overflow: auto;
+  padding: 0.7rem;
+  color: var(--fg);
+  background: var(--bg);
+  font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.board-defines-popover.empty .board-defines-body {
+  color: var(--muted);
+  font-style: italic;
+}
+
+@media (max-width: 760px) {
+  #boardJsonModal {
+    align-items: stretch;
+    padding: 0.6rem;
+  }
+
+  #boardJsonModal .modal-body {
+    max-height: calc(100vh - 1.2rem);
+  }
+
+  #boardJsonModal header {
+    flex-wrap: wrap;
+  }
+
+  #boardJsonModal header .title {
+    flex-basis: 100%;
+  }
+
+  #boardJsonModal header .btn {
+    flex: 1 1 auto;
+  }
+}

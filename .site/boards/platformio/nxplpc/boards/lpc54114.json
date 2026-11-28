@@ -1,0 +1,32 @@
+{
+  "build": {
+    "cpu": "cortex-m4",
+    "f_cpu": "100000000L",
+    "mcu": "lpc54114j256bd64",
+    "zephyr": {
+       "variant": "lpcxpresso54114_m4"
+    }
+  },
+  "debug": {
+    "jlink_device": "LPC54114J256_M4",
+    "pyocd_target": "lpc54114",
+    "svd_path": "LPC5410x_v0.4.svd"
+  },
+  "frameworks": [
+    "mbed",
+    "zephyr"
+  ],
+  "name": "NXP LPCXpresso54114",
+  "upload": {
+    "maximum_ram_size": 196608,
+    "maximum_size": 262144,
+    "protocol": "mbed",
+    "protocols": [
+      "jlink",
+      "cmsis-dap",
+      "mbed"
+    ]
+  },
+  "url": "https://os.mbed.com/platforms/LPCXpresso54114/",
+  "vendor": "NXP"
+}

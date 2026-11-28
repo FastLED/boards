@@ -1,0 +1,138 @@
+{
+  "bootloader": {
+    "file": "arduino-nano-matter-bootloader-storage-internal-single-512k.hex",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    }
+  },
+  "build": {
+    "board": "NANO_MATTER",
+    "board_specific_macros": "'-DARDUINO_NANO_MATTER' '-DNUM_LEDS=3' '-DNUM_BTN=1' '-DNUM_HW_SERIAL=2' '-DNUM_HW_SPI=2' '-DNUM_HW_I2C=2' '-DNUM_DAC_HW=2' '-DARDUINO_MAIN_TASK_STACK_SIZE=2048'",
+    "core": "gecko",
+    "f_cpu": "39000000",
+    "float_flags": "",
+    "mcu": "cortex-m33",
+    "platform": "GECKO",
+    "s_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -imacros sl_gcc_preinclude.h -x assembler-with-cpp -c -g",
+    "target_part": "MGM240SD22VNA",
+    "variant": "nano_matter",
+    "variant_system_lib": ""
+  },
+  "debug": {
+    "cortex-debug": {
+      "custom": {
+        "overrideRestartCommands": {
+          "0": "monitor reset halt",
+          "1": "monitor gdb_sync",
+          "2": "c"
+        },
+        "postAttachCommands": {
+          "0": "monitor reset halt",
+          "3": "monitor gdb_sync",
+          "4": "c"
+        },
+        "request": "attach"
+      }
+    },
+    "server": {
+      "": "openocd",
+      "openocd": {
+        "scripts": {
+          "0": "interface/cmsis-dap.cfg",
+          "1": "target/efm32s2_g23.cfg"
+        }
+      }
+    }
+  },
+  "menu": {
+    "protocol_stack": {
+      "ble_arduino": {
+        "": "BLE (Arduino)",
+        "build": {
+          "c_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=c18 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g -Wno-unused-parameter",
+          "cpp_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++17 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g -fno-exceptions -Wno-unused-parameter",
+          "extra_flags": "{build.board_specific_macros} '-DARDUINO_SILABS_STACK_BLE_ARDUINO' '-DARDUINO_SILABS_AIML_CAPABLE' '-DMGM240SD22VNA=1' '-DSL_APP_PROPERTIES=1' '-DHARDWARE_BOARD_DEFAULT_RF_BAND_2400=1' '-DHARDWARE_BOARD_SUPPORTS_1_RF_BAND=1' '-DHARDWARE_BOARD_SUPPORTS_RF_BAND_2400=1' '-DSL_BOARD_NAME=\"BRD2707A\"' '-DSL_BOARD_REV=\"A00\"' '-DconfigNUM_SDK_THREAD_LOCAL_STORAGE_POINTERS=2' '-DSL_COMPONENT_CATALOG_PRESENT=1' '-DMBEDTLS_CONFIG_FILE=<sl_mbedtls_config.h>' '-DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=<psa_crypto_config.h>' '-DTF_LITE_STATIC_MEMORY=1'",
+          "include_list": "\"-I{build.variant.path}\" \"-I{build.variant.path}/ble_arduino/include\"",
+          "ld_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard --specs=nano.specs -Xlinker -Map {compiler.mapfile_path} -Wl,--gc-sections -Wl,--wrap=_free_r -Wl,--wrap=_malloc_r -Wl,--wrap=_calloc_r -Wl,--wrap=_realloc_r",
+          "ld_libs": "-lstdc++ -lgcc -lc -lm -lnosys -lsupc++",
+          "ldscript": "{build.variant.path}/ble_arduino/linkerfile.ld",
+          "precompiled_gsdk": "\"{build.variant.path}/ble_arduino/gsdk.a\"",
+          "precompiled_libs": "\"{build.variant.path}/ble_arduino/libbgcommon.a\" \"{build.variant.path}/ble_arduino/liblinklayer.a\" \"{build.variant.path}/ble_arduino/librail_config_mgm240sd22vna_gcc.a\" \"{build.variant.path}/ble_arduino/librail_module_efr32xg24_gcc_release.a\" \"{build.variant.path}/noradio/libcmsis-nn.a\" \"{build.variant.path}/noradio/libtflm.a\""
+        }
+      },
+      "ble_silabs": {
+        "": "BLE (Silabs)",
+        "build": {
+          "c_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=c18 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g -Wno-unused-parameter",
+          "cpp_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++17 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g -fno-exceptions -Wno-unused-parameter",
+          "extra_flags": "{build.board_specific_macros} '-DARDUINO_SILABS_STACK_BLE_SILABS' '-DARDUINO_SILABS_AIML_CAPABLE' '-DMGM240SD22VNA=1' '-DSL_APP_PROPERTIES=1' '-DHARDWARE_BOARD_DEFAULT_RF_BAND_2400=1' '-DHARDWARE_BOARD_SUPPORTS_1_RF_BAND=1' '-DHARDWARE_BOARD_SUPPORTS_RF_BAND_2400=1' '-DSL_BOARD_NAME=\"BRD2707A\"' '-DSL_BOARD_REV=\"A00\"' '-DconfigNUM_SDK_THREAD_LOCAL_STORAGE_POINTERS=2' '-DSL_COMPONENT_CATALOG_PRESENT=1' '-DMBEDTLS_CONFIG_FILE=<sl_mbedtls_config.h>' '-DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=<psa_crypto_config.h>' '-DSL_RAIL_LIB_MULTIPROTOCOL_SUPPORT=0' '-DSL_RAIL_UTIL_PA_CONFIG_HEADER=<sl_rail_util_pa_config.h>' '-DSLI_RADIOAES_REQUIRES_MASKING=1' '-DTF_LITE_STATIC_MEMORY=1'",
+          "include_list": "\"-I{build.variant.path}\" \"-I{build.variant.path}/ble_silabs/include\"",
+          "ld_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard --specs=nano.specs -Xlinker -Map {compiler.mapfile_path}  -Wl,--gc-sections -Wl,--wrap=_free_r -Wl,--wrap=_malloc_r -Wl,--wrap=_calloc_r -Wl,--wrap=_realloc_r -flto=auto",
+          "ld_libs": "-lstdc++ -lgcc -lc -lm -lnosys -lsupc++",
+          "ldscript": "{build.variant.path}/ble_silabs/linkerfile.ld",
+          "precompiled_gsdk": "\"{build.variant.path}/ble_silabs/gsdk.a\"",
+          "precompiled_libs": "\"{build.variant.path}/ble_silabs/libbgapi_core.a\" \"{build.variant.path}/ble_silabs/libbgcommon.a\" \"{build.variant.path}/ble_silabs/libble_bgapi_gatt_client.a\" \"{build.variant.path}/ble_silabs/libble_bgapi_gatt_server.a\" \"{build.variant.path}/ble_silabs/libble_bgapi.a\" \"{build.variant.path}/ble_silabs/libble_host_accept_list_stub.a\" \"{build.variant.path}/ble_silabs/libble_host_hal_series2.a\" \"{build.variant.path}/ble_silabs/libble_host_hci.a\" \"{build.variant.path}/ble_silabs/libble_host.a\" \"{build.variant.path}/ble_silabs/libble_system.a\" \"{build.variant.path}/ble_silabs/libbondingdb.a\" \"{build.variant.path}/ble_silabs/liblinklayer.a\" \"{build.variant.path}/ble_silabs/librail_config_mgm240sd22vna_gcc.a\" \"{build.variant.path}/ble_silabs/librail_module_efr32xg24_gcc_release.a\" \"{build.variant.path}/noradio/libcmsis-nn.a\" \"{build.variant.path}/noradio/libtflm.a\""
+        }
+      },
+      "matter": {
+        "": "Matter",
+        "build": {
+          "c_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=c18 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -imacros sl_openthread_rtos_config.h -Wno-deprecated-declarations -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-unused-parameter -Wno-cast-function-type -Wno-sign-compare -Wno-psabi -mcmse --specs=nano.specs -g",
+          "cpp_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++17 -fno-rtti -Wall -Wextra -fno-exceptions -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -imacros sl_openthread_rtos_config.h -mcmse -Wno-deprecated-declarations -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-unused-parameter -Wno-cast-function-type -Wno-psabi -fno-strict-aliasing -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-common -Wno-sign-compare --specs=nano.specs -g",
+          "extra_flags": "{build.board_specific_macros} '-DARDUINO_MATTER' '-DARDUINO_MATTER_OVER_THREAD' '-DARDUINO_SILABS_STACK_MATTER_OVER_THREAD' '-DARDUINO_SILABS_AIML_CAPABLE' '-DCHIP_CRYPTO_PLATFORM=1' '-DIS_DEMO_LIGHT=1' '-DNVM3_DEFAULT_MAX_OBJECT_SIZE=4092' '-DNVM3_DEFAULT_NVM_SIZE=40960' '-DSL_OPENTHREAD_CERT_LIB=1' '-DSL_STATUS_LED=0' '-D_WANT_REENT_SMALL=1' '-DconfigNUM_THREAD_LOCAL_STORAGE_POINTERS=2' '-DconfigNUM_USER_THREAD_LOCAL_STORAGE_POINTERS=0' '-DCHIP_ADDRESS_RESOLVE_IMPL_INCLUDE_HEADER=<lib/address_resolve/AddressResolve_DefaultImpl.h>' '-DCHIP_HAVE_CONFIG_H=1' '-DRADIO_CONFIG_DMP_SUPPORT=1' '-DCHIP_DNSSD_DEFAULT_PLATFORM=1' '-DCHIP_CRYPTO_KEYSTORE_PSA=1' '-DCURRENT_TIME_NOT_IMPLEMENTED=1' '-DSL_MATTER_GN_BUILD=0' '-DMBEDTLS_USER_CONFIG_FILE=<sli_psa_builtin_config.h>' '-DOPENTHREAD_CONFIG_DETERMINISTIC_ECDSA_ENABLE=0' '-DOPENTHREAD_CONFIG_ENABLE_BUILTIN_MBEDTLS=0' '-DSILABS_LOG_OUT_UART=0' '-DNON_SPEC_COMPLIANT_OTA_ACTION_DELAY_FLOOR=-1' '-DSILABS_OTA_ENABLED=1' '-DRTT_USE_ASM=0' '-DOPENTHREAD_CONFIG_DNS_CLIENT_OVER_TCP_ENABLE=0' '-DOPENTHREAD_CONFIG_TCP_ENABLE=0' '-DMGM240SD22VNA=1' '-DSL_CODE_COMPONENT_SYSTEM=system' '-DSL_APP_PROPERTIES=1' '-DHARDWARE_BOARD_DEFAULT_RF_BAND_2400=1' '-DHARDWARE_BOARD_SUPPORTS_1_RF_BAND=1' '-DHARDWARE_BOARD_SUPPORTS_RF_BAND_2400=1' '-DSL_BOARD_NAME=\"BRD4002A\"' '-DSL_BOARD_REV=\"A07\"' '-DSL_CODE_COMPONENT_CLOCK_MANAGER=clock_manager' '-DconfigNUM_SDK_THREAD_LOCAL_STORAGE_POINTERS=2' '-DSL_COMPONENT_CATALOG_PRESENT=1' '-DSL_CODE_COMPONENT_DEVICE_PERIPHERAL=device_peripheral' '-DSL_CODE_COMPONENT_DMADRV=dmadrv' '-DSL_CODE_COMPONENT_FREERTOS_KERNEL=freertos_kernel' '-DSL_CODE_COMPONENT_HAL_COMMON=hal_common' '-DSL_CODE_COMPONENT_HAL_GPIO=hal_gpio' '-DSL_CODE_COMPONENT_HAL_SYSRTC=hal_sysrtc' '-DCMSIS_NVIC_VIRTUAL=1' '-DCMSIS_NVIC_VIRTUAL_HEADER_FILE=\"cmsis_nvic_virtual.h\"' '-DMBEDTLS_CONFIG_FILE=<sl_mbedtls_config.h>' '-DOPENTHREAD_CONFIG_DIAG_ENABLE=1' '-DOPENTHREAD_CORE_CONFIG_PLATFORM_CHECK_FILE=\"openthread-core-efr32-config-check.h\"' '-DOPENTHREAD_PROJECT_CORE_CONFIG_FILE=\"openthread-core-efr32-config.h\"' '-DSL_CODE_COMPONENT_OT_PLATFORM_ABSTRACTION=ot_platform_abstraction' '-DOPENTHREAD_CONFIG_FILE=\"sl_openthread_generic_config.h\"' '-DOPENTHREAD_FTD=1' '-DSL_OPENTHREAD_STACK_FEATURES_CONFIG_FILE=\"sl_openthread_features_ftd_cert_config.h\"' '-DSL_CODE_COMPONENT_POWER_MANAGER=power_manager' '-DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=<psa_crypto_config.h>' '-DSL_RAIL_LIB_MULTIPROTOCOL_SUPPORT=1' '-DSL_RAIL_UTIL_PA_CONFIG_HEADER=<sl_rail_util_pa_config.h>' '-DSL_CODE_COMPONENT_SE_MANAGER=se_manager' '-DCIRCULAR_QUEUE_USE_LOCAL_CONFIG_HEADER=1' '-DSL_CODE_COMPONENT_CORE=core' '-DSL_CODE_COMPONENT_SLEEPTIMER=sleeptimer' '-DSL_CODE_COMPONENT_SLI_CRYPTO=sli_crypto' '-DSLI_RADIOAES_REQUIRES_MASKING=1' '-DSL_CODE_COMPONENT_SLI_PROTOCOL_CRYPTO=sli_protocol_crypto' '-DSL_CODE_COMPONENT_PSEC_OSAL=psec_osal' '-DSL_CODE_COMPONENT_SPIDRV=spidrv' '-DTF_LITE_STATIC_MEMORY=1'",
+          "gsdk_path": "{build.variant.path}/matter/{gsdk_folder}",
+          "include_list": "\"-I{build.variant.path}/matter\" \"-I{build.variant.path}/matter/autogen\" \"-I{build.variant.path}/matter/autogen/zap-generated\" \"-I{build.variant.path}/matter/autogen/zap-generated/app-common/zap-generated\" \"-I{build.variant.path}/matter/autogen/zap-generated/app-common/zap-generated/attributes\" \"-I{build.variant.path}/matter/autogen/zap-generated/app-common/zap-generated/ids\" \"-I{build.variant.path}/matter/autogen/zap-generated/app\" \"-I{build.variant.path}/matter/autogen/zap-generated/attributes\" \"-I{build.variant.path}/matter/config\" \"-I{build.variant.path}/matter/config/app/icd/server\" \"-I{build.variant.path}/matter/config/matter/tracing\" \"-I{build.variant.path}/matter/config/btconf\" \"-I{build.variant.path}/matter/config/app\" \"-I{build.variant.path}/matter/config/prioconf\" \"-I{build.variant.path}/matter/config/common\" \"-I{build.variant.path}/matter/include\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/examples/platform/silabs\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/include\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib\" \"-I{build.matter_sdk_path}/third_party/nlassert/include\" \"-I{build.matter_sdk_path}/third_party/nlio/include\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/address_resolve\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/reporting\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/ember_coupling\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/data-model-provider\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/codegen-data-model-provider\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/dnssd\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/examples/platform/silabs/efr32\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/silabs/efr32\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/include/platform\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/include/platform/internal\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/logging\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/include/platform/internal/testing\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/dnssd/platform\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/common\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lwip/silabs\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/silabs\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/silabs/platformAbstraction\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/OpenThread\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/FreeRTOS\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/core\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/access\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/access/examples\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/asn1\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/protocols/bdx\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/ble\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/crypto\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/protocols/user_directed_commissioning\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/protocols\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/protocols/secure_channel\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/protocols/echo\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/credentials/examples\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/credentials/attestation_verifier\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/credentials\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/credentials/tests\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/inet\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/protocols/interaction_model\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/examples/providers\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/messaging\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/transport/raw\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/setup_payload\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/support/logging\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/support\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/lib/support/verhoeff\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/system\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/transport\" \"-I{build.matter_sdk_path}/third_party/matter_sdk\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/icd/server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/access-control-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/basic-information\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/cluster-building-blocks\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/color-control-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/descriptor\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/diagnostic-logs-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/door-lock-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/fan-control-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/general-commissioning-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/general-diagnostics-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/groups-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/identify-server\" \"-I{build.matter_sdk_path}/slc/inc\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/level-control\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/network-commissioning\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/occupancy-sensor-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/on-off-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/controller\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/ota-requestor\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/silabs/provision\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/scenes-server\" \"-I{build.matter_sdk_path}/slc/component/sdk-content/simplicity-sdk/util/third_party/segger/systemview/SEGGER\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/software-diagnostics-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/switch-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/thermostat-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/clusters/thread-network-diagnostics-server\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/tracing\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/platform/silabs/tracing\" \"-I{build.matter_sdk_path}/third_party/matter_sdk/src/app/MessageDef\"",
+          "ld_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard --specs=nano.specs -Xlinker -Map {compiler.mapfile_path} -Wl,--wrap=MemoryAlloc -Wl,--no-warn-rwx-segment -Wl,--wrap=_free_r -Wl,--wrap=_malloc_r -Wl,--wrap=_calloc_r -Wl,--wrap=_realloc_r -Wl,--gc-sections -Wl,--no-warn-rwx-segments",
+          "ld_libs": "-lstdc++ -lgcc -lc -lm -lnosys",
+          "ldscript": "{build.variant.path}/matter/linkerfile.ld",
+          "matter_sdk_path": "{build.variant.path}/matter/{matter_sdk_folder}",
+          "precompiled_gsdk": "\"{build.variant.path}/matter/gsdk.a\"",
+          "precompiled_libs": "\"{build.variant.path}/matter/libProvision_mgm24.a\" \"{build.variant.path}/matter/libbgcommon.a\" \"{build.variant.path}/matter/liblinklayer.a\" \"{build.variant.path}/matter/libble_bgapi_gatt_server.a\" \"{build.variant.path}/matter/libbgapi_core.a\" \"{build.variant.path}/matter/libble_host_accept_list_stub.a\" \"{build.variant.path}/matter/libble_host.a\" \"{build.variant.path}/matter/libbondingdb_stub.a\" \"{build.variant.path}/matter/libble_bgapi.a\" \"{build.variant.path}/matter/libble_bgapi_stub_gatt_client.a\" \"{build.variant.path}/matter/libble_host_hal_series2.a\" \"{build.variant.path}/matter/libble_host_hci.a\" \"{build.variant.path}/matter/libble_system.a\" \"{build.variant.path}/matter/libsl_openthread_cm33_gcc.a\" \"{build.variant.path}/matter/libsl_ot_stack_ftd_efr32mg24_gcc.a\" \"{build.variant.path}/matter/librail_config_mgm240sd22vna_gcc.a\" \"{build.variant.path}/matter/librail_multiprotocol_module_efr32xg24_gcc_release.a\" \"{build.variant.path}/matter/libsl_openthread_cm33_gcc.a\" \"{build.variant.path}/noradio/libcmsis-nn.a\" \"{build.variant.path}/noradio/libtflm.a\""
+        },
+        "gsdk_folder": "simplicity_sdk_2024.12.1",
+        "matter_sdk_folder": "matter_2.5.1"
+      },
+      "none": {
+        "": "None",
+        "build": {
+          "c_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=c18 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g -Wno-unused-parameter",
+          "cpp_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -c -g {compiler.warning_flags} {build.float_flags} -std=gnu++17 -Wall -Wextra -fdata-sections -ffunction-sections -fomit-frame-pointer -imacros sl_gcc_preinclude.h -mcmse --specs=nano.specs -g -fno-exceptions -Wno-unused-parameter",
+          "extra_flags": "{build.board_specific_macros} '-DARDUINO_SILABS_STACK_NONE' '-DARDUINO_SILABS_AIML_CAPABLE' '-DMGM240SD22VNA=1' '-DSL_APP_PROPERTIES=1' '-DHARDWARE_BOARD_DEFAULT_RF_BAND_2400=1' '-DHARDWARE_BOARD_SUPPORTS_1_RF_BAND=1' '-DHARDWARE_BOARD_SUPPORTS_RF_BAND_2400=1' '-DSL_BOARD_NAME=\"BRD2707A\"' '-DSL_BOARD_REV=\"A00\"' '-DconfigNUM_SDK_THREAD_LOCAL_STORAGE_POINTERS=2' '-DSL_COMPONENT_CATALOG_PRESENT=1' '-DMBEDTLS_CONFIG_FILE=<sl_mbedtls_config.h>' '-DMBEDTLS_PSA_CRYPTO_CONFIG_FILE=<psa_crypto_config.h>' '-DTF_LITE_STATIC_MEMORY=1'",
+          "include_list": "\"-I{build.variant.path}\" \"-I{build.variant.path}/noradio/include\"",
+          "ld_flags": "-mcpu={build.mcu} -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard --specs=nano.specs -Xlinker -Map {compiler.mapfile_path} -Wl,--gc-sections -Wl,--wrap=_free_r -Wl,--wrap=_malloc_r -Wl,--wrap=_calloc_r -Wl,--wrap=_realloc_r",
+          "ld_libs": "-lstdc++ -lgcc -lc -lm -lnosys -lsupc++",
+          "ldscript": "{build.variant.path}/noradio/linkerfile.ld",
+          "precompiled_gsdk": "\"{build.variant.path}/noradio/gsdk.a\"",
+          "precompiled_libs": "\"{build.variant.path}/noradio/libcmsis-nn.a\" \"{build.variant.path}/noradio/libtflm.a\""
+        }
+      }
+    }
+  },
+  "name": "Arduino Nano Matter",
+  "pid": {
+    "0": "0x0072"
+  },
+  "upload": {
+    "maximum_data_size": "262144",
+    "maximum_size": "1572864",
+    "native_usb": "false",
+    "protocol": "SWD",
+    "setup_command": "",
+    "tool": {
+      "": "openocd",
+      "default": "openocd"
+    },
+    "use_1200bps_touch": "false",
+    "wait_for_upload_port": "false"
+  },
+  "upload_port": {
+    "0": {
+      "pid": "0x0072",
+      "vid": "0x2341"
+    }
+  },
+  "vid": {
+    "0": "0x2341"
+  }
+}

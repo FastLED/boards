@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FastLED/boards — USB VID:PID Lookup</title>
+    <!--
+      No preload for boards.db! A `<link rel="preload" href="boards.db">`
+      fetches with the browser's default Accept-Encoding (which
+      includes gzip), so the CDN serves the gzipped full file and
+      caches it. When the worker later requests with Accept-Encoding:
+      identity, the browser hands it the cached gzipped copy, the
+      probe records 268740 bytes (the gzipped size) as the DB size,
+      and every subsequent FTS5 read silently returns garbage.
+      Always let the worker do the first fetch.
+    -->
+    <link rel="preload" href="_meta.json" as="fetch" />
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>FastLED/boards &mdash; USB VID:PID Lookup</h1>
+      <p class="sub">
+        Live query over the published <code>boards.db</code>. Powered by
+        <a href="https://github.com/zackees/memex">memex</a>'s
+        <code>sqlite-wasm-http</code> client (WASM, runs entirely in your
+        browser).
+      </p>
+      <div class="head-info">
+        <span id="dbStatus">loading database…</span>
+        <span id="dbCounts"></span>
+      </div>
+      <div class="head-info">
+        <span>
+          SQLite DB:
+          <a id="dbLink" href="boards.db">
+            <code>https://fastled.github.io/boards/boards.db</code>
+          </a>
+        </span>
+        <span><a id="dbLinkRaw" href="boards.db" download>download</a></span>
+      </div>
+      <div class="head-info">
+        <span>
+          USB IDs JSON:
+          <a id="usbIdsLink" href="usb-ids.json">
+            <code>https://fastled.github.io/boards/usb-ids.json</code>
+          </a>
+        </span>
+        <span><a id="usbIdsLinkRaw" href="usb-ids.json" download>download</a></span>
+      </div>
+
+      <section>
+        <h2>Search</h2>
+        <div class="row search-row">
+          <label class="uni">
+            Query
+            <input
+              id="uniIn"
+              type="text"
+              autocomplete="off"
+              autofocus
+              placeholder="esp32dev, espressif, 303a, 303a:1001, teensy, wifi, arduino…"
+            />
+          </label>
+          <label class="mode">
+            Looking for
+            <select id="modeIn" autocomplete="off">
+              <option value="anything" selected>Anything</option>
+              <option value="board">Boards</option>
+              <option value="vendor">USB Vendors (VID)</option>
+              <option value="product">USB Products (VID:PID)</option>
+            </select>
+          </label>
+        </div>
+        <p class="uni-hint">
+          Type anything — a vendor name, product name, board name or id,
+          MCU, framework, connectivity feature, VID, or VID:PID. Case and
+          punctuation (<code>0x</code>, <code>:</code>, spaces, dashes) are
+          ignored, so <code>303a:1001</code>, <code>303A1001</code>, and
+          <code>0x303a 1001</code> all hit the same product. Press
+          <kbd>Esc</kbd> to dismiss the results.
+        </p>
+        <div id="uniOut" class="uni-results" hidden></div>
+      </section>
+
+      <template id="searchIntroTemplate">
+        <div class="search-intro">
+          <h2>What am I looking at?</h2>
+          <div class="help-grid">
+            <article class="help-card">
+              <h3>What is a USB VID:PID?</h3>
+              <p>
+                Every USB device exposes two 16-bit hex identifiers: a
+                <strong>Vendor ID</strong> assigned by USB-IF and a
+                <strong>Product ID</strong> assigned by that vendor. Together
+                they look like <code>0x303a:0x1001</code>.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <h3>Try these searches</h3>
+              <ul>
+                <li><strong>USB Vendors</strong> <span class="label">VID to company</span>: <code>303a</code> or <code>espressif</code>.</li>
+                <li><strong>USB Products</strong> <span class="label">VID:PID to device</span>: <code>303a:1001</code> or <code>teensy</code>.</li>
+                <li><strong>Boards</strong> <span class="label">structured metadata</span>: <code>esp32dev</code>, <code>cortex-m7</code>, or <code>wifi</code>.</li>
+              </ul>
+            </article>
+
+            <article class="help-card">
+              <h3>Tips</h3>
+              <ul>
+                <li>Punctuation and case are ignored: <code>303A1001</code>, <code>303a:1001</code>, and <code>0x303a 1001</code> match the same product.</li>
+                <li>Architecture searches work too: <code>cortex</code>, <code>m7</code>, <code>xtensa</code>, <code>riscv</code>, <code>avr</code>.</li>
+                <li>Board rows include <strong>View JSON</strong> for the raw upstream definition and source links when available.</li>
+              </ul>
+            </article>
+
+            <article class="help-card">
+              <h3>Where the data comes from</h3>
+              <p>
+                Vendor IDs come from USB allocation registries plus Espressif
+                and Raspberry Pi PID registries. Boards come from PlatformIO
+                repos and Arduino core <code>boards.txt</code> files, with
+                curated overrides applied during the site build.
+              </p>
+            </article>
+          </div>
+        </div>
+      </template>
+
+      <div
+        id="boardJsonModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="boardJsonTitle"
+      >
+        <div class="modal-body">
+          <header>
+            <a
+              class="title"
+              id="boardJsonTitle"
+              href="#"
+              target="_blank"
+              rel="noopener"
+            ></a>
+            <button id="boardJsonCopyUrl" class="btn secondary" type="button">
+              copy URL
+            </button>
+            <button id="boardJsonCopy" class="btn secondary" type="button">
+              copy JSON
+            </button>
+            <button class="close" id="boardJsonClose" aria-label="close">
+              &times;
+            </button>
+          </header>
+          <pre id="boardJsonBody">loading…</pre>
+        </div>
+      </div>
+
+      <footer>
+        Source data merged from PlatformIO + Arduino cores + vendor
+        allocation registries. Curated overrides (Teensy, etc.) applied via
+        the <code>other</code> branch. Repo:
+        <a href="https://github.com/FastLED/boards">FastLED/boards</a>.
+        Database is rebuilt and republished by the <code>Build site</code>
+        workflow on every data-branch refresh.
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

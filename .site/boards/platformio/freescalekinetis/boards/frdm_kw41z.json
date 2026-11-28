@@ -1,0 +1,32 @@
+{
+  "build": {
+    "cpu": "cortex-m0plus",
+    "f_cpu": "48000000L",
+    "mcu": "mkw41z512vht4"
+  },
+  "connectivity": [
+    "bluetooth"
+  ],
+  "debug": {
+    "jlink_device": "MKW41Z512xxx4",
+    "pyocd_target": "kw41z4",
+    "svd_path": "MKW41Z4.svd"
+  },
+  "frameworks": [
+    "mbed",
+    "zephyr"
+  ],
+  "name": "Freescale Kinetis FRDM-KW41Z",
+  "upload": {
+    "maximum_ram_size": 131072,
+    "maximum_size": 524288,
+    "protocol": "mbed",
+    "protocols": [
+      "cmsis-dap",
+      "jlink",
+      "mbed"
+    ]
+  },
+  "url": "https://os.mbed.com/platforms/FRDM-KW41Z/",
+  "vendor": "Freescale"
+}
